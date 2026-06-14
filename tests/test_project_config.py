@@ -73,6 +73,14 @@ def test_ci_is_windows_python_only():
     assert "pytest" in workflow
 
 
+def test_install_workflow_can_read_pull_requests_for_changelog():
+    workflow = (ROOT / ".github" / "workflows" / "install.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "permissions:\n  contents: read\n  pull-requests: read" in workflow
+
+
 def test_installer_rewrites_agent_path_for_packaged_layout():
     installer = (ROOT / "tools" / "install.py").read_text(encoding="utf-8")
     assert 'interface["agent"]["child_args"] = ["./agent/main.py"]' in installer
