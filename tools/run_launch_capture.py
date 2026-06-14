@@ -20,6 +20,18 @@ def find_exact_device(devices, address):
     raise RuntimeError(f"未发现目标设备 {address}，不会回退到其他 ADB 设备。")
 
 
+def controller_options(device):
+    from maa.define import MaaAdbScreencapMethodEnum
+
+    return {
+        "adb_path": device.adb_path,
+        "address": device.address,
+        "screencap_methods": MaaAdbScreencapMethodEnum.EncodeToFileAndPull,
+        "input_methods": device.input_methods,
+        "config": device.config,
+    }
+
+
 def read_png_size(path):
     data = Path(path).read_bytes()[:24]
     if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
@@ -83,13 +95,7 @@ def run(project_root, adb_path, address):
 
     devices = Toolkit.find_adb_devices(str(adb_path))
     device = find_exact_device(devices, address)
-    controller = AdbController(
-        adb_path=device.adb_path,
-        address=device.address,
-        screencap_methods=device.screencap_methods,
-        input_methods=device.input_methods,
-        config=device.config,
-    )
+    controller = AdbController(**controller_options(device))
     resource = Resource()
     wait_job(resource.post_bundle(str(project_root / "assets" / "resource")), "资源加载")
     wait_job(controller.post_connection(), "设备连接")

@@ -9,7 +9,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from run_launch_capture import ensure_package_installed, find_exact_device, read_png_size
+from run_launch_capture import (
+    controller_options,
+    ensure_package_installed,
+    find_exact_device,
+    read_png_size,
+)
 
 
 def test_find_exact_device_selects_5557_instead_of_5555():
@@ -26,6 +31,25 @@ def test_find_exact_device_never_falls_back():
 
     with pytest.raises(RuntimeError, match="127.0.0.1:5557"):
         find_exact_device(devices, "127.0.0.1:5557")
+
+
+def test_controller_uses_compatible_lossless_screencap_method():
+    from maa.define import MaaAdbScreencapMethodEnum
+
+    device = SimpleNamespace(
+        adb_path="adb.exe",
+        address="127.0.0.1:5557",
+        input_methods=123,
+        config={"key": "value"},
+    )
+
+    assert controller_options(device) == {
+        "adb_path": "adb.exe",
+        "address": "127.0.0.1:5557",
+        "screencap_methods": MaaAdbScreencapMethodEnum.EncodeToFileAndPull,
+        "input_methods": 123,
+        "config": {"key": "value"},
+    }
 
 
 def test_read_png_size(tmp_path):
