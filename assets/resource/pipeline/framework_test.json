@@ -1,0 +1,15 @@
+{
+    "TestLaunchAndCapture": {
+        "action": "StartApp",
+        "package": "jp.goodsmile.nekoconne",
+        "post_delay": 20000,
+        "next": [
+            "TestCaptureScreen"
+        ]
+    },
+    "TestCaptureScreen": {
+        "action": "Screencap",
+        "filename": "nekoconne_launch",
+        "format": "png"
+    }
+}
