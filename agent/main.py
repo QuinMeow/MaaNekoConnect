@@ -3,21 +3,16 @@ import sys
 from maa.agent.agent_server import AgentServer
 from maa.toolkit import Toolkit
 
-import my_action
-import my_reco
+import extensions  # noqa: F401
 
 
 def main():
     Toolkit.init_option("./")
 
     if len(sys.argv) < 2:
-        print("Usage: python main.py <socket_id>")
-        print("socket_id is provided by AgentIdentifier.")
-        sys.exit(1)
-        
-    socket_id = sys.argv[-1]
+        raise SystemExit("Usage: python agent/main.py <socket_id>")
 
-    AgentServer.start_up(socket_id)
+    AgentServer.start_up(sys.argv[-1])
     AgentServer.join()
     AgentServer.shut_down()
 

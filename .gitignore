@@ -452,3 +452,5 @@ tools/ImageCropper/**/*.png
 
 config
 debug
+.pytest_cache/
+assets/resource/model/ocr/
