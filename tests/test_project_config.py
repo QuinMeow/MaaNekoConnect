@@ -9,7 +9,7 @@ def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_interface_exposes_only_the_launch_capture_task():
+def test_interface_exposes_launch_capture_and_flowerbed_tasks():
     interface = load_json(ROOT / "assets" / "interface.json")
 
     assert interface["name"] == "MaaNekoConnect"
@@ -22,13 +22,14 @@ def test_interface_exposes_only_the_launch_capture_task():
             "display_short_side": 720,
         }
     ]
-    assert interface["task"] == [
-        {
-            "name": "框架测试：启动游戏并截图",
-            "entry": "TestLaunchAndCapture",
-            "controller": ["Android"],
-        }
-    ]
+    assert interface["task"][0] == {
+        "name": "框架测试：启动游戏并截图",
+        "entry": "TestLaunchAndCapture",
+        "controller": ["Android"],
+    }
+    assert interface["task"][1]["name"] == "自动强化 Soleil 花坛"
+    assert interface["task"][1]["entry"] == "SoleilFlowerbedAutoUpgrade"
+    assert interface["task"][1]["controller"] == ["Android"]
     assert interface["agent"]["child_args"] == ["../agent/main.py"]
 
 
