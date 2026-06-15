@@ -176,7 +176,6 @@ def test_pipeline_defines_wrapper_entries_for_every_recognition_flow():
         "SoleilFlowerbedDetectActiveEntry": "SoleilFlowerbedDetectActive",
         "SoleilFlowerbedDetectCappedEntry": "SoleilFlowerbedDetectCapped",
         "SoleilFlowerbedConfirmStartedEntry": "SoleilFlowerbedConfirmStartedState",
-        "SoleilFlowerbedAlreadyOpenEntry": "SoleilFlowerbedMainPageFoodLabel",
     }
 
     for wrapper, recognition_name in wrappers.items():
@@ -184,6 +183,43 @@ def test_pipeline_defines_wrapper_entries_for_every_recognition_flow():
         assert pipeline[wrapper]["next"] == [recognition_name]
         assert "recognition" not in pipeline[wrapper]
         assert "recognition" in pipeline[recognition_name]
+
+
+def test_already_open_chain_uses_next_candidates_for_safe_navigation_fallback():
+    pipeline = json.loads(PIPELINE_PATH.read_text(encoding="utf-8"))
+
+    assert pipeline["SoleilFlowerbedAlreadyOpenEntry"]["next"] == [
+        "SoleilFlowerbedMainPageFoodLabel",
+        "SoleilFlowerbedOpenSoleil",
+    ]
+    assert pipeline["SoleilFlowerbedMainPageFoodLabel"]["next"] == [
+        "SoleilFlowerbedMainPageSweetsLabel",
+        "SoleilFlowerbedOpenSoleil",
+    ]
+    assert pipeline["SoleilFlowerbedMainPageSweetsLabel"]["next"] == [
+        "SoleilFlowerbedMainPageFlowerName",
+        "SoleilFlowerbedOpenSoleil",
+    ]
+    for name in (
+        "SoleilFlowerbedMainPageFoodLabel",
+        "SoleilFlowerbedMainPageSweetsLabel",
+        "SoleilFlowerbedMainPageFlowerName",
+    ):
+        assert "on_error" not in pipeline[name]
+
+
+def test_courtyard_navigation_requires_recognition_before_each_click():
+    pipeline = json.loads(PIPELINE_PATH.read_text(encoding="utf-8"))
+    courtyard = pipeline["SoleilFlowerbedOpenCourtyard"]
+    garden = pipeline["SoleilFlowerbedOpenGarden"]
+
+    assert courtyard["recognition"] == "OCR"
+    assert courtyard["expected"] == "中庭"
+    assert courtyard["next"] == ["SoleilFlowerbedOpenGarden"]
+    assert garden["recognition"] == "OCR"
+    assert garden["expected"] == "中庭"
+    assert garden["action"] == "Click"
+    assert garden["target"] == [360, 600]
 
 
 def test_backend_calls_wrapper_entries_instead_of_recognition_nodes():
