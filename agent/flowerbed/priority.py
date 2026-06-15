@@ -172,13 +172,13 @@ def _subset_score(
     return (
         sum(ratings) if deadline_rating else 0.0,
         sum(
-            rating / int(candidate.duration_seconds)
-            for candidate, rating in zip(chosen, ratings)
-        ),
-        sum(
             int(candidate.cost)
             for candidate in chosen
             if candidate.flower in SCARCE_FLOWERS
+        ),
+        sum(
+            rating / int(candidate.duration_seconds)
+            for candidate, rating in zip(chosen, ratings)
         ),
         -sum(int(candidate.duration_seconds) for candidate in chosen),
     )
@@ -215,12 +215,12 @@ def _item_order(item: PlanItem, config: ScheduleConfig) -> tuple:
     return (
         item.deadline_rating == 0,
         -item.deadline_rating,
-        -(rating / int(candidate.duration_seconds)),
         -(
             int(candidate.cost)
             if candidate.flower in SCARCE_FLOWERS
             else 0
         ),
+        -(rating / int(candidate.duration_seconds)),
         int(candidate.duration_seconds),
         _stable_key(candidate),
     )

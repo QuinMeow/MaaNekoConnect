@@ -10,12 +10,15 @@
     "SoleilFlowerbedAlreadyOpenEntry": {
         "action": "DoNothing",
         "next": [
+            "SoleilFlowerbedMainPageFlowerName",
             "SoleilFlowerbedMainPageFoodLabel",
+            "SoleilFlowerbedStoreHasCourtyardTab",
             "SoleilFlowerbedOpenSoleil"
         ]
     },
     "SoleilFlowerbedMainPageFoodLabel": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [150, 250, 170, 50],
         "expected": "フード",
         "next": [
@@ -25,6 +28,7 @@
     },
     "SoleilFlowerbedMainPageSweetsLabel": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [410, 250, 180, 50],
         "expected": "スイーツ",
         "next": [
@@ -34,12 +38,23 @@
     },
     "SoleilFlowerbedMainPageFlowerName": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [35, 1040, 130, 80],
         "expected": ".+の花",
         "next": ["SoleilFlowerbedPlanAndExecute"]
     },
+    "SoleilFlowerbedStoreHasCourtyardTab": {
+        "recognition": "OCR",
+        "model": "ja_jp",
+        "roi": [410, 1080, 100, 70],
+        "expected": "中庭",
+        "action": "Click",
+        "post_delay": 2000,
+        "next": ["SoleilFlowerbedOpenGarden"]
+    },
     "SoleilFlowerbedOpenSoleil": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "expected": "Soleil",
         "action": "Click",
         "post_delay": 3000,
@@ -47,15 +62,19 @@
     },
     "SoleilFlowerbedOpenCourtyard": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "expected": "中庭",
         "action": "Click",
         "post_delay": 2000,
         "next": ["SoleilFlowerbedOpenGarden"]
     },
     "SoleilFlowerbedOpenGarden": {
-        "recognition": "OCR",
-        "roi": [410, 1040, 100, 80],
-        "expected": "中庭",
+        "recognition": "ColorMatch",
+        "roi": [410, 1030, 90, 120],
+        "method": 4,
+        "lower": [210, 90, 20],
+        "upper": [255, 190, 100],
+        "count": 100,
         "action": "Click",
         "target": [360, 600],
         "post_delay": 2000,
@@ -153,33 +172,41 @@
     },
     "SoleilFlowerbedReadTitle": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [180, 250, 360, 90],
         "expected": ".+強化",
         "next": ["SoleilFlowerbedReadLevels"]
     },
     "SoleilFlowerbedReadLevels": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [180, 350, 360, 120],
-        "expected": ".*\\d+.*\\d+",
+        "expected": "\\d+",
         "next": ["SoleilFlowerbedReadBonuses"]
     },
     "SoleilFlowerbedReadBonuses": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [80, 480, 560, 90],
         "expected": ".*[+-]?\\d+(?:\\.\\d+)?.*[+-]?\\d+(?:\\.\\d+)?.*",
         "next": ["SoleilFlowerbedReadResources"]
     },
     "SoleilFlowerbedReadResources": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [160, 640, 400, 80],
         "expected": ".*\\d[\\d,]*.*\\d[\\d,]*.*",
         "next": ["SoleilFlowerbedReadDuration"]
     },
     "SoleilFlowerbedReadDuration": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [180, 700, 360, 80],
         "expected": ".*\\d+:[0-5]\\d:[0-5]\\d.*",
-        "next": ["SoleilFlowerbedUpgradeButtonEnabled"]
+        "next": [
+            "SoleilFlowerbedUpgradeButtonEnabled",
+            "SoleilFlowerbedUpgradeButtonDisabled"
+        ]
     },
     "SoleilFlowerbedUpgradeButtonEnabled": {
         "recognition": "ColorMatch",
@@ -192,8 +219,17 @@
     },
     "SoleilFlowerbedUpgradeButtonText": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "roi": [210, 780, 300, 80],
         "expected": "強化"
+    },
+    "SoleilFlowerbedUpgradeButtonDisabled": {
+        "recognition": "ColorMatch",
+        "roi": [210, 780, 300, 80],
+        "method": 4,
+        "lower": [120, 141, 141],
+        "upper": [210, 200, 200],
+        "count": 100
     },
     "SoleilFlowerbedDetectCappedEntry": {
         "action": "DoNothing",
@@ -201,6 +237,7 @@
     },
     "SoleilFlowerbedDetectCapped": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "expected": "$^",
         "enabled": false
     },
@@ -210,6 +247,7 @@
     },
     "SoleilFlowerbedDetectActive": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "expected": "$^",
         "enabled": false
     },
@@ -230,6 +268,7 @@
     },
     "SoleilFlowerbedConfirmStartedState": {
         "recognition": "OCR",
+        "model": "ja_jp",
         "expected": "$^",
         "enabled": false
     }

@@ -163,15 +163,41 @@ def test_higher_deadline_rating_wins_before_rating_per_second():
     assert selected[0].candidate is larger
 
 
-def test_rating_per_second_breaks_equal_rating_tie():
-    slow = candidate(attribute="Food", duration_seconds=3600)
-    fast = candidate(attribute="Sweets", duration_seconds=60)
+def test_scarce_consumption_wins_before_rating_per_second():
+    slow = candidate(
+        flower=FLOWER_ORDER[1],
+        attribute="Food",
+        duration_seconds=3600,
+        cost=10000,
+    )
+    fast = candidate(
+        flower=FLOWER_ORDER[0],
+        attribute="Sweets",
+        duration_seconds=60,
+    )
 
     selected = select_candidates(
         [slow, fast],
         0,
         config(max_starts=1),
     )
+
+    assert selected[0].candidate is slow
+
+
+def test_rating_per_second_breaks_equal_rating_and_scarce_cost_tie():
+    slow = candidate(
+        flower=FLOWER_ORDER[1],
+        attribute="Food",
+        duration_seconds=3600,
+    )
+    fast = candidate(
+        flower=FLOWER_ORDER[2],
+        attribute="Sweets",
+        duration_seconds=60,
+    )
+
+    selected = select_candidates([slow, fast], 0, config(max_starts=1))
 
     assert selected[0].candidate is fast
 

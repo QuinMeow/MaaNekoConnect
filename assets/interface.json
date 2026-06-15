@@ -40,7 +40,7 @@
             ]
         },
         {
-            "name": "自动强化 Soleil 花坛",
+            "name": "规划 Soleil 花坛强化",
             "entry": "SoleilFlowerbedAutoUpgrade",
             "controller": [
                 "Android"
@@ -54,16 +54,8 @@
         "FlowerbedSettings": {
             "type": "input",
             "label": "Soleil 花坛设置",
-            "description": "默认仅规划。Execute 在识别证据不足时会关闭失败，不使用加速道具或社团委托。",
+            "description": "扫描当前花坛状态并生成规划，不启动强化，不使用加速道具或社团委托。",
             "inputs": [
-                {
-                    "name": "ExecutionMode",
-                    "label": "执行模式",
-                    "default": "PlanOnly",
-                    "pipeline_type": "string",
-                    "verify": "^(?:PlanOnly|Execute)$",
-                    "pattern_msg": "请输入 PlanOnly 或 Execute。"
-                },
                 {
                     "name": "DeadlineHours",
                     "label": "期限（小时）",
@@ -134,7 +126,7 @@
             "pipeline_override": {
                 "SoleilFlowerbedPlanAndExecute": {
                     "custom_action_param": {
-                        "execution_mode": "{ExecutionMode}",
+                        "execution_mode": "PlanOnly",
                         "deadline_hours": "{DeadlineHours}",
                         "max_starts": "{MaxStarts}",
                         "allow_tail_fill": "{AllowTailFill}",

@@ -27,7 +27,7 @@ def test_interface_exposes_launch_capture_and_flowerbed_tasks():
         "entry": "TestLaunchAndCapture",
         "controller": ["Android"],
     }
-    assert interface["task"][1]["name"] == "自动强化 Soleil 花坛"
+    assert interface["task"][1]["name"] == "规划 Soleil 花坛强化"
     assert interface["task"][1]["entry"] == "SoleilFlowerbedAutoUpgrade"
     assert interface["task"][1]["controller"] == ["Android"]
     assert interface["agent"]["child_args"] == ["../agent/main.py"]

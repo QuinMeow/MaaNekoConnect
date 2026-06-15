@@ -11,7 +11,11 @@ from .action import (
     run_automation,
 )
 from .models import Candidate, ScanSnapshot
-from .parsing import candidate_from_ocr
+from .parsing import (
+    candidate_from_ocr,
+    parse_level_change,
+    parse_resource_change,
+)
 from .priority import ATTRIBUTE_ORDER, FLOWER_ORDER
 
 
@@ -31,6 +35,13 @@ _FIELD_NODE = {
     "resources": "SoleilFlowerbedReadResources",
     "duration": "SoleilFlowerbedReadDuration",
 }
+_CUSTOMER_SERVICE_STAGE_CAPS = frozenset({15, 30, 50})
+
+
+class CandidateUnavailable(ValueError):
+    def __init__(self, state: str):
+        super().__init__(state)
+        self.state = state
 
 
 def _task_succeeded(task) -> bool:
@@ -53,6 +64,23 @@ def _recognition_result(node):
     if result is None:
         raise ValueError(f"recognition result missing for {getattr(node, 'name', '')}")
     return result
+
+
+def _ocr_results(node) -> list:
+    recognition = getattr(node, "recognition", None)
+    if recognition is None or not recognition.hit:
+        raise ValueError(f"recognition did not hit for {getattr(node, 'name', '')}")
+    results = list(getattr(recognition, "all_results", ()) or ())
+    if not results:
+        results = [_recognition_result(node)]
+    return sorted(
+        results,
+        key=lambda result: getattr(result, "box", (0, 0, 0, 0))[0],
+    )
+
+
+def _ocr_text(node) -> str:
+    return " ".join(str(result.text) for result in _ocr_results(node))
 
 
 class MaaFlowerbedBackend:
@@ -89,12 +117,25 @@ class MaaFlowerbedBackend:
         for field, node_name in _FIELD_NODE.items():
             if node_name not in nodes:
                 raise ValueError(f"popup field node missing: {node_name}")
-            result = _recognition_result(nodes[node_name])
-            fields[field] = result.text
-            scores.append(float(result.score))
+            results = _ocr_results(nodes[node_name])
+            fields[field] = " ".join(str(result.text) for result in results)
+            scores.extend(float(result.score) for result in results)
 
         enabled_node = nodes.get("SoleilFlowerbedUpgradeButtonEnabled")
+        disabled_node = nodes.get("SoleilFlowerbedUpgradeButtonDisabled")
         text_node = nodes.get("SoleilFlowerbedUpgradeButtonText")
+        if disabled_node is not None:
+            _recognition_result(disabled_node)
+            current_level, _ = parse_level_change(str(fields["levels"]))
+            if (
+                attribute == "Customer Service"
+                and current_level in _CUSTOMER_SERVICE_STAGE_CAPS
+            ):
+                raise CandidateUnavailable("capped")
+            balance, cost = parse_resource_change(str(fields["resources"]))
+            if balance < cost:
+                raise CandidateUnavailable("unavailable")
+            raise RuntimeError("disabled upgrade state could not be confirmed")
         if enabled_node is None or text_node is None:
             raise ValueError("upgrade button state is incomplete")
         _recognition_result(enabled_node)
@@ -148,10 +189,9 @@ class MaaFlowerbedBackend:
                 try:
                     try:
                         candidate = self._read_open_popup(flower, attribute)
-                    except (RuntimeError, ValueError):
+                    except CandidateUnavailable as exc:
                         self._close_popup_best_effort()
-                        state = self._detect_unavailable_state(attribute)
-                        if state == "active":
+                        if exc.state == "active":
                             active_count += 1
                         continue
                     self._run_required("SoleilFlowerbedClosePopup")

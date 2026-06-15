@@ -19,12 +19,24 @@ def test_parse_bonus_change_uses_popup_values():
     assert parse_bonus_change("+19.0 ▶ +19.5") == (19.0, 19.5)
 
 
+def test_parse_bonus_change_accepts_decimal_comma_from_japanese_ocr():
+    assert parse_bonus_change("+19,5 +20.0") == (19.5, 20.0)
+
+
 def test_parse_level_change_reads_current_and_next():
     assert parse_level_change("Lv 38 ▶ 39") == (38, 39)
 
 
+def test_parse_level_change_splits_consecutive_levels_fused_by_ocr():
+    assert parse_level_change("3940") == (39, 40)
+
+
 def test_parse_resource_change_derives_cost_from_actual_balances():
     assert parse_resource_change("219,850 ▶ 209,850") == (219850, 10000)
+
+
+def test_parse_resource_change_accepts_negative_projected_balance():
+    assert parse_resource_change("347 ▶ -1,333") == (347, 1680)
 
 
 def test_parse_duration_allows_unbounded_hours():

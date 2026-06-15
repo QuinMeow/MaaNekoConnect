@@ -4,7 +4,8 @@ from .models import Candidate
 
 
 _INTEGER_RE = re.compile(r"(?<![\d,])\d[\d,]*(?![\d,])")
-_NUMBER_RE = re.compile(r"(?<![\d.])[+-]?\d+(?:\.\d+)?(?![\d.])")
+_SIGNED_INTEGER_RE = re.compile(r"(?<![\d,])[+-]?\d[\d,]*(?![\d,])")
+_NUMBER_RE = re.compile(r"(?<![\d.,])[+-]?\d+(?:[.,]\d+)?(?![\d.,])")
 _DURATION_RE = re.compile(r"(?<!\d)(\d+):([0-5]\d):([0-5]\d)(?!\d)")
 
 
@@ -17,20 +18,38 @@ def parse_integer(text: str) -> int:
 
 def parse_level_change(text: str) -> tuple[int, int]:
     values = [int(value.replace(",", "")) for value in _INTEGER_RE.findall(text)]
+    if len(values) == 1:
+        fused = str(values[0])
+        consecutive = [
+            (int(fused[:index]), int(fused[index:]))
+            for index in range(1, len(fused))
+            if int(fused[index:]) == int(fused[:index]) + 1
+        ]
+        if len(consecutive) == 1:
+            return consecutive[0]
     if len(values) != 2:
         raise ValueError(f"level change requires two values: {text!r}")
     return values[0], values[1]
 
 
 def parse_bonus_change(text: str) -> tuple[float, float]:
-    values = [float(value) for value in _NUMBER_RE.findall(text)]
+    values = [
+        float(value.replace(",", "."))
+        for value in _NUMBER_RE.findall(text)
+    ]
     if len(values) != 2:
         raise ValueError(f"bonus change requires two values: {text!r}")
     return values[0], values[1]
 
 
 def parse_resource_change(text: str) -> tuple[int, int]:
-    before, after = parse_level_change(text)
+    values = [
+        int(value.replace(",", ""))
+        for value in _SIGNED_INTEGER_RE.findall(text)
+    ]
+    if len(values) != 2:
+        raise ValueError(f"resource change requires two values: {text!r}")
+    before, after = values
     cost = before - after
     if cost <= 0:
         raise ValueError(f"resource balance did not decrease: {text!r}")

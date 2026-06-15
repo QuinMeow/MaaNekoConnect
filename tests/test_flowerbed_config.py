@@ -104,7 +104,6 @@ def test_public_task_exposes_supported_options_with_safe_defaults():
     settings = interface["option"]["FlowerbedSettings"]
     assert settings["type"] == "input"
     assert [(item["name"], item["default"]) for item in settings["inputs"]] == [
-        ("ExecutionMode", "PlanOnly"),
         ("DeadlineHours", "24"),
         ("MaxStarts", "6"),
         ("AllowTailFill", "false"),
@@ -115,15 +114,13 @@ def test_public_task_exposes_supported_options_with_safe_defaults():
         ("WorkSpeedWeight", "0.1"),
         ("StaminaWeight", "0.01"),
     ]
-    assert settings["inputs"][0]["verify"] == "^(?:PlanOnly|Execute)$"
-    assert settings["inputs"][3]["verify"] == "^(?:true|false)$"
+    assert settings["inputs"][2]["verify"] == "^(?:true|false)$"
 
 
 def test_settings_override_preserves_all_fields_with_official_placeholders():
     interface = load_json(ROOT / "assets" / "interface.json")
     settings = interface["option"]["FlowerbedSettings"]
     values = {
-        "ExecutionMode": "Execute",
         "DeadlineHours": "120",
         "MaxStarts": "3",
         "AllowTailFill": "true",
@@ -139,7 +136,7 @@ def test_settings_override_preserves_all_fields_with_official_placeholders():
     params = override["SoleilFlowerbedPlanAndExecute"]["custom_action_param"]
 
     assert params == {
-        "execution_mode": "Execute",
+        "execution_mode": "PlanOnly",
         "deadline_hours": 120,
         "max_starts": 3,
         "allow_tail_fill": "true",
@@ -150,7 +147,9 @@ def test_settings_override_preserves_all_fields_with_official_placeholders():
         "work_speed_weight": "0.2",
         "stamina_weight": "0.03",
     }
-    assert parse_action_config(params).allow_tail_fill is True
+    config = parse_action_config(params)
+    assert config.execution_mode is ExecutionMode.PLAN_ONLY
+    assert config.allow_tail_fill is True
     assert "「" not in json.dumps(interface, ensure_ascii=False)
 
 
@@ -179,3 +178,30 @@ def test_pipeline_never_uses_acceleration_items_or_guild_commissions():
     assert "加速" not in text
     assert "委托" not in text
     assert "依頼" not in text
+
+
+def test_flowerbed_pipeline_uses_bundled_japanese_ocr_model():
+    pipeline = load_json(
+        ROOT / "assets" / "resource" / "pipeline" / "soleil_flowerbed.json"
+    )
+    ocr_nodes = [
+        node
+        for node in pipeline.values()
+        if node.get("recognition") == "OCR"
+    ]
+
+    assert ocr_nodes
+    assert all(node.get("model") == "ja_jp" for node in ocr_nodes)
+
+    model_dir = ROOT / "assets" / "resource" / "model" / "ocr" / "ja_jp"
+    source_dir = ROOT / "assets" / "MaaCommonAssets" / "OCR"
+    sources = {
+        "det.onnx": source_dir / "ppocr_v4" / "zh_cn" / "det.onnx",
+        "rec.onnx": source_dir / "ppocr_v3" / "ja_jp" / "rec.onnx",
+        "keys.txt": source_dir / "ppocr_v3" / "ja_jp" / "keys.txt",
+    }
+    for filename, source in sources.items():
+        bundled = model_dir / filename
+        assert bundled.is_file()
+        assert bundled.stat().st_size > 0
+        assert bundled.read_bytes() == source.read_bytes()
