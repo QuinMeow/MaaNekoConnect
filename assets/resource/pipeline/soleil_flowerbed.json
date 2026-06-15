@@ -2,7 +2,7 @@
     "SoleilFlowerbedAutoUpgrade": {
         "action": "StartApp",
         "package": "jp.goodsmile.nekoconne",
-        "post_delay": 30000,
+        "post_delay": 5000,
         "next": [
             "SoleilFlowerbedAlreadyOpenEntry"
         ]
@@ -107,64 +107,64 @@
     "SoleilFlowerbedSelectFlower0": {
         "action": "Click",
         "target": [100, 1030],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedSelectFlower1": {
         "action": "Click",
         "target": [270, 1030],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedSelectFlower2": {
         "action": "Click",
         "target": [450, 1030],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedSelectFlower3": {
         "action": "Click",
         "target": [620, 1030],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedScrollToLastFlower": {
         "action": "Swipe",
         "begin": [650, 1040],
         "end": [80, 1040],
         "duration": 300,
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedSelectFlower4": {
         "action": "Click",
         "target": [620, 1030],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedOpenFood": {
         "action": "Click",
         "target": [235, 230],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedOpenSweets": {
         "action": "Click",
         "target": [485, 230],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedOpenDrink": {
         "action": "Click",
         "target": [105, 450],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedOpenCustomerService": {
         "action": "Click",
         "target": [615, 450],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedOpenWorkSpeed": {
         "action": "Click",
         "target": [235, 670],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedOpenStamina": {
         "action": "Click",
         "target": [485, 670],
-        "post_delay": 500
+        "post_delay": 250
     },
     "SoleilFlowerbedReadPopupEntry": {
         "action": "DoNothing",
@@ -175,6 +175,7 @@
         "model": "ja_jp",
         "roi": [180, 250, 360, 90],
         "expected": ".+強化",
+        "post_delay": 0,
         "next": ["SoleilFlowerbedReadLevels"]
     },
     "SoleilFlowerbedReadLevels": {
@@ -182,6 +183,7 @@
         "model": "ja_jp",
         "roi": [180, 350, 360, 120],
         "expected": "\\d+",
+        "post_delay": 0,
         "next": ["SoleilFlowerbedReadBonuses"]
     },
     "SoleilFlowerbedReadBonuses": {
@@ -189,6 +191,7 @@
         "model": "ja_jp",
         "roi": [80, 480, 560, 90],
         "expected": ".*[+-]?\\d+(?:\\.\\d+)?.*[+-]?\\d+(?:\\.\\d+)?.*",
+        "post_delay": 0,
         "next": ["SoleilFlowerbedReadResources"]
     },
     "SoleilFlowerbedReadResources": {
@@ -196,6 +199,7 @@
         "model": "ja_jp",
         "roi": [160, 640, 400, 80],
         "expected": ".*\\d[\\d,]*.*\\d[\\d,]*.*",
+        "post_delay": 0,
         "next": ["SoleilFlowerbedReadDuration"]
     },
     "SoleilFlowerbedReadDuration": {
@@ -203,6 +207,7 @@
         "model": "ja_jp",
         "roi": [180, 700, 360, 80],
         "expected": ".*\\d+:[0-5]\\d:[0-5]\\d.*",
+        "post_delay": 0,
         "next": [
             "SoleilFlowerbedUpgradeButtonEnabled",
             "SoleilFlowerbedUpgradeButtonDisabled"
@@ -215,13 +220,15 @@
         "lower": [180, 40, 40],
         "upper": [255, 140, 140],
         "count": 100,
+        "post_delay": 0,
         "next": ["SoleilFlowerbedUpgradeButtonText"]
     },
     "SoleilFlowerbedUpgradeButtonText": {
         "recognition": "OCR",
         "model": "ja_jp",
         "roi": [210, 780, 300, 80],
-        "expected": "強化"
+        "expected": "強化",
+        "post_delay": 0
     },
     "SoleilFlowerbedUpgradeButtonDisabled": {
         "recognition": "ColorMatch",
@@ -229,7 +236,8 @@
         "method": 4,
         "lower": [120, 141, 141],
         "upper": [210, 200, 200],
-        "count": 100
+        "count": 100,
+        "post_delay": 0
     },
     "SoleilFlowerbedDetectCappedEntry": {
         "action": "DoNothing",
@@ -254,7 +262,7 @@
     "SoleilFlowerbedClosePopup": {
         "action": "Click",
         "target": [360, 1180],
-        "post_delay": 300
+        "post_delay": 150
     },
     "SoleilFlowerbedConfirmStart": {
         "action": "Click",

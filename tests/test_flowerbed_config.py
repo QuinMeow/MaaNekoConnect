@@ -205,3 +205,38 @@ def test_flowerbed_pipeline_uses_bundled_japanese_ocr_model():
         assert bundled.is_file()
         assert bundled.stat().st_size > 0
         assert bundled.read_bytes() == source.read_bytes()
+
+
+def test_flowerbed_scan_uses_reduced_safe_delays():
+    pipeline = load_json(
+        ROOT / "assets" / "resource" / "pipeline" / "soleil_flowerbed.json"
+    )
+
+    assert pipeline["SoleilFlowerbedAutoUpgrade"]["post_delay"] <= 5000
+    for name in (
+        "SoleilFlowerbedSelectFlower0",
+        "SoleilFlowerbedSelectFlower1",
+        "SoleilFlowerbedSelectFlower2",
+        "SoleilFlowerbedSelectFlower3",
+        "SoleilFlowerbedSelectFlower4",
+        "SoleilFlowerbedOpenFood",
+        "SoleilFlowerbedOpenSweets",
+        "SoleilFlowerbedOpenDrink",
+        "SoleilFlowerbedOpenCustomerService",
+        "SoleilFlowerbedOpenWorkSpeed",
+        "SoleilFlowerbedOpenStamina",
+    ):
+        assert pipeline[name]["post_delay"] <= 250
+
+    assert pipeline["SoleilFlowerbedClosePopup"]["post_delay"] <= 150
+    for name in (
+        "SoleilFlowerbedReadTitle",
+        "SoleilFlowerbedReadLevels",
+        "SoleilFlowerbedReadBonuses",
+        "SoleilFlowerbedReadResources",
+        "SoleilFlowerbedReadDuration",
+        "SoleilFlowerbedUpgradeButtonEnabled",
+        "SoleilFlowerbedUpgradeButtonText",
+        "SoleilFlowerbedUpgradeButtonDisabled",
+    ):
+        assert pipeline[name]["post_delay"] == 0
