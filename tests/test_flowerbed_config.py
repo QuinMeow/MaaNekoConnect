@@ -14,6 +14,30 @@ def load_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def apply_input_override(option, values):
+    input_types = {
+        item["name"]: item.get("pipeline_type", "string")
+        for item in option["inputs"]
+    }
+
+    def replace(value):
+        if isinstance(value, dict):
+            return {key: replace(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [replace(item) for item in value]
+        if isinstance(value, str) and value.startswith("{") and value.endswith("}"):
+            name = value[1:-1]
+            raw = values[name]
+            if input_types[name] == "int":
+                return int(raw)
+            if input_types[name] == "bool":
+                return str(raw).lower() == "true"
+            return str(raw)
+        return value
+
+    return replace(option["pipeline_override"])
+
+
 def test_action_config_defaults_are_safe():
     config = parse_action_config({})
 
@@ -75,29 +99,59 @@ def test_public_task_exposes_supported_options_with_safe_defaults():
         if task["entry"] == "SoleilFlowerbedAutoUpgrade"
     )
 
-    assert task["option"] == [
-        "FlowerbedExecutionMode",
-        "FlowerbedDeadlineHours",
-        "FlowerbedMaxStarts",
-        "FlowerbedAllowTailFill",
-        "FlowerbedKagayakiReserve",
-        "FlowerbedChosenReserve",
-        "FlowerbedKyoryokuReserve",
-        "FlowerbedNazoReserve",
-        "FlowerbedWorkSpeedWeight",
-        "FlowerbedStaminaWeight",
+    assert task["option"] == ["FlowerbedSettings"]
+    assert list(interface["option"]) == ["FlowerbedSettings"]
+    settings = interface["option"]["FlowerbedSettings"]
+    assert settings["type"] == "input"
+    assert [(item["name"], item["default"]) for item in settings["inputs"]] == [
+        ("ExecutionMode", "PlanOnly"),
+        ("DeadlineHours", "24"),
+        ("MaxStarts", "6"),
+        ("AllowTailFill", "false"),
+        ("KagayakiReserve", "0"),
+        ("ChosenReserve", "0"),
+        ("KyoryokuReserve", "0"),
+        ("NazoReserve", "0"),
+        ("WorkSpeedWeight", "0.1"),
+        ("StaminaWeight", "0.01"),
     ]
-    assert interface["option"]["FlowerbedExecutionMode"]["default_case"] == "PlanOnly"
-    assert interface["option"]["FlowerbedDeadlineHours"]["inputs"][0]["default"] == "24"
-    assert interface["option"]["FlowerbedMaxStarts"]["inputs"][0]["default"] == "6"
-    assert interface["option"]["FlowerbedAllowTailFill"]["default_case"] == "No"
-    for name in (
-        "FlowerbedKagayakiReserve",
-        "FlowerbedChosenReserve",
-        "FlowerbedKyoryokuReserve",
-        "FlowerbedNazoReserve",
-    ):
-        assert interface["option"][name]["inputs"][0]["default"] == "0"
+    assert settings["inputs"][0]["verify"] == "^(?:PlanOnly|Execute)$"
+    assert settings["inputs"][3]["verify"] == "^(?:true|false)$"
+
+
+def test_settings_override_preserves_all_fields_with_official_placeholders():
+    interface = load_json(ROOT / "assets" / "interface.json")
+    settings = interface["option"]["FlowerbedSettings"]
+    values = {
+        "ExecutionMode": "Execute",
+        "DeadlineHours": "120",
+        "MaxStarts": "3",
+        "AllowTailFill": "true",
+        "KagayakiReserve": "10",
+        "ChosenReserve": "20",
+        "KyoryokuReserve": "30",
+        "NazoReserve": "40",
+        "WorkSpeedWeight": "0.2",
+        "StaminaWeight": "0.03",
+    }
+
+    override = apply_input_override(settings, values)
+    params = override["SoleilFlowerbedPlanAndExecute"]["custom_action_param"]
+
+    assert params == {
+        "execution_mode": "Execute",
+        "deadline_hours": 120,
+        "max_starts": 3,
+        "allow_tail_fill": "true",
+        "kagayaki_reserve": 10,
+        "chosen_reserve": 20,
+        "kyoryoku_reserve": 30,
+        "nazo_reserve": 40,
+        "work_speed_weight": "0.2",
+        "stamina_weight": "0.03",
+    }
+    assert parse_action_config(params).allow_tail_fill is True
+    assert "「" not in json.dumps(interface, ensure_ascii=False)
 
 
 def test_pipeline_uses_json_for_navigation_ocr_and_fixed_actions():

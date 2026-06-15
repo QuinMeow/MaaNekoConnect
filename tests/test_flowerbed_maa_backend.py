@@ -1,13 +1,19 @@
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
+from agent.flowerbed.action import StartOutcome
 from agent.flowerbed.maa_backend import MaaFlowerbedBackend
 from agent.flowerbed.models import Candidate
-from agent.flowerbed.action import StartOutcome
 from agent.flowerbed.priority import ATTRIBUTE_ORDER, FLOWER_ORDER
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PIPELINE_PATH = (
+    ROOT / "assets" / "resource" / "pipeline" / "soleil_flowerbed.json"
+)
 
 
 TITLE_BY_ATTRIBUTE = {
@@ -59,9 +65,9 @@ def count_node(name, count=100, hit=True):
     )
 
 
-def read_task(attribute):
+def read_task(attribute, succeeded=True):
     return SimpleNamespace(
-        status=status(),
+        status=status(succeeded),
         nodes=[
             node("SoleilFlowerbedReadTitle", TITLE_BY_ATTRIBUTE[attribute]),
             node("SoleilFlowerbedReadLevels", "Lv 1 ▶ 2"),
@@ -74,26 +80,75 @@ def read_task(attribute):
     )
 
 
+def recognition_task(name, hit):
+    return SimpleNamespace(
+        status=status(),
+        nodes=[node(name, "matched", hit=hit)],
+    )
+
+
 class FakeContext:
-    def __init__(self, confirm_started=True):
+    def __init__(
+        self,
+        *,
+        read_failure_attribute=None,
+        active_hit=False,
+        capped_hit=False,
+        confirm_started_hit=True,
+    ):
         self.calls = []
         self.attribute = "Food"
-        self.confirm_started = confirm_started
+        self.popup_open = False
+        self.read_failure_attribute = read_failure_attribute
+        self.active_hit = active_hit
+        self.capped_hit = capped_hit
+        self.confirm_started_hit = confirm_started_hit
 
     def run_task(self, entry):
         self.calls.append(entry)
         for attribute, open_entry in OPEN_ENTRY_BY_ATTRIBUTE.items():
             if entry == open_entry:
                 self.attribute = attribute
+                self.popup_open = True
                 return SimpleNamespace(status=status(), nodes=[])
-        if entry == "SoleilFlowerbedReadTitle":
-            return read_task(self.attribute)
-        if entry == "SoleilFlowerbedConfirmStartedState":
-            return SimpleNamespace(
-                status=status(self.confirm_started),
-                nodes=[],
+        if entry == "SoleilFlowerbedReadPopupEntry":
+            return read_task(
+                self.attribute,
+                succeeded=self.attribute != self.read_failure_attribute,
             )
-        return SimpleNamespace(status=status(), nodes=[])
+        if entry == "SoleilFlowerbedClosePopup":
+            self.popup_open = False
+            return SimpleNamespace(status=status(), nodes=[])
+        if entry == "SoleilFlowerbedDetectActiveEntry":
+            assert not self.popup_open
+            return recognition_task(
+                "SoleilFlowerbedDetectActive",
+                self.active_hit,
+            )
+        if entry == "SoleilFlowerbedDetectCappedEntry":
+            assert not self.popup_open
+            return recognition_task(
+                "SoleilFlowerbedDetectCapped",
+                self.capped_hit,
+            )
+        if entry == "SoleilFlowerbedConfirmStartedEntry":
+            return recognition_task(
+                "SoleilFlowerbedConfirmStartedState",
+                self.confirm_started_hit,
+            )
+        known_actions = {
+            "SoleilFlowerbedResetFlowerList",
+            "SoleilFlowerbedScrollToLastFlower",
+            "SoleilFlowerbedSelectFlower0",
+            "SoleilFlowerbedSelectFlower1",
+            "SoleilFlowerbedSelectFlower2",
+            "SoleilFlowerbedSelectFlower3",
+            "SoleilFlowerbedSelectFlower4",
+            "SoleilFlowerbedConfirmStart",
+        }
+        if entry in known_actions:
+            return SimpleNamespace(status=status(), nodes=[])
+        return SimpleNamespace(status=status(False), nodes=[])
 
 
 def candidate():
@@ -114,6 +169,36 @@ def candidate():
     )
 
 
+def test_pipeline_defines_wrapper_entries_for_every_recognition_flow():
+    pipeline = json.loads(PIPELINE_PATH.read_text(encoding="utf-8"))
+    wrappers = {
+        "SoleilFlowerbedReadPopupEntry": "SoleilFlowerbedReadTitle",
+        "SoleilFlowerbedDetectActiveEntry": "SoleilFlowerbedDetectActive",
+        "SoleilFlowerbedDetectCappedEntry": "SoleilFlowerbedDetectCapped",
+        "SoleilFlowerbedConfirmStartedEntry": "SoleilFlowerbedConfirmStartedState",
+        "SoleilFlowerbedAlreadyOpenEntry": "SoleilFlowerbedMainPageFoodLabel",
+    }
+
+    for wrapper, recognition_name in wrappers.items():
+        assert wrapper in pipeline
+        assert pipeline[wrapper]["next"] == [recognition_name]
+        assert "recognition" not in pipeline[wrapper]
+        assert "recognition" in pipeline[recognition_name]
+
+
+def test_backend_calls_wrapper_entries_instead_of_recognition_nodes():
+    context = FakeContext()
+    backend = MaaFlowerbedBackend(context)
+    proposed = candidate()
+
+    assert backend.verify(proposed) == proposed
+    assert backend.start(proposed) is StartOutcome.CONFIRMED
+    assert "SoleilFlowerbedReadPopupEntry" in context.calls
+    assert "SoleilFlowerbedReadTitle" not in context.calls
+    assert "SoleilFlowerbedConfirmStartedEntry" in context.calls
+    assert "SoleilFlowerbedConfirmStartedState" not in context.calls
+
+
 def test_backend_scans_all_five_flowers_and_six_attributes():
     context = FakeContext()
 
@@ -127,6 +212,28 @@ def test_backend_scans_all_five_flowers_and_six_attributes():
     assert "SoleilFlowerbedConfirmStart" not in context.calls
 
 
+def test_read_failure_closes_popup_before_state_detection_and_fails_closed():
+    context = FakeContext(read_failure_attribute="Food")
+
+    with pytest.raises(RuntimeError, match="could not be confirmed"):
+        MaaFlowerbedBackend(context).scan()
+
+    close_index = context.calls.index("SoleilFlowerbedClosePopup")
+    active_index = context.calls.index("SoleilFlowerbedDetectActiveEntry")
+    assert close_index < active_index
+    assert context.popup_open is False
+
+
+def test_scan_best_effort_closes_popup_when_popup_parsing_raises():
+    context = FakeContext(read_failure_attribute="Food")
+
+    with pytest.raises(RuntimeError):
+        MaaFlowerbedBackend(context).scan()
+
+    assert context.calls.count("SoleilFlowerbedClosePopup") >= 1
+    assert context.popup_open is False
+
+
 def test_backend_verifies_popup_then_confirms_exactly_one_start():
     context = FakeContext()
     backend = MaaFlowerbedBackend(context)
@@ -135,11 +242,11 @@ def test_backend_verifies_popup_then_confirms_exactly_one_start():
     assert backend.verify(proposed) == proposed
     assert backend.start(proposed) is StartOutcome.CONFIRMED
     assert context.calls.count("SoleilFlowerbedConfirmStart") == 1
-    assert context.calls[-1] == "SoleilFlowerbedConfirmStartedState"
+    assert context.calls[-1] == "SoleilFlowerbedConfirmStartedEntry"
 
 
-def test_backend_reports_unknown_when_started_state_cannot_be_confirmed():
-    context = FakeContext(confirm_started=False)
+def test_confirm_started_requires_recognition_hit_not_task_success():
+    context = FakeContext(confirm_started_hit=False)
     backend = MaaFlowerbedBackend(context)
     proposed = candidate()
 

@@ -75,8 +75,14 @@ class MaaFlowerbedBackend:
     def _open_attribute(self, attribute: str) -> None:
         self._run_required(_OPEN_ENTRY[attribute])
 
+    def _close_popup_best_effort(self) -> None:
+        try:
+            self.context.run_task("SoleilFlowerbedClosePopup")
+        except Exception:
+            pass
+
     def _read_open_popup(self, flower: str, attribute: str) -> Candidate:
-        task = self._run_required("SoleilFlowerbedReadTitle")
+        task = self._run_required("SoleilFlowerbedReadPopupEntry")
         nodes = _nodes_by_name(task)
         fields = {}
         scores = []
@@ -108,12 +114,26 @@ class MaaFlowerbedBackend:
             fields=fields,
         )
 
+    def _recognition_hit(self, entry: str, node_name: str) -> bool:
+        task = self.context.run_task(entry)
+        if task is None:
+            return False
+        node = _nodes_by_name(task).get(node_name)
+        if node is None:
+            return False
+        recognition = getattr(node, "recognition", None)
+        return bool(recognition is not None and recognition.hit)
+
     def _detect_unavailable_state(self, attribute: str) -> str:
-        active = self.context.run_task("SoleilFlowerbedDetectActive")
-        if _task_succeeded(active):
+        if self._recognition_hit(
+            "SoleilFlowerbedDetectActiveEntry",
+            "SoleilFlowerbedDetectActive",
+        ):
             return "active"
-        capped = self.context.run_task("SoleilFlowerbedDetectCapped")
-        if attribute == "Customer Service" and _task_succeeded(capped):
+        if attribute == "Customer Service" and self._recognition_hit(
+            "SoleilFlowerbedDetectCappedEntry",
+            "SoleilFlowerbedDetectCapped",
+        ):
             return "capped"
         raise RuntimeError("candidate state could not be confirmed")
 
@@ -126,14 +146,19 @@ class MaaFlowerbedBackend:
             for attribute in ATTRIBUTE_ORDER:
                 self._open_attribute(attribute)
                 try:
-                    candidate = self._read_open_popup(flower, attribute)
-                except (RuntimeError, ValueError):
-                    state = self._detect_unavailable_state(attribute)
-                    if state == "active":
-                        active_count += 1
-                    continue
-                self._run_required("SoleilFlowerbedClosePopup")
-                candidates.append(candidate)
+                    try:
+                        candidate = self._read_open_popup(flower, attribute)
+                    except (RuntimeError, ValueError):
+                        self._close_popup_best_effort()
+                        state = self._detect_unavailable_state(attribute)
+                        if state == "active":
+                            active_count += 1
+                        continue
+                    self._run_required("SoleilFlowerbedClosePopup")
+                    candidates.append(candidate)
+                except Exception:
+                    self._close_popup_best_effort()
+                    raise
         return ScanSnapshot(
             active_count=active_count,
             candidates=tuple(candidates),
@@ -146,8 +171,11 @@ class MaaFlowerbedBackend:
             self._open_attribute(proposed.attribute)
             verified = self._read_open_popup(proposed.flower, proposed.attribute)
         except (RuntimeError, ValueError):
+            self._close_popup_best_effort()
             self._verified_key = None
             return None
+        if verified != proposed:
+            self._close_popup_best_effort()
         self._verified_key = verified.idempotency_key
         return verified
 
@@ -158,8 +186,10 @@ class MaaFlowerbedBackend:
         action = self.context.run_task("SoleilFlowerbedConfirmStart")
         if not _task_succeeded(action):
             return StartOutcome.FAILED
-        confirmed = self.context.run_task("SoleilFlowerbedConfirmStartedState")
-        if not _task_succeeded(confirmed):
+        if not self._recognition_hit(
+            "SoleilFlowerbedConfirmStartedEntry",
+            "SoleilFlowerbedConfirmStartedState",
+        ):
             return StartOutcome.UNKNOWN
         return StartOutcome.CONFIRMED
 

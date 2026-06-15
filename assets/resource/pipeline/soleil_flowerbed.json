@@ -4,15 +4,33 @@
         "package": "jp.goodsmile.nekoconne",
         "post_delay": 30000,
         "next": [
-            "SoleilFlowerbedAlreadyOpen",
-            "SoleilFlowerbedOpenSoleil"
+            "SoleilFlowerbedAlreadyOpenEntry"
         ]
     },
-    "SoleilFlowerbedAlreadyOpen": {
+    "SoleilFlowerbedAlreadyOpenEntry": {
+        "action": "DoNothing",
+        "next": ["SoleilFlowerbedMainPageFoodLabel"]
+    },
+    "SoleilFlowerbedMainPageFoodLabel": {
         "recognition": "OCR",
-        "roi": [0, 150, 720, 620],
+        "roi": [150, 250, 170, 50],
         "expected": "フード",
-        "next": ["SoleilFlowerbedPlanAndExecute"]
+        "next": ["SoleilFlowerbedMainPageSweetsLabel"],
+        "on_error": ["SoleilFlowerbedOpenSoleil"]
+    },
+    "SoleilFlowerbedMainPageSweetsLabel": {
+        "recognition": "OCR",
+        "roi": [410, 250, 180, 50],
+        "expected": "スイーツ",
+        "next": ["SoleilFlowerbedMainPageFlowerName"],
+        "on_error": ["SoleilFlowerbedOpenSoleil"]
+    },
+    "SoleilFlowerbedMainPageFlowerName": {
+        "recognition": "OCR",
+        "roi": [35, 1040, 130, 80],
+        "expected": ".+の花",
+        "next": ["SoleilFlowerbedPlanAndExecute"],
+        "on_error": ["SoleilFlowerbedOpenSoleil"]
     },
     "SoleilFlowerbedOpenSoleil": {
         "recognition": "OCR",
@@ -120,6 +138,10 @@
         "target": [485, 670],
         "post_delay": 500
     },
+    "SoleilFlowerbedReadPopupEntry": {
+        "action": "DoNothing",
+        "next": ["SoleilFlowerbedReadTitle"]
+    },
     "SoleilFlowerbedReadTitle": {
         "recognition": "OCR",
         "roi": [180, 250, 360, 90],
@@ -164,15 +186,23 @@
         "roi": [210, 780, 300, 80],
         "expected": "強化"
     },
+    "SoleilFlowerbedDetectCappedEntry": {
+        "action": "DoNothing",
+        "next": ["SoleilFlowerbedDetectCapped"]
+    },
     "SoleilFlowerbedDetectCapped": {
         "recognition": "OCR",
-        "roi": [30, 240, 660, 650],
-        "expected": "(?:上限|最大|MAX)"
+        "expected": "$^",
+        "enabled": false
+    },
+    "SoleilFlowerbedDetectActiveEntry": {
+        "action": "DoNothing",
+        "next": ["SoleilFlowerbedDetectActive"]
     },
     "SoleilFlowerbedDetectActive": {
         "recognition": "OCR",
-        "roi": [0, 120, 720, 820],
-        "expected": ".*\\d+:[0-5]\\d:[0-5]\\d.*"
+        "expected": "$^",
+        "enabled": false
     },
     "SoleilFlowerbedClosePopup": {
         "action": "Click",
@@ -182,11 +212,16 @@
     "SoleilFlowerbedConfirmStart": {
         "action": "Click",
         "target": [360, 820],
-        "post_delay": 1000
+        "post_delay": 1000,
+        "enabled": false
+    },
+    "SoleilFlowerbedConfirmStartedEntry": {
+        "action": "DoNothing",
+        "next": ["SoleilFlowerbedConfirmStartedState"]
     },
     "SoleilFlowerbedConfirmStartedState": {
         "recognition": "OCR",
-        "roi": [0, 120, 720, 820],
-        "expected": ".*\\d+:[0-5]\\d:[0-5]\\d.*"
+        "expected": "$^",
+        "enabled": false
     }
 }

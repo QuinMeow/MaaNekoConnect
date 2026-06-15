@@ -46,218 +46,86 @@
                 "Android"
             ],
             "option": [
-                "FlowerbedExecutionMode",
-                "FlowerbedDeadlineHours",
-                "FlowerbedMaxStarts",
-                "FlowerbedAllowTailFill",
-                "FlowerbedKagayakiReserve",
-                "FlowerbedChosenReserve",
-                "FlowerbedKyoryokuReserve",
-                "FlowerbedNazoReserve",
-                "FlowerbedWorkSpeedWeight",
-                "FlowerbedStaminaWeight"
+                "FlowerbedSettings"
             ]
         }
     ],
     "option": {
-        "FlowerbedExecutionMode": {
-            "type": "select",
-            "label": "执行模式",
-            "description": "PlanOnly 只扫描和规划，不点击最终强化；Execute 才允许启动强化。",
-            "cases": [
-                {
-                    "name": "PlanOnly",
-                    "label": "仅规划",
-                    "pipeline_override": {
-                        "SoleilFlowerbedPlanAndExecute": {
-                            "custom_action_param": {
-                                "execution_mode": "PlanOnly"
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "Execute",
-                    "label": "执行",
-                    "pipeline_override": {
-                        "SoleilFlowerbedPlanAndExecute": {
-                            "custom_action_param": {
-                                "execution_mode": "Execute"
-                            }
-                        }
-                    }
-                }
-            ],
-            "default_case": "PlanOnly"
-        },
-        "FlowerbedDeadlineHours": {
+        "FlowerbedSettings": {
             "type": "input",
-            "label": "期限（小时）",
+            "label": "Soleil 花坛设置",
+            "description": "默认仅规划。Execute 在识别证据不足时会关闭失败，不使用加速道具或社团委托。",
             "inputs": [
                 {
+                    "name": "ExecutionMode",
+                    "label": "执行模式",
+                    "default": "PlanOnly",
+                    "pipeline_type": "string",
+                    "verify": "^(?:PlanOnly|Execute)$",
+                    "pattern_msg": "请输入 PlanOnly 或 Execute。"
+                },
+                {
                     "name": "DeadlineHours",
+                    "label": "期限（小时）",
                     "default": "24",
                     "pipeline_type": "int",
                     "verify": "^\\d+$",
                     "pattern_msg": "请输入非负整数小时。"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "deadline_hours": "「DeadlineHours」"
-                    }
-                }
-            }
-        },
-        "FlowerbedMaxStarts": {
-            "type": "input",
-            "label": "最多启动数",
-            "inputs": [
+                },
                 {
                     "name": "MaxStarts",
+                    "label": "最多启动数",
                     "default": "6",
                     "pipeline_type": "int",
                     "verify": "^[1-6]$",
                     "pattern_msg": "请输入 1 到 6。"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "max_starts": "「MaxStarts」"
-                    }
-                }
-            }
-        },
-        "FlowerbedAllowTailFill": {
-            "type": "switch",
-            "label": "允许期限外尾填充",
-            "cases": [
-                {
-                    "name": "Yes",
-                    "pipeline_override": {
-                        "SoleilFlowerbedPlanAndExecute": {
-                            "custom_action_param": {
-                                "allow_tail_fill": true
-                            }
-                        }
-                    }
                 },
                 {
-                    "name": "No",
-                    "pipeline_override": {
-                        "SoleilFlowerbedPlanAndExecute": {
-                            "custom_action_param": {
-                                "allow_tail_fill": false
-                            }
-                        }
-                    }
-                }
-            ],
-            "default_case": "No"
-        },
-        "FlowerbedKagayakiReserve": {
-            "type": "input",
-            "label": "輝きの花 reserve",
-            "inputs": [
+                    "name": "AllowTailFill",
+                    "label": "允许期限外尾填充",
+                    "default": "false",
+                    "pipeline_type": "string",
+                    "verify": "^(?:true|false)$",
+                    "pattern_msg": "请输入 true 或 false。"
+                },
                 {
                     "name": "KagayakiReserve",
+                    "label": "輝きの花 reserve",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^\\d+$"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "kagayaki_reserve": "「KagayakiReserve」"
-                    }
-                }
-            }
-        },
-        "FlowerbedChosenReserve": {
-            "type": "input",
-            "label": "挑戦の花 reserve",
-            "inputs": [
+                },
                 {
                     "name": "ChosenReserve",
+                    "label": "挑戦の花 reserve",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^\\d+$"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "chosen_reserve": "「ChosenReserve」"
-                    }
-                }
-            }
-        },
-        "FlowerbedKyoryokuReserve": {
-            "type": "input",
-            "label": "協力の花 reserve",
-            "inputs": [
+                },
                 {
                     "name": "KyoryokuReserve",
+                    "label": "協力の花 reserve",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^\\d+$"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "kyoryoku_reserve": "「KyoryokuReserve」"
-                    }
-                }
-            }
-        },
-        "FlowerbedNazoReserve": {
-            "type": "input",
-            "label": "謎めきの花 reserve",
-            "inputs": [
+                },
                 {
                     "name": "NazoReserve",
+                    "label": "謎めきの花 reserve",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^\\d+$"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "nazo_reserve": "「NazoReserve」"
-                    }
-                }
-            }
-        },
-        "FlowerbedWorkSpeedWeight": {
-            "type": "input",
-            "label": "作业速度 fallback 权重",
-            "inputs": [
+                },
                 {
                     "name": "WorkSpeedWeight",
+                    "label": "作业速度 fallback 权重",
                     "default": "0.1",
                     "pipeline_type": "string",
                     "verify": "^\\d+(?:\\.\\d+)?$"
-                }
-            ],
-            "pipeline_override": {
-                "SoleilFlowerbedPlanAndExecute": {
-                    "custom_action_param": {
-                        "work_speed_weight": "「WorkSpeedWeight」"
-                    }
-                }
-            }
-        },
-        "FlowerbedStaminaWeight": {
-            "type": "input",
-            "label": "Stamina fallback 权重",
-            "inputs": [
+                },
                 {
                     "name": "StaminaWeight",
+                    "label": "Stamina fallback 权重",
                     "default": "0.01",
                     "pipeline_type": "string",
                     "verify": "^\\d+(?:\\.\\d+)?$"
@@ -266,7 +134,16 @@
             "pipeline_override": {
                 "SoleilFlowerbedPlanAndExecute": {
                     "custom_action_param": {
-                        "stamina_weight": "「StaminaWeight」"
+                        "execution_mode": "{ExecutionMode}",
+                        "deadline_hours": "{DeadlineHours}",
+                        "max_starts": "{MaxStarts}",
+                        "allow_tail_fill": "{AllowTailFill}",
+                        "kagayaki_reserve": "{KagayakiReserve}",
+                        "chosen_reserve": "{ChosenReserve}",
+                        "kyoryoku_reserve": "{KyoryokuReserve}",
+                        "nazo_reserve": "{NazoReserve}",
+                        "work_speed_weight": "{WorkSpeedWeight}",
+                        "stamina_weight": "{StaminaWeight}"
                     }
                 }
             }
