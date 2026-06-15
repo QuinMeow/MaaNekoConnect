@@ -38,6 +38,107 @@
             "controller": [
                 "Android"
             ]
+        },
+        {
+            "name": "规划 Soleil 花坛强化",
+            "entry": "SoleilFlowerbedAutoUpgrade",
+            "controller": [
+                "Android"
+            ],
+            "option": [
+                "FlowerbedSettings"
+            ]
         }
-    ]
+    ],
+    "option": {
+        "FlowerbedSettings": {
+            "type": "input",
+            "label": "Soleil 花坛设置",
+            "description": "扫描当前花坛状态并生成规划，不启动强化，不使用加速道具或社团委托。",
+            "inputs": [
+                {
+                    "name": "DeadlineHours",
+                    "label": "期限（小时）",
+                    "default": "24",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$",
+                    "pattern_msg": "请输入非负整数小时。"
+                },
+                {
+                    "name": "MaxStarts",
+                    "label": "最多启动数",
+                    "default": "6",
+                    "pipeline_type": "int",
+                    "verify": "^[1-6]$",
+                    "pattern_msg": "请输入 1 到 6。"
+                },
+                {
+                    "name": "AllowTailFill",
+                    "label": "允许期限外尾填充",
+                    "default": "false",
+                    "pipeline_type": "string",
+                    "verify": "^(?:true|false)$",
+                    "pattern_msg": "请输入 true 或 false。"
+                },
+                {
+                    "name": "KagayakiReserve",
+                    "label": "輝きの花 reserve",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$"
+                },
+                {
+                    "name": "ChosenReserve",
+                    "label": "挑戦の花 reserve",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$"
+                },
+                {
+                    "name": "KyoryokuReserve",
+                    "label": "協力の花 reserve",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$"
+                },
+                {
+                    "name": "NazoReserve",
+                    "label": "謎めきの花 reserve",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$"
+                },
+                {
+                    "name": "WorkSpeedWeight",
+                    "label": "作业速度 fallback 权重",
+                    "default": "0.1",
+                    "pipeline_type": "string",
+                    "verify": "^\\d+(?:\\.\\d+)?$"
+                },
+                {
+                    "name": "StaminaWeight",
+                    "label": "Stamina fallback 权重",
+                    "default": "0.01",
+                    "pipeline_type": "string",
+                    "verify": "^\\d+(?:\\.\\d+)?$"
+                }
+            ],
+            "pipeline_override": {
+                "SoleilFlowerbedPlanAndExecute": {
+                    "custom_action_param": {
+                        "execution_mode": "PlanOnly",
+                        "deadline_hours": "{DeadlineHours}",
+                        "max_starts": "{MaxStarts}",
+                        "allow_tail_fill": "{AllowTailFill}",
+                        "kagayaki_reserve": "{KagayakiReserve}",
+                        "chosen_reserve": "{ChosenReserve}",
+                        "kyoryoku_reserve": "{KyoryokuReserve}",
+                        "nazo_reserve": "{NazoReserve}",
+                        "work_speed_weight": "{WorkSpeedWeight}",
+                        "stamina_weight": "{StaminaWeight}"
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,1 +1,7 @@
 ocr
+!ocr/
+ocr/*
+!ocr/ja_jp/
+!ocr/ja_jp/det.onnx
+!ocr/ja_jp/rec.onnx
+!ocr/ja_jp/keys.txt

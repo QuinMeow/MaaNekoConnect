@@ -1,0 +1,1 @@
+"""Soleil flowerbed automation."""
