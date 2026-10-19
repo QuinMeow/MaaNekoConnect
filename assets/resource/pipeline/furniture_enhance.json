@@ -1,0 +1,1289 @@
+{
+    "FurnitureEnhance_Round": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_BeginRound"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_OnComplete": "FurnitureEnhance_Complete"
+        }
+    },
+    "FurnitureEnhance_BeginRound": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit0",
+            "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete",
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureEnhance_Prepare",
+            "CommonRecoveryResume": "FurnitureEnhance_RecoveryResume"
+        }
+    },
+    "FurnitureEnhance_RecoveryResume": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureEnhance_Prepare"
+        }
+    },
+    "FurnitureEnhance_EnsurePage": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "CommonNetworkInterrupt",
+            "FurnitureEnhance_PageReady",
+            "FurnitureEnhance_Open",
+            "NavSoleil_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "NavSoleil_Return": "FurnitureEnhance_Open"
+        }
+    },
+    "FurnitureEnhance_PageReady": {
+        "recognition": "And",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_EnsurePage_Return"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ]
+    },
+    "FurnitureEnhance_Open": {
+        "recognition": "And",
+        "post_delay": 700,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_PageReady"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Click",
+        "target": [
+            635,
+            450,
+            25,
+            25
+        ],
+        "all_of": [
+            "NavSoleil_Ready"
+        ]
+    },
+    "FurnitureEnhance_Prepare": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_ScrollTop"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_ScrollTop": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 1000,
+        "timeout": 15000,
+        "action": "Swipe",
+        "begin": [
+            370,
+            460
+        ],
+        "end": [
+            [
+                370,
+                823
+            ]
+        ],
+        "duration": 150,
+        "repeat": 12,
+        "repeat_delay": 100,
+        "next": [
+            "FurnitureEnhance_Scan"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Page": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            0,
+            20,
+            160,
+            70
+        ],
+        "template": "soleil/page.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_Furniture": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            30,
+            1088,
+            215,
+            55
+        ],
+        "template": "soleil/furniture.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_PageGuard": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Page",
+            "FurnitureEnhance_Furniture"
+        ]
+    },
+    "FurnitureEnhance_ListTop": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            685,
+            433,
+            16,
+            39
+        ],
+        "template": "soleil/top.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_OrdinaryUpgrade": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            230,
+            998,
+            260,
+            70
+        ],
+        "template": "soleil/upgrade.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_Speedup": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            230,
+            998,
+            260,
+            70
+        ],
+        "template": "soleil/speedup.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_RefillGuard": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_ListTop"
+        ]
+    },
+    "FurnitureEnhance_Scan": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy1",
+            "FurnitureEnhance_Select1",
+            "FurnitureEnhance_Busy2",
+            "FurnitureEnhance_Select2",
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available1": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            125,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    65,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy2",
+            "FurnitureEnhance_Select2",
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available1"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            90,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy1",
+            "FurnitureEnhance_Ready1"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    37,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy2",
+            "FurnitureEnhance_Select2",
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available1",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    37,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready1"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available2": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            255,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    195,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available2"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            220,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy2",
+            "FurnitureEnhance_Ready2"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    167,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available2",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    167,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready2"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available3": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            385,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    325,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available3"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            350,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy3",
+            "FurnitureEnhance_Ready3"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    297,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available3",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    297,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready3"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available4": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            515,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    455,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available4"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            480,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy4",
+            "FurnitureEnhance_Ready4"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    427,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available4",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    427,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready4"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available5": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            645,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    585,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available5"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            610,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy5",
+            "FurnitureEnhance_Ready5"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    555,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available5",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    555,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready5"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Started": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            "FurnitureEnhance_ButtonBright"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_AfterStart"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_AfterStart": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Scan"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_PostRound": "FurnitureEnhance_ReturnForRequest"
+        }
+    },
+    "FurnitureEnhance_RoundPermit0": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit1"
+        }
+    },
+    "FurnitureEnhance_RoundPermit1": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit2"
+        }
+    },
+    "FurnitureEnhance_RoundPermit2": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit3"
+        }
+    },
+    "FurnitureEnhance_RoundPermit3": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit4"
+        }
+    },
+    "FurnitureEnhance_RoundPermit4": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit5"
+        }
+    },
+    "FurnitureEnhance_RoundPermit5": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_RoundFinish"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SessionSpendPermit": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Start1",
+            "FurnitureEnhance_Start2",
+            "FurnitureEnhance_Start3",
+            "FurnitureEnhance_Start4",
+            "FurnitureEnhance_Start5"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SessionLimit": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_RoundFinish"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_OnComplete": "FurnitureSchedule_Complete"
+        }
+    },
+    "FurnitureEnhance_NoCandidate": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_RoundFinish"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_RoundFinish": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_PostRound"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_ReturnForRequest": {
+        "recognition": "And",
+        "post_delay": 700,
+        "timeout": 15000,
+        "next": [
+            "Soleil_RequestPrepare"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Click",
+        "target": [
+            140,
+            1220,
+            20,
+            20
+        ],
+        "anchor": {
+            "CommonRecoveryResume": "Soleil_RequestResume"
+        },
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "NavFooter_Back"
+        ]
+    },
+    "FurnitureEnhance_RoundComplete": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_OnComplete"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_ButtonBright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [
+            265,
+            1005,
+            180,
+            50
+        ],
+        "lower": [
+            220,
+            55,
+            65
+        ],
+        "upper": [
+            255,
+            115,
+            125
+        ],
+        "count": 4000
+    },
+    "FurnitureEnhance_BusyPreview": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Speedup",
+            "FurnitureEnhance_ButtonBright"
+        ]
+    },
+    "FurnitureEnhance_ReadyPreview": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_ButtonBright"
+        ]
+    },
+    "FurnitureEnhance_Complete": {
+        "recognition": "DirectHit",
+        "action": "Screencap",
+        "filename": "furniture_enhance_complete",
+        "format": "png",
+        "post_delay": 0
+    }
+}

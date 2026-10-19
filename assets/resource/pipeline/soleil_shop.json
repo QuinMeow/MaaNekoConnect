@@ -1,0 +1,69 @@
+{
+    "Soleil_RequestResume": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "CommonNetworkInterrupt",
+            "Soleil_RequestPrepare",
+            "FurnitureEnhance_ReturnForRequest",
+            "NavSoleil_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "NavSoleil_Return": "Soleil_RequestPrepare"
+        }
+    },
+    "Soleil_RequestPrepare": {
+        "recognition": "And",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "Soleil_RequestSupport"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "CommonRecoveryResume": "FurnitureEnhance_RoundComplete",
+            "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete"
+        },
+        "all_of": [
+            "NavSoleil_Ready"
+        ]
+    },
+    "Soleil_RequestSupport": {
+        "recognition": "And",
+        "all_of": [
+            "NavSoleil_Ready",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    610,
+                    630,
+                    85,
+                    90
+                ],
+                "template": "soleil/request.png",
+                "threshold": 0.9
+            }
+        ],
+        "post_delay": 600,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            635,
+            660,
+            25,
+            25
+        ],
+        "next": [
+            "FurnitureEnhance_RoundComplete"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

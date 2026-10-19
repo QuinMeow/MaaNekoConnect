@@ -1,0 +1,254 @@
+{
+    "CommonRecoveryEnter": {
+        "recognition": "DirectHit",
+        "anchor": {"CommonRecoveryRoute": "CommonRecoveryDispatch"},
+        "post_delay": 0,
+        "next": ["CommonRecoveryBudget", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryFrozenEnter": {
+        "recognition": "DirectHit",
+        "anchor": {"CommonRecoveryRoute": "CommonRecoveryFreshCheck"},
+        "post_delay": 0,
+        "next": ["CommonRecoveryBudget", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryHomeStallEnter": {
+        "recognition": "DirectHit",
+        "anchor": {"CommonRecoveryRoute": "CommonRecoveryHomeWatch"},
+        "post_delay": 0,
+        "next": ["CommonRecoveryBudget", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryBudget": {
+        "recognition": "DirectHit",
+        "max_hit": 3,
+        "post_delay": 0,
+        "next": ["[Anchor]CommonRecoveryRoute"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryDispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "CommonNetworkConfirm", "CommonRecoveryLoading", "CommonTitleTap",
+            "CommonRecoveryHome", "CommonRecoveryWatchPermit"
+        ],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonNetworkMessage": {
+        "recognition": "TemplateMatch",
+        "roi": [175, 495, 370, 80],
+        "template": "common_recovery/network_message.png",
+        "threshold": 0.95
+    },
+    "CommonNetworkButton": {
+        "recognition": "TemplateMatch",
+        "roi": [200, 625, 320, 85],
+        "template": "common_recovery/network_confirm.png",
+        "threshold": 0.95
+    },
+    "CommonNetworkInterrupt": {
+        "recognition": "And",
+        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonNetworkConfirm": {
+        "recognition": "And",
+        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
+        "action": "Click",
+        "target": [345, 653, 30, 25],
+        "max_hit": 3,
+        "post_delay": 2000,
+        "next": ["CommonRecoveryDispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonLoading": {
+        "recognition": "TemplateMatch",
+        "roi": [530, 1180, 140, 60],
+        "template": "common_recovery/loading_text.png",
+        "threshold": 0.95
+    },
+    "CommonRecoveryLoading": {
+        "recognition": "And",
+        "all_of": ["CommonLoading"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryWatchPermit", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonLoadingInterrupt": {
+        "recognition": "And",
+        "all_of": ["CommonLoading"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonTitleText": {
+        "recognition": "TemplateMatch",
+        "roi": [235, 1050, 240, 60],
+        "template": "common_recovery/title_tap.png",
+        "threshold": 0.95
+    },
+    "CommonTitleLogo": {
+        "recognition": "TemplateMatch",
+        "roi": [205, 945, 310, 50],
+        "template": "common_recovery/title_logo.png",
+        "threshold": 0.95
+    },
+    "CommonTitleReady": {
+        "recognition": "And",
+        "all_of": ["CommonTitleText", "CommonTitleLogo"]
+    },
+    "CommonTitleTap": {
+        "recognition": "And",
+        "all_of": ["CommonTitleReady"],
+        "action": "Click",
+        "target": [350, 1070, 20, 20],
+        "max_hit": 3,
+        "post_delay": 3000,
+        "next": ["CommonRecoveryDispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonHomeReady": {
+        "recognition": "And",
+        "all_of": ["NavHome_Ready"]
+    },
+    "CommonRecoveryHome": {
+        "recognition": "And",
+        "all_of": ["CommonHomeReady"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryRecovered"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryRecovered": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": ["[Anchor]CommonRecoveryResume"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryWatchPermit": {
+        "recognition": "DirectHit",
+        "max_hit": 3,
+        "post_delay": 0,
+        "next": ["CommonRecoveryWatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryWatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 1000,
+        "next": ["CommonFrozen30", "CommonRecoveryMoving"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryHomeWatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 1000,
+        "next": ["CommonRecoveryHomeFrozen", "CommonRecoveryMoving"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryHomeFrozen": {
+        "recognition": "And",
+        "all_of": ["CommonFrozen30"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryHomeFreshCheck"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryHomeFreshCheck": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "CommonNetworkConfirm", "CommonFrozenLoading", "CommonTitleTap",
+            "CommonRecoveryHomeRestart", "CommonRecoveryDispatch"
+        ],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryHomeRestart": {
+        "recognition": "And",
+        "all_of": ["CommonHomeReady"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryRestartPermit", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonFrozen30": {
+        "recognition": "Custom",
+        "custom_recognition": "WaitForFrozenScreen",
+        "custom_recognition_param": {
+            "time": 30000,
+            "target": [0, 0, 0, 0],
+            "threshold": 0.000001,
+            "method": 1,
+            "rate_limit": 1000,
+            "timeout": 35000
+        },
+        "post_delay": 0,
+        "next": ["CommonRecoveryFreshCheck"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryMoving": {
+        "recognition": "DirectHit",
+        "post_delay": 1000,
+        "next": ["CommonRecoveryDispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryFreshCheck": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "CommonNetworkConfirm", "CommonRecoveryHome", "CommonFrozenLoading",
+            "CommonTitleTap", "CommonRecoveryRestartPermit"
+        ],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonFrozenLoading": {
+        "recognition": "And",
+        "all_of": ["CommonLoading"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryRestartPermit", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryRestartPermit": {
+        "recognition": "DirectHit",
+        "max_hit": 2,
+        "post_delay": 0,
+        "next": ["CommonRecoveryBeforeRestart"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryBeforeRestart": {
+        "recognition": "DirectHit",
+        "action": "Screencap",
+        "filename": "common_recovery_before_restart",
+        "post_delay": 0,
+        "next": ["CommonStopGame"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonStopGame": {
+        "recognition": "DirectHit",
+        "action": "StopApp",
+        "package": "jp.goodsmile.nekoconne",
+        "post_delay": 1500,
+        "next": ["CommonStartGame"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonStartGame": {
+        "recognition": "DirectHit",
+        "action": "StartApp",
+        "package": "jp.goodsmile.nekoconne",
+        "post_delay": 3000,
+        "next": ["CommonRecoveryDispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryStopCapture": {
+        "recognition": "DirectHit",
+        "action": "Screencap",
+        "filename": "common_recovery_stopped",
+        "post_delay": 0,
+        "next": ["CommonRecoveryStop"]
+    },
+    "CommonRecoveryStop": {
+        "recognition": "DirectHit",
+        "action": "StopTask"
+    }
+}

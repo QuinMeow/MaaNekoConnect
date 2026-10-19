@@ -2,9 +2,17 @@
 
 ## 主要结论
 
-项目目标是基于 MaaFramework 自动化ネココネ（包名 `jp.goodsmile.nekoconne`）。当前实现仍处于框架连通性基线：精确选择 ADB 设备，启动游戏，等待 20 秒，再保存截图。没有已实现的登录、首页识别、日常任务或战斗流程，不能把“自动化项目”理解成可用的完整日常助手。
+项目目标是基于 MaaFramework 自动化ネココネ（包名 `jp.goodsmile.nekoconne`）。本次初始核对的实现是框架连通性基线：精确选择 ADB 设备，启动游戏，等待 20 秒，再保存截图。后续于 2026-10-19 新增实验性[家具单轮补位及间隔调度](develop/soleil_upgrade.md)、[公共首页/Soleil 导航](develop/navigation.md)和[通用异常恢复](develop/common_recovery.md)。导航、筛选、单轮强化、店铺依頼、调度与计时分模块使用 JSON；`agent/recovery.py` 是原生冻结识别桥，`agent/furniture_timer.py` 只处理 OCR 时间数据和等待。默认单轮最多 5 次尝试、轮末一次依頼，可配置固定/最短/最长剩余时间及总轮数，动态时间只覆盖可见忙碌格。下文架构、单一任务和差距表保留初次核对快照，不代表新增功能后的完整清单；验证边界以对应说明为准。尚不能把项目理解成可用的完整日常助手。
 
 上游 `MaaNekoConnect_Codex` 的主要内容是双仓库协作、环境准备、研究记录和 Agent 长期记忆治理；其任务清单只明确完成框架基线并要求继续研究实际游戏流程，没有给出具体玩法功能的优先级列表。本文提出的后续顺序属于基于差距的建议，需与用户确定业务目标。
+
+## 当前 Python 环境与交付
+
+当前新增[项目便携 Python](portable_python.md)：Windows x64 上运行 `scripts/setup_python.ps1` 即可准备 `.runtime/python/python.exe`，不要求全局 Python、Conda 或 Python 的 `PATH`。锁文件固定 Astral Python Build Standalone CPython 3.11.17，以及 MaaFw 5.14.3、numpy、MaaAgentBinary、StrEnum 的版本和哈希；生产应用依赖不含 pytest。开发测试可使用独立 bootstrap/venv，不能把临时验证环境写进 Agent 配置。
+
+源接口使用 `../.runtime/python/python.exe ../agent/main.py`；发布副本改为 `./.runtime/python/python.exe ./agent/main.py`，携带校验后的运行时、许可证与 manifest，不改源接口。启动截图脚本默认使用项目 Python，仅显式 `-CondaEnv` 才走旧兼容路径；缺失不自动回退。发布工作流目标固定 MaaFramework v5.14.3、MFAAvalonia v2.16.2。
+
+2026-10-19 本机已完成私有运行时安装、独立 LocalBridge 默认 Agent 初始化和搬迁后发布包的 Agent IPC 检查；在线 MPE 已重新连接。未创建控制器或 Tasker，未执行游戏任务；GUI 跨机器运行及游戏验收未完成，详细边界见便携 Python 说明的验证记录。下面的初次架构与差距内容保留历史快照，环境现状以本节和便携 Python 说明为准。
 
 ## 阅读范围与可验证版本
 
@@ -32,7 +40,9 @@
 | P13 | [scripts/setup_workspace.ps1](https://github.com/QuinMeow/MaaNekoConnect_Codex/blob/1e8bd019021a570d1836c39374f624ebfe1d68c3/scripts/setup_workspace.ps1) | 外层环境准备实际逻辑 |
 | P14 | [scripts/validate_workspace.ps1](https://github.com/QuinMeow/MaaNekoConnect_Codex/blob/1e8bd019021a570d1836c39374f624ebfe1d68c3/scripts/validate_workspace.ps1) | 外层和内层测试、记忆及 MaaFw 检查 |
 
-## 当前实现架构与执行流程
+## 初次核对的架构快照
+
+本节记录最初的启动截图基线；旧裸 `python`、Agent 空壳和单一任务描述不是当前接口配置。
 
 ### 任务与设备边界
 
@@ -63,7 +73,7 @@ scripts/test_nekoconne.ps1
 - [`tests/test_project_config.py`](../../tests/test_project_config.py) 检查单一任务、Pipeline、模板示例清理、CI 和打包路径；[`tests/test_run_launch_capture.py`](../../tests/test_run_launch_capture.py) 检查设备精确选择、禁止回退、截图方式、PNG 头及包检查目标。它们不是实机验收；其中一项需要导入 MaaFw 枚举。
 - [`check.yml`](../../.github/workflows/check.yml) 安装依赖后做 Schema 校验、`compileall`、pytest；Schema 目录为 `deps/tools`，不能直接使用校验脚本默认的 `tools/schema`。
 - [`tools/configure.py`](../../tools/configure.py) 从 MaaCommonAssets 复制中文 OCR 模型；当前 launch Pipeline 未使用 OCR。`assets/MaaCommonAssets` 是真实 Git submodule（HEAD 记录 `9adc92ed264318c4d13dcf6df4565c746169a20e`），与“计划仓库和实现仓库不是 submodule”是两回事；当前目录为空，未初始化资源。
-- [`install.yml`](../../.github/workflows/install.yml) 在 Ubuntu runner 上为 Windows x64 打包，当前固定 MaaFramework v5.14.3，MFAAvalonia 取 latest；`tools/install.py` 要求已准备原生 deps，复制资源及 Agent，改写版本与路径。不能把此发布链视为本机已可运行。
+- [`install.yml`](../../.github/workflows/install.yml) 在 Ubuntu runner 上为 Windows x64 打包。初次核对时 MFAAvalonia 取 latest，现已固定 v2.16.2，并先准备项目 Python；`tools/install.py` 要求已准备原生 deps、Agent 运行时和所用 OCR 模型。不能把发布链定义视为本机产物已可运行。
 - [`package.json`](../../package.json) 只有开发依赖，没有 npm scripts；[`maatools.config.mts`](../../maatools.config.mts) 当前已固定 `maaVersion: '5.14.3'`，与 Python/发布版本一致。初次核对时的 latest 偏差已在后续框架同步中修正，见 [框架更新记录](develop/maa_framework_updates.md)。
 
 ## 计划中的决策及先后关系
@@ -74,7 +84,7 @@ scripts/test_nekoconne.ps1
 4. **治理实现的明确顺序。** P12：先定义并测试 handoff 契约，再实现记录/晋升，然后接入校验、分配写入所有权，最后验证和发布。计划勾选了前述实现与验证，但仍保留“push 被网络配额阻止”的未勾选历史条目；该文档已存在于读取到的远程提交，不能据此断言今天仍未推送。
 5. **接下来研究实际游戏流程。** P5 只写持续补充游戏知识与实验记录。基于当前缺口，建议未来先复核目标设备和截图基线，再选一个明确业务目标，采集页面和异常证据，定义识别与恢复流程、测试及验收，最后逐项扩展。此为本文建议，并非上游既定玩法排期。
 
-## 已实现与待实现的差距
+## 初次核对的差距快照
 
 | 领域 | 当前代码或来源能够证明的内容 | 尚不能证明或仍缺失的内容 |
 | --- | --- | --- |
@@ -98,9 +108,9 @@ scripts/test_nekoconne.ps1
 
 1. 首个业务目标是什么，登录/首页/日常流程各需支持哪些页面和成功判据？上游没有玩法路线图。
 2. 当前设备地址、ADB 路径、账号状态、游戏版本、语言与分辨率是否仍与六月观测一致？后续实机任务需重新确认。
-3. 独立实现项目的长期环境由谁、用什么本地方式配置？当前项目已升级 Python 3.11 + MaaFw 5.14.3，但本机验证使用临时环境，尚不能沿用外层 setup 的路径假设。
+3. 长期生产环境现由项目便携 Python 和哈希锁准备，不再沿用外层 Conda 或临时环境；实际 MPE Agent 启动和搬迁后运行仍应单独验收。
 4. 独立项目如何持续同步上游计划与研究记录，哪些结论应留本仓库、哪些仍在私有编排库维护？本轮仅形成固定版本对照，不建立自动同步机制。
-5. maa-tools 与固定 MaaFw 版本已在后续同步中统一为 5.14.3；是否固定 MFA 发布版本、补充语义截图验收，仍待后续工程决策。
+5. maa-tools 与固定 MaaFw 版本已统一为 5.14.3，MFAA 已固定为 v2.16.2；后续升级需同步锁与验收，语义截图和实机交付仍不能只靠版本固定证明。
 
 ## 初次文档整理的验证与边界
 

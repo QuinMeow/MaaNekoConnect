@@ -1,0 +1,600 @@
+{
+    "FurnitureFilter_Level": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            495,
+            865,
+            80,
+            55
+        ],
+        "template": "soleil/lv.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_Ascending": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            645,
+            867,
+            52,
+            52
+        ],
+        "template": "soleil/up.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_Descending": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            645,
+            867,
+            52,
+            52
+        ],
+        "template": "soleil/down.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_SortDialog": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            275,
+            170,
+            180,
+            65
+        ],
+        "template": "soleil/sort_dialog.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_FilterHeader": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            80,
+            270,
+            290,
+            45
+        ],
+        "template": "soleil/filter_header.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_FilterGuard": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_SortDialog",
+            "FurnitureFilter_FilterHeader"
+        ]
+    },
+    "FurnitureFilter_OpenSort": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 400,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            500,
+            875,
+            25,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_ChooseLevel"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_ChooseLevel": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_SortDialog"
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            75,
+            270,
+            25,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_OpenFilter"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_OpenFilter": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_SortDialog"
+        ],
+        "post_delay": 300,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            495,
+            845,
+            30,
+            25
+        ],
+        "next": [
+            "FurnitureFilter_ResetFilters"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_ResetFilters": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    460,
+                    755,
+                    190,
+                    55
+                ],
+                "template": "soleil/filter_reset.png",
+                "threshold": 0.9
+            }
+        ],
+        "post_delay": 350,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            530,
+            770,
+            30,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_FilterUpgradeable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FilterUpgradeable": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_UpgradeableOn"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FilterPlaced": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_PlacedOn"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableOn": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_UpgradeableChecked",
+            "FurnitureFilter_EnableUpgradeable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableOff": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_UpgradeableUnchecked",
+            "FurnitureFilter_DisableUpgradeable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableChecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    635,
+                    40,
+                    40
+                ],
+                "template": "soleil/checkbox_on.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_FilterPlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableUnchecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    635,
+                    40,
+                    40
+                ],
+                "template": "soleil/checkbox_off.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_FilterPlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_EnableUpgradeable": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    635,
+                    40,
+                    40
+                ],
+                "template": "soleil/checkbox_off.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            645,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_UpgradeableChecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_DisableUpgradeable": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    635,
+                    40,
+                    40
+                ],
+                "template": "soleil/checkbox_on.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            645,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_UpgradeableUnchecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedOn": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_PlacedChecked",
+            "FurnitureFilter_EnablePlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedOff": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_PlacedUnchecked",
+            "FurnitureFilter_DisablePlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedChecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    780,
+                    40,
+                    42
+                ],
+                "template": "soleil/placed_on.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_ApplyLevel"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedUnchecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    780,
+                    40,
+                    42
+                ],
+                "template": "soleil/placed_off.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_ApplyLevel"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_EnablePlaced": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    780,
+                    40,
+                    42
+                ],
+                "template": "soleil/placed_off.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            790,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_PlacedChecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_DisablePlaced": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    780,
+                    40,
+                    42
+                ],
+                "template": "soleil/placed_on.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            790,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_PlacedUnchecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_ApplyLevel": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    440,
+                    900,
+                    160,
+                    65
+                ],
+                "template": "soleil/apply.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 500,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            500,
+            920,
+            35,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_Direction"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_Direction": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_AscendingReady",
+            "FurnitureFilter_FlipToAscending"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_AscendingReady": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureFilter_Level",
+            "FurnitureFilter_Ascending"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_ScrollTop"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_DescendingReady": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureFilter_Level",
+            "FurnitureFilter_Descending"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_ScrollTop"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FlipToAscending": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureFilter_Level",
+            "FurnitureFilter_Descending"
+        ],
+        "post_delay": 500,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            663,
+            885,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_AscendingReady"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FlipToDescending": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureFilter_Level",
+            "FurnitureFilter_Ascending"
+        ],
+        "post_delay": 500,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            663,
+            885,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_DescendingReady"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

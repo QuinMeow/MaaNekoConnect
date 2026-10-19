@@ -26,7 +26,7 @@
         }
     ],
     "agent": {
-        "child_exec": "python",
+        "child_exec": "../.runtime/python/python.exe",
         "child_args": [
             "../agent/main.py"
         ]
@@ -38,6 +38,282 @@
             "controller": [
                 "Android"
             ]
+        },
+        {
+            "name": "Soleil：循环强化最低等级的 5 件家具（消耗强化券）",
+            "label": "家具强化：单轮／间隔补位",
+            "description": "每轮为当前列表前五格补位，最多启动五件，轮末至多点击一次依頼。默认仅运行一轮；间隔模式按配置轮数运行。使用现有排序时不保证等级最低。",
+            "entry": "FurnitureSchedule_Start",
+            "controller": [
+                "Android"
+            ],
+            "option": [
+                "FurnitureSchedule",
+                "UseExistingSort",
+                "AutoRequest"
+            ]
         }
-    ]
+    ],
+    "option": {
+        "UseExistingSort": {
+            "type": "switch",
+            "label": "使用现有排序",
+            "description": "开启时不更改当前排序和筛选。关闭后显示下方排序与筛选设置。",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureEnhance_Prepare": {
+                            "next": [
+                                "FurnitureEnhance_ScrollTop"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "option": [
+                        "SortOrder",
+                        "OnlyPlaced",
+                        "OnlyUpgradeable"
+                    ],
+                    "pipeline_override": {
+                        "FurnitureEnhance_Prepare": {
+                            "next": [
+                                "FurnitureFilter_OpenSort"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "SortOrder": {
+            "type": "select",
+            "label": "排序方式",
+            "default_case": "lv_asc",
+            "cases": [
+                {
+                    "name": "lv_asc",
+                    "label": "Lv 升序",
+                    "pipeline_override": {
+                        "FurnitureFilter_Direction": {
+                            "next": [
+                                "FurnitureFilter_AscendingReady",
+                                "FurnitureFilter_FlipToAscending"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "lv_desc",
+                    "label": "Lv 降序",
+                    "pipeline_override": {
+                        "FurnitureFilter_Direction": {
+                            "next": [
+                                "FurnitureFilter_DescendingReady",
+                                "FurnitureFilter_FlipToDescending"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "OnlyPlaced": {
+            "type": "switch",
+            "label": "仅已配置家具",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterPlaced": {
+                            "next": [
+                                "FurnitureFilter_PlacedOn"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterPlaced": {
+                            "next": [
+                                "FurnitureFilter_PlacedOff"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "OnlyUpgradeable": {
+            "type": "switch",
+            "label": "仅可升级家具",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterUpgradeable": {
+                            "next": [
+                                "FurnitureFilter_UpgradeableOn"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterUpgradeable": {
+                            "next": [
+                                "FurnitureFilter_UpgradeableOff"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "AutoRequest": {
+            "type": "switch",
+            "label": "本轮补位完成后点击依頼",
+            "description": "仅本轮至少确认一次新强化后请求，整轮最多点击一次；关闭时轮末直接结束或等待。",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureEnhance_AfterStart": {
+                            "anchor": {
+                                "FurnitureEnhance_PostRound": "FurnitureEnhance_ReturnForRequest"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "FurnitureEnhance_AfterStart": {
+                            "anchor": {
+                                "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "FurnitureSchedule": {
+            "type": "select",
+            "label": "运行方式",
+            "description": "单轮立即补位后结束。间隔模式首轮立即执行，后续按固定或可见忙碌家具的剩余时间等待；识别失败回退固定间隔。",
+            "default_case": "single",
+            "cases": [
+                {
+                    "name": "single",
+                    "label": "仅运行一轮",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "fixed"
+                            }
+                        },
+                        "FurnitureSchedule_Permit": {
+                            "max_hit": 1
+                        }
+                    }
+                },
+                {
+                    "name": "fixed",
+                    "label": "固定间隔",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "fixed"
+                            }
+                        }
+                    },
+                    "option": [
+                        "FurnitureRounds",
+                        "FurnitureInterval"
+                    ]
+                },
+                {
+                    "name": "shortest",
+                    "label": "最短剩余时间",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "shortest"
+                            }
+                        }
+                    },
+                    "option": [
+                        "FurnitureRounds",
+                        "FurnitureInterval"
+                    ]
+                },
+                {
+                    "name": "longest",
+                    "label": "最长剩余时间",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "longest"
+                            }
+                        }
+                    },
+                    "option": [
+                        "FurnitureRounds",
+                        "FurnitureInterval"
+                    ]
+                }
+            ]
+        },
+        "FurnitureRounds": {
+            "type": "input",
+            "label": "总轮数",
+            "description": "含立即执行的首轮；1 至 10000，每轮最多尝试启动五件。",
+            "inputs": [
+                {
+                    "name": "Rounds",
+                    "label": "轮数",
+                    "default": "1",
+                    "pipeline_type": "int",
+                    "verify": "^(?:[1-9][0-9]{0,3}|10000)$",
+                    "pattern_msg": "请输入 1 至 10000 的整数"
+                }
+            ],
+            "pipeline_override": {
+                "FurnitureSchedule_Permit": {
+                    "max_hit": "{Rounds}"
+                }
+            }
+        },
+        "FurnitureInterval": {
+            "type": "input",
+            "label": "固定／回退间隔",
+            "description": "单位为秒，10 至 86400。动态倒计时无法安全读取时使用此值，不使用零秒重试。",
+            "inputs": [
+                {
+                    "name": "Seconds",
+                    "label": "秒",
+                    "default": "60",
+                    "pipeline_type": "int",
+                    "verify": "^(?:[1-9][0-9]{1,3}|[1-7][0-9]{4}|8[0-5][0-9]{3}|86[0-3][0-9]{2}|86400)$",
+                    "pattern_msg": "请输入 10 至 86400 的整数"
+                }
+            ],
+            "pipeline_override": {
+                "FurnitureTimer_IntervalConfig": {
+                    "custom_action_param": {
+                        "op": "interval",
+                        "seconds": "{Seconds}"
+                    }
+                }
+            }
+        }
+    }
 }

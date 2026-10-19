@@ -9,7 +9,7 @@ env:
   # - 设置 VERSION 为空字符串时，下载 latest 版本
   # - 设置 VERSION 为具体版本号时（如 v1.2.3），下载指定版本
   MAAFW_VERSION: "v5.14.3"
-  MFAA_VERSION: ""
+  MFAA_VERSION: "v2.16.2"
 
 on:
   push:
@@ -21,6 +21,7 @@ on:
       - ".github/workflows/install.yml"
       - "assets/**"
       - "**.py"
+      - "tools/python-runtime.lock.json"
   pull_request:
     branches:
       - "**"
@@ -28,6 +29,7 @@ on:
       - ".github/workflows/install.yml"
       - "assets/**"
       - "**.py"
+      - "tools/python-runtime.lock.json"
   workflow_dispatch:
 
 jobs:
@@ -85,6 +87,10 @@ jobs:
         with:
           submodules: true
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Download MaaFramework
         uses: robinraju/release-downloader@v1
         with:
@@ -120,7 +126,14 @@ jobs:
         shell: bash
         run: |
           rm -rf MFA/runtimes
-      
+
+      - name: Prepare portable Python
+        shell: bash
+        run: |
+          cd tools/
+          python -m pip install -r ./requirements.txt
+          python prepare_python.py --project-root .. --target win-x64
+
       - name: Install
         shell: bash
         run: |
@@ -138,7 +151,6 @@ jobs:
           fi
 
           cd tools/
-          python -m pip install -r ./requirements.txt
           python ./install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
           cd ..
 
@@ -146,6 +158,7 @@ jobs:
         with:
           name: MaaNekoConnect-${{ matrix.os }}-${{ matrix.arch }}
           path: "install"
+          include-hidden-files: true
 
   changelog:
     name: Generate changelog

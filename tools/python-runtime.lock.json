@@ -1,0 +1,28 @@
+{
+    "schema_version": 1,
+    "target": "win-x64",
+    "python": {
+        "version": "3.11.17",
+        "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.11.17%2B20261013-x86_64-pc-windows-msvc-install_only_stripped.tar.gz",
+        "sha256": "54a38c5e7cc1a5fd2b0182b495f29606dc1455d18ebfd3b5bf0a3c09253b5031",
+        "archive_root": "python"
+    },
+    "packages": {
+        "MaaFw": {
+            "version": "5.14.3",
+            "sha256": "5fcd48d85b2110150f19848da777564abe64e4ca64966704cb8dec948d243ce5"
+        },
+        "numpy": {
+            "version": "2.4.6",
+            "sha256": "1e254a00cdf42b1e4d5b3d68d33af63268d41340d8885df2ab6470f2e1500147"
+        },
+        "MaaAgentBinary": {
+            "version": "1.0.1",
+            "sha256": "d97bcc9f35b52add199b287932511ecfcddcb83930c6b532d1c7010b432ec8bf"
+        },
+        "StrEnum": {
+            "version": "0.4.15",
+            "sha256": "a30cda4af7cc6b5bf52c8055bc4bf4b2b6b14a93b574626da33df53cf7740659"
+        }
+    }
+}

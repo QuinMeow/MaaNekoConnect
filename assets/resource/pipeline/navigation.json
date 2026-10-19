@@ -1,0 +1,152 @@
+{
+    "NavHome_SoleilLabel": {
+        "recognition": "TemplateMatch",
+        "roi": [530, 1205, 155, 65],
+        "template": "soleil/home.png",
+        "threshold": 0.9
+    },
+    "NavHome_SoleilBuilding": {
+        "recognition": "TemplateMatch",
+        "roi": [525, 1095, 160, 130],
+        "template": "soleil/home_ready.png",
+        "threshold": 0.95
+    },
+    "NavHome_Bright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [530, 1205, 155, 65],
+        "lower": [225, 205, 175],
+        "upper": [255, 255, 255],
+        "count": 200
+    },
+    "NavHome_Ready": {
+        "recognition": "And",
+        "all_of": ["NavHome_SoleilLabel", "NavHome_SoleilBuilding", "NavHome_Bright"]
+    },
+    "NavSoleil_Title": {
+        "recognition": "TemplateMatch",
+        "roi": [0, 20, 160, 70],
+        "template": "soleil/room.png",
+        "threshold": 0.95
+    },
+    "NavSoleil_EnhanceIcon": {
+        "recognition": "TemplateMatch",
+        "roi": [610, 420, 85, 90],
+        "template": "soleil/open_enhance.png",
+        "threshold": 0.9
+    },
+    "NavSoleil_Bright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [0, 30, 180, 45],
+        "lower": [225, 100, 25],
+        "upper": [255, 200, 150],
+        "count": 5000
+    },
+    "NavSoleil_Ready": {
+        "recognition": "And",
+        "all_of": ["NavSoleil_Title", "NavSoleil_EnhanceIcon", "NavSoleil_Bright"]
+    },
+    "NavFooter_HomeTemplate": {
+        "recognition": "TemplateMatch",
+        "roi": [280, 1195, 160, 75],
+        "template": "navigation/footer_home.png",
+        "threshold": 0.95
+    },
+    "NavFooter_HomeBright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [295, 1215, 130, 35],
+        "lower": [225, 120, 35],
+        "upper": [255, 195, 120],
+        "count": 2000
+    },
+    "NavFooter_Home": {
+        "recognition": "And",
+        "all_of": ["NavFooter_HomeTemplate", "NavFooter_HomeBright"]
+    },
+    "NavFooter_BackTemplate": {
+        "recognition": "TemplateMatch",
+        "roi": [95, 1195, 115, 75],
+        "template": "navigation/footer_back.png",
+        "threshold": 0.95
+    },
+    "NavFooter_BackBright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [110, 1210, 80, 45],
+        "lower": [220, 50, 50],
+        "upper": [255, 140, 160],
+        "count": 300
+    },
+    "NavFooter_Back": {
+        "recognition": "And",
+        "all_of": ["NavFooter_BackTemplate", "NavFooter_BackBright"]
+    },
+    "NavHome_Ensure": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "CommonNetworkInterrupt", "CommonLoadingInterrupt", "NavHome_Arrived",
+            "NavHome_FromSoleil", "NavHome_FromFurnitureEnhance"
+        ],
+        "on_error": ["CommonRecoveryEnter"]
+    },
+    "NavHome_FromSoleil": {
+        "recognition": "And",
+        "all_of": ["NavSoleil_Ready", "NavFooter_Home"],
+        "action": "Click",
+        "target": [345, 1220, 30, 20],
+        "post_delay": 2000,
+        "timeout": 60000,
+        "next": ["NavHome_Arrived"],
+        "on_error": ["CommonRecoveryEnter"]
+    },
+    "NavHome_FromFurnitureEnhance": {
+        "recognition": "And",
+        "all_of": ["FurnitureEnhance_PageGuard", "NavFooter_Home"],
+        "action": "Click",
+        "target": [345, 1220, 30, 20],
+        "post_delay": 2000,
+        "timeout": 60000,
+        "next": ["NavHome_Arrived"],
+        "on_error": ["CommonRecoveryEnter"]
+    },
+    "NavHome_Arrived": {
+        "recognition": "And",
+        "all_of": ["NavHome_Ready"],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["[Anchor]NavHome_Return"],
+        "on_error": ["CommonRecoveryEnter"]
+    },
+    "NavSoleil_Ensure": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "CommonNetworkInterrupt", "CommonLoadingInterrupt", "NavSoleil_Arrived",
+            "NavSoleil_FromHome"
+        ],
+        "on_error": ["CommonRecoveryEnter"]
+    },
+    "NavSoleil_FromHome": {
+        "recognition": "And",
+        "all_of": ["NavHome_Ready"],
+        "action": "Click",
+        "target": [590, 1180, 20, 20],
+        "post_delay": 2000,
+        "timeout": 60000,
+        "next": ["NavSoleil_Arrived"],
+        "on_error": ["CommonRecoveryHomeStallEnter"]
+    },
+    "NavSoleil_Arrived": {
+        "recognition": "And",
+        "all_of": ["NavSoleil_Ready"],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["[Anchor]NavSoleil_Return"],
+        "on_error": ["CommonRecoveryEnter"]
+    }
+}
