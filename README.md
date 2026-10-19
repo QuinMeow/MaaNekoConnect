@@ -13,6 +13,8 @@
 
 优先使用 `assets/resource/pipeline/*.json` 和 MaaFramework 现有 API。只有 JSON 无法表达的逻辑才放到 `agent/extensions.py`。
 
+当前开发基准为 Python 3.11、MaaFw 5.14.3；打包版本及 `deps/tools/` 的 Schema 同步到 MaaFramework v5.14.3。上游提交与校验信息见 [框架更新记录](docs/zh_cn/develop/maa_framework_updates.md)。
+
 环境由外层私有工作区 `MaaNekoConnect_Codex` 的脚本统一配置。配置完成后可运行：
 
 ```powershell

@@ -41,11 +41,14 @@ jobs:
           # 确保目标目录存在
           mkdir -p deps/tools
 
-          # 下载四个JSON schema文件
-          curl -s -o deps/tools/interface.schema.json https://raw.githubusercontent.com/MaaXYZ/MaaFramework/main/tools/interface.schema.json || echo "Failed to download interface.schema.json"
-          curl -s -o deps/tools/interface_config.schema.json https://raw.githubusercontent.com/MaaXYZ/MaaFramework/main/tools/interface_config.schema.json || echo "Failed to download interface_config.schema.json"
-          curl -s -o deps/tools/interface_import.schema.json https://raw.githubusercontent.com/MaaXYZ/MaaFramework/main/tools/interface_import.schema.json || echo "Failed to download interface_import.schema.json"
-          curl -s -o deps/tools/pipeline.schema.json https://raw.githubusercontent.com/MaaXYZ/MaaFramework/main/tools/pipeline.schema.json || echo "Failed to download pipeline.schema.json"
+          # Schema 与项目依赖使用同一正式版本，避免 main 超前于运行时。
+          MAAFW_TAG="$(sed -nE 's/^MaaFw==([0-9.]+)\r?$/v\1/p' requirements.txt)"
+          test -n "$MAAFW_TAG"
+          for schema in interface interface_config interface_import pipeline custom.action custom.recognition; do
+            curl --fail --silent --show-error --location --retry 3 \
+              -o "deps/tools/$schema.schema.json" \
+              "https://raw.githubusercontent.com/MaaXYZ/MaaFramework/$MAAFW_TAG/tools/$schema.schema.json"
+          done
 
           # 检查文件是否成功下载
           echo "Checking downloaded files:"

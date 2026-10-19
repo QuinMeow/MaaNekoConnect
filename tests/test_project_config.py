@@ -66,7 +66,7 @@ def test_ci_is_windows_python_only():
         encoding="utf-8"
     )
     assert "runs-on: windows-latest" in workflow
-    assert "MaaFw==5.10.5" in (ROOT / "requirements.txt").read_text(encoding="utf-8")
+    assert "MaaFw==5.14.3" in (ROOT / "requirements.txt").read_text(encoding="utf-8")
     assert "setup-node" not in workflow
     assert "npm " not in workflow
     assert "compileall" in workflow
