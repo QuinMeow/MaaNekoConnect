@@ -29,11 +29,175 @@
     },
     "CommonRecoveryDispatch": {
         "recognition": "DirectHit",
+        "anchor": {"NavHome_PopupReturn": "CommonRecoveryDispatch"},
         "post_delay": 0,
         "next": [
-            "CommonNetworkConfirm", "CommonRecoveryLoading", "CommonTitleTap",
-            "CommonRecoveryHome", "CommonRecoveryWatchPermit"
+            "CommonLoginFailedGate", "CommonPlayDeviceGate", "CommonAccessDeniedGate", "CommonDateChangedGate", "CommonNetworkGate",
+            "CommonRecoveryLoading",
+            "CommonRecoveryKnownNormal",
+            "NavHome_CloseInterrupt", "NavHome_PromoInterrupt", "NavHome_RewardInterrupt",
+            "CommonTitleTap", "CommonRecoveryHome", "CommonRecoveryWatchPermit"
         ],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonLoginFailedTitle": {
+        "recognition": "TemplateMatch",
+        "roi": [215, 285, 290, 60],
+        "template": "common_recovery/login_title.png",
+        "threshold": 0.95
+    },
+    "CommonLoginFailedMessage": {
+        "recognition": "TemplateMatch",
+        "roi": [180, 365, 360, 80],
+        "template": "common_recovery/login_message.png",
+        "threshold": 0.95
+    },
+    "CommonLoginFailedReady": {
+        "recognition": "And",
+        "all_of": ["CommonLoginFailedTitle", "CommonLoginFailedMessage", "CommonPlayDeviceButton"]
+    },
+    "CommonLoginFailedInterrupt": {
+        "recognition": "And",
+        "all_of": ["CommonLoginFailedReady"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonLoginFailedGate": {
+        "recognition": "And",
+        "all_of": ["CommonLoginFailedReady"],
+        "post_delay": 0,
+        "next": ["CommonLoginFailedConfirm", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonLoginFailedConfirm": {
+        "recognition": "And",
+        "all_of": ["CommonLoginFailedReady"],
+        "action": "Click",
+        "target": [345, 823, 30, 25],
+        "max_hit": 1,
+        "post_delay": 1500,
+        "next": ["CommonRecoveryRestartPermit", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonRecoveryKnownNormal": {
+        "recognition": "Or",
+        "any_of": ["NavHome_KnownBusinessReady", "NavHome_KnownModal"],
+        "anchor": {"NavHome_NormalizeReturn": "CommonRecoveryRecovered", "NavHome_PopupReturn": "NavHome_Normalize"},
+        "post_delay": 0,
+        "next": ["NavHome_Normalize"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonPlayDeviceTitle": {
+        "recognition": "TemplateMatch",
+        "roi": [245, 285, 235, 55],
+        "template": "common_recovery/device_title.png",
+        "threshold": 0.95
+    },
+    "CommonPlayDeviceMessage": {
+        "recognition": "TemplateMatch",
+        "roi": [50, 350, 620, 110],
+        "template": "common_recovery/device_message.png",
+        "threshold": 0.95
+    },
+    "CommonPlayDeviceButton": {
+        "recognition": "TemplateMatch",
+        "roi": [200, 795, 320, 85],
+        "template": "common_recovery/device_ok.png",
+        "threshold": 0.95
+    },
+    "CommonPlayDeviceReady": {
+        "recognition": "And",
+        "all_of": ["CommonPlayDeviceTitle", "CommonPlayDeviceMessage", "CommonPlayDeviceButton"]
+    },
+    "CommonPlayDeviceInterrupt": {
+        "recognition": "And",
+        "all_of": ["CommonPlayDeviceReady"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonPlayDeviceGate": {
+        "recognition": "And",
+        "all_of": ["CommonPlayDeviceReady"],
+        "post_delay": 0,
+        "next": ["CommonPlayDeviceConfirm", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonPlayDeviceConfirm": {
+        "recognition": "And",
+        "all_of": ["CommonPlayDeviceReady"],
+        "action": "Click",
+        "target": [345, 823, 30, 25],
+        "max_hit": 1,
+        "post_delay": 3000,
+        "next": ["CommonRecoveryDispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonAccessDeniedMessage": {
+        "recognition": "TemplateMatch",
+        "roi": [115, 505, 480, 60],
+        "template": "common_recovery/access_message.png",
+        "threshold": 0.95
+    },
+    "CommonAccessDeniedInterrupt": {
+        "recognition": "And",
+        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonAccessDeniedGate": {
+        "recognition": "And",
+        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"],
+        "post_delay": 0,
+        "next": ["CommonAccessDeniedConfirm", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonAccessDeniedConfirm": {
+        "recognition": "And",
+        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"],
+        "action": "Click",
+        "target": [345, 653, 30, 25],
+        "max_hit": 3,
+        "post_delay": 3000,
+        "next": ["CommonRecoveryDispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonDateChangedMessage": {
+        "recognition": "TemplateMatch",
+        "roi": [240, 500, 245, 70],
+        "template": "common_recovery/date_message.png",
+        "threshold": 0.95
+    },
+    "CommonDateChangedButton": {
+        "recognition": "TemplateMatch",
+        "roi": [200, 625, 320, 85],
+        "template": "common_recovery/date_button.png",
+        "threshold": 0.95
+    },
+    "CommonDateChangedInterrupt": {
+        "recognition": "And",
+        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"],
+        "post_delay": 0,
+        "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonDateChangedGate": {
+        "recognition": "And",
+        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"],
+        "post_delay": 0,
+        "next": ["CommonDateChangedConfirm", "CommonRecoveryStopCapture"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonDateChangedConfirm": {
+        "recognition": "And",
+        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"],
+        "action": "Click",
+        "target": [345, 653, 30, 25],
+        "max_hit": 3,
+        "post_delay": 3000,
+        "next": ["CommonRecoveryDispatch"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonNetworkMessage": {
@@ -53,6 +217,13 @@
         "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
         "post_delay": 0,
         "next": ["CommonRecoveryEnter"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "CommonNetworkGate": {
+        "recognition": "And",
+        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
+        "post_delay": 0,
+        "next": ["CommonNetworkConfirm", "CommonRecoveryStopCapture"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonNetworkConfirm": {
@@ -158,10 +329,14 @@
     },
     "CommonRecoveryHomeFreshCheck": {
         "recognition": "DirectHit",
+        "anchor": {"NavHome_PopupReturn": "CommonRecoveryDispatch"},
         "post_delay": 0,
         "next": [
-            "CommonNetworkConfirm", "CommonFrozenLoading", "CommonTitleTap",
-            "CommonRecoveryHomeRestart", "CommonRecoveryDispatch"
+            "CommonLoginFailedGate", "CommonPlayDeviceGate", "CommonAccessDeniedGate", "CommonDateChangedGate", "CommonNetworkGate",
+            "CommonFrozenLoading",
+            "CommonRecoveryKnownNormal",
+            "NavHome_CloseInterrupt", "NavHome_PromoInterrupt", "NavHome_RewardInterrupt",
+            "CommonTitleTap", "CommonRecoveryHomeRestart", "CommonRecoveryDispatch"
         ],
         "on_error": ["CommonRecoveryStopCapture"]
     },
@@ -195,9 +370,13 @@
     },
     "CommonRecoveryFreshCheck": {
         "recognition": "DirectHit",
+        "anchor": {"NavHome_PopupReturn": "CommonRecoveryDispatch"},
         "post_delay": 0,
         "next": [
-            "CommonNetworkConfirm", "CommonRecoveryHome", "CommonFrozenLoading",
+            "CommonLoginFailedGate", "CommonPlayDeviceGate", "CommonAccessDeniedGate", "CommonDateChangedGate", "CommonNetworkGate",
+            "CommonFrozenLoading",
+            "CommonRecoveryKnownNormal",
+            "NavHome_CloseInterrupt", "NavHome_PromoInterrupt", "NavHome_RewardInterrupt", "CommonRecoveryHome",
             "CommonTitleTap", "CommonRecoveryRestartPermit"
         ],
         "on_error": ["CommonRecoveryStopCapture"]

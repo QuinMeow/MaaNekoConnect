@@ -7,6 +7,15 @@ from pathlib import Path
 
 DEFAULT_ADDRESS = "127.0.0.1:5557"
 PACKAGE_NAME = "jp.goodsmile.nekoconne"
+LAUNCH_CAPTURE_PIPELINE = {
+    "TestLaunchAndCapture": {
+        "action": "StartApp", "package": PACKAGE_NAME, "post_delay": 20000,
+        "next": ["TestCaptureScreen"],
+    },
+    "TestCaptureScreen": {
+        "action": "Screencap", "filename": "nekoconne_launch", "format": "png",
+    },
+}
 DEFAULT_ADB_PATHS = (
     Path(r"D:\Program Files\Netease\MuMu\nx_main\adb.exe"),
     Path(r"D:\Program Files\Netease\MuMu\nx_device\12.0\shell\adb.exe"),
@@ -107,7 +116,7 @@ def run(project_root, adb_path, address):
 
     output = project_root / "debug" / "screencap" / "nekoconne_launch.png"
     started_at = time.time()
-    wait_job(tasker.post_task("TestLaunchAndCapture"), "启动截图任务")
+    wait_job(tasker.post_task("TestLaunchAndCapture", LAUNCH_CAPTURE_PIPELINE), "启动截图任务")
 
     if not output.is_file() or output.stat().st_mtime < started_at:
         raise RuntimeError(f"未生成新的截图：{output}")

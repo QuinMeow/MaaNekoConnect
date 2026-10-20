@@ -1,0 +1,317 @@
+{
+    "Daily_PendingFriend": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_friend.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    311,
+                    -2,
+                    -249,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "box_index": 1
+    },
+    "Daily_ChooseFriend": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_friend.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    311,
+                    -2,
+                    -249,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "enabled": true,
+        "box_index": 1,
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 45000,
+        "next": [
+            "Daily_FriendBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/friend_title.png",
+        "roi": [
+            270,
+            75,
+            180,
+            65
+        ],
+        "threshold": 0.97
+    },
+    "Daily_FriendClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_FriendBegin": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            640,
+            190,
+            30,
+            30
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Daily_FriendMenu"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendMenu": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Menu",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/menu_friend.png",
+                "roi": [
+                    205,
+                    505,
+                    155,
+                    125
+                ],
+                "threshold": 0.97
+            }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "target": true,
+        "post_delay": 2200,
+        "next": [
+            "Daily_FriendTab"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendTab": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage"
+        ],
+        "action": "Click",
+        "target": [
+            130,
+            1030,
+            30,
+            25
+        ],
+        "post_delay": 1800,
+        "next": [
+            "DailyFriend_Batch",
+            "Daily_FriendUnavailable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendGreet": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/friend_tab.png",
+                "roi": [
+                    65,
+                    1010,
+                    170,
+                    65
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/greet.png",
+                "roi": [
+                    495,
+                    250,
+                    150,
+                    650
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 2500,
+                "roi": [
+                    85,
+                    1026,
+                    120,
+                    35
+                ]
+            }
+        ],
+        "box_index": 2,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 1500,
+        "anchor": {
+            "Daily_AfterReward": "Daily_Return"
+        },
+        "next": [
+            "Daily_RewardWait"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_FriendUnavailable": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/friend_tab.png",
+                "roi": [
+                    65,
+                    1010,
+                    170,
+                    65
+                ],
+                "threshold": 0.97
+            }
+        ],
+        "next": [
+            "Daily_Return"
+        ],
+        "attach": {
+            "result": "no_greetable_friend"
+        },
+        "post_delay": 0
+    },
+    "DailyFriend_Batch": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage",
+            {"recognition": "TemplateMatch", "template": "daily/friend_tab.png", "roi": [65, 1010, 170, 65], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/friend_batch.png", "roi": [490, 925, 175, 60], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/friend_batch_alert.png", "roi": [625, 915, 35, 40], "threshold": 0.97},
+            {"recognition": "ColorMatch", "method": 4, "roi": [85, 1026, 120, 35], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 2500}
+        ],
+        "action": "Click", "target": [550, 943, 60, 20], "max_hit": 1,
+        "post_delay": 2200,
+        "anchor": {"Daily_AfterReward": "Daily_Return"},
+        "next": ["Daily_RewardWait"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyFriend_Start": {
+        "doc": "好友问候",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "Daily_FriendBegin"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

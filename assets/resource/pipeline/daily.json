@@ -1,0 +1,62 @@
+{
+    "Daily_Start": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_Resume"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "anchor": {
+            "CommonRecoveryResume": "Daily_Resume",
+            "NavHome_Return": "Daily_Open",
+            "NavSoleil_Return": "Daily_DeliveryMap",
+            "Daily_ScanReturn": "Daily_Scan",
+            "Daily_AfterWork": "Daily_Resume",
+            "Daily_FinishReturn": "Daily_LegacyDone"
+        }
+    },
+    "Daily_Resume": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_MissionClose",
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "NavHome_Return": "Daily_Open"
+        }
+    },
+    "Daily_Scan": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page"
+        ],
+        "post_delay": 0,
+        "timeout": 10000,
+        "next": [
+            "Daily_PostError",
+            "Daily_ClaimGate",
+            "Daily_ChooseIncome",
+            "Daily_ChooseFriend",
+            "Daily_ChooseDelivery",
+            "Daily_ChooseVR",
+            "Daily_ChooseContest",
+            "Daily_ChooseGold",
+            "Daily_ChooseGift",
+            "Daily_ChooseGacha",
+            "Daily_EndSeen",
+            "Daily_Scroll",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    }
+}

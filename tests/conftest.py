@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from maa.controller import CustomController
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -63,7 +64,6 @@ def soleil_image(frame):
 
 @pytest.fixture
 def native(tmp_path):
-    from maa.controller import CustomController
     from maa.define import LoggingLevelEnum
     from maa.pipeline import JAnd
     from maa.resource import Resource
@@ -74,6 +74,7 @@ def native(tmp_path):
             self.image = np.zeros((1280, 720, 3), dtype=np.uint8)
             self.source = None
             self.on_click = self.on_start = self.on_stop = None
+            self.foreground_package = "jp.goodsmile.nekoconne"
             self.rejected = []
             super().__init__()
 
@@ -105,15 +106,19 @@ def native(tmp_path):
         swipe = touch_down = touch_move = touch_up = reject
         click_key = input_text = key_down = key_up = scroll = relative_move = reject
 
-        def shell(self, *args):
-            self.reject(*args)
-            return None
+        def shell(self, cmd, timeout):
+            if cmd == "dumpsys activity activities":
+                package = self.foreground_package
+                return f"topResumedActivity=ActivityRecord{{test u0 {package}/.MainActivity t1}}" if package else None
+            return self.reject(cmd, timeout)
 
     Tasker.set_log_dir(tmp_path / "native-logs")
     Tasker.set_stdout_level(LoggingLevelEnum.Off)
     Tasker.set_save_draw(False)
     Tasker.set_save_on_error(False)
     controller, resource, tasker = Controller(), Resource(), Tasker()
+    from agent.login import register_login
+    register_login(resource)
     assert controller.post_connection().wait().succeeded
     assert resource.post_bundle(ROOT / "assets/resource").wait().succeeded
     assert tasker.bind(resource, controller)

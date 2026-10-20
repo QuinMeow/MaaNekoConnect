@@ -1,0 +1,528 @@
+{
+    "Daily_MissionClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Header",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1500,
+        "next": [
+            "Daily_Resume"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_SelectTab": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Header",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            65,
+            1030,
+            50,
+            20
+        ],
+        "post_delay": 1600,
+        "next": [
+            "Daily_Top"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_Top": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page"
+        ],
+        "action": "Swipe",
+        "begin": [
+            400,
+            360
+        ],
+        "end": [
+            400,
+            830
+        ],
+        "duration": 350,
+        "repeat": 4,
+        "post_delay": 1500,
+        "next": [
+            "[Anchor]Daily_ScanReturn"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Header": {
+        "recognition": "TemplateMatch",
+        "template": "daily/header.png",
+        "roi": [
+            255,
+            105,
+            215,
+            55
+        ],
+        "threshold": 0.97
+    },
+    "Daily_Tab": {
+        "recognition": "TemplateMatch",
+        "template": "daily/tab.png",
+        "roi": [
+            35,
+            1005,
+            130,
+            80
+        ],
+        "threshold": 0.97
+    },
+    "Daily_Bright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [
+            45,
+            1018,
+            105,
+            49
+        ],
+        "lower": [
+            220,
+            45,
+            55
+        ],
+        "upper": [
+            255,
+            130,
+            145
+        ],
+        "count": 2400
+    },
+    "Daily_Page": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Header",
+            "Daily_Tab",
+            "Daily_Bright"
+        ]
+    },
+    "Daily_Error": {
+        "recognition": "Or",
+        "any_of": [
+            "CommonLoginFailedReady",
+            "CommonPlayDeviceReady",
+            {
+                "recognition": "And",
+                "all_of": [
+                    "CommonAccessDeniedMessage",
+                    "CommonDateChangedButton"
+                ]
+            },
+            {
+                "recognition": "And",
+                "all_of": [
+                    "CommonDateChangedMessage",
+                    "CommonDateChangedButton"
+                ]
+            },
+            {
+                "recognition": "And",
+                "all_of": [
+                    "CommonNetworkMessage",
+                    "CommonNetworkButton"
+                ]
+            }
+        ]
+    },
+    "Daily_PostError": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Error"
+        ],
+        "next": [
+            "Daily_StopCapture"
+        ],
+        "post_delay": 0
+    },
+    "Daily_Open": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            640,
+            595,
+            30,
+            30
+        ],
+        "post_delay": 3000,
+        "timeout": 45000,
+        "next": [
+            "Daily_SelectTab"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_Scroll": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page"
+        ],
+        "action": "Swipe",
+        "begin": [
+            410,
+            840
+        ],
+        "end": [
+            410,
+            400
+        ],
+        "duration": 500,
+        "max_hit": 48,
+        "post_delay": 1200,
+        "next": [
+            "[Anchor]Daily_ScanReturn"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_StopCapture": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_Stop"
+        ],
+        "on_error": [
+            "Daily_Stop"
+        ],
+        "action": "Screencap",
+        "filename": "daily_stopped",
+        "format": "png"
+    },
+    "Daily_Stop": {
+        "recognition": "DirectHit",
+        "action": "StopTask",
+        "post_delay": 0
+    },
+    "Daily_Menu": {
+        "recognition": "TemplateMatch",
+        "template": "daily/menu.png",
+        "roi": [
+            5,
+            435,
+            175,
+            65
+        ],
+        "threshold": 0.97
+    },
+    "Daily_MenuClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Menu",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1200,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_MapPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/map_title.png",
+        "roi": [
+            35,
+            25,
+            160,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "Daily_PrepPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/prep_title.png",
+        "roi": [
+            35,
+            25,
+            155,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "Daily_BusinessPage": {
+        "recognition": "Or",
+        "any_of": [
+            "Daily_MapPage",
+            "Daily_VRPage",
+            "Daily_ContestPage",
+            "Daily_ExchangePage",
+            "Daily_GiftPage",
+            "Daily_DeliveryPage",
+            "Daily_PrepPage",
+            "Daily_GachaPage"
+        ]
+    },
+    "Daily_BusinessHome": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_BusinessPage",
+            "NavFooter_Home"
+        ],
+        "action": "Click",
+        "target": [
+            345,
+            1220,
+            30,
+            20
+        ],
+        "post_delay": 3000,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_OnHome": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "post_delay": 0,
+        "next": [
+            "[Anchor]Daily_AfterWork"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Return": {
+        "recognition": "DirectHit",
+        "anchor": {
+            "NavHome_NormalizeReturn": "Daily_OnHome",
+            "NavHome_PopupReturn": "NavHome_Normalize"
+        },
+        "post_delay": 0,
+        "timeout": 45000,
+        "next": [
+            "NavHome_Normalize"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_BattleResult": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    0,
+                    595,
+                    350,
+                    130
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^(Win|Lose)[!！]?$"
+                ]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/result_top.png",
+                "roi": [
+                    215,
+                    1155,
+                    290,
+                    90
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    250,
+                    1185,
+                    220,
+                    30
+                ],
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 3500
+            }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "target": true,
+        "post_delay": 2500,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_LegacyDone": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": []
+    },
+    "DailyCore_Done": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "post_delay": 0,
+        "next": []
+    },
+    "DailyCore_Recover": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyCore_CloseMission": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Header",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1500,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyCore_Scan": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page"
+        ],
+        "post_delay": 0,
+        "timeout": 10000,
+        "next": [
+            "Daily_PostError",
+            "[Anchor]DailyCore_Selected",
+            "DailyCore_EndSeen",
+            "Daily_Scroll",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyCore_EndSeen": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            "Daily_Summary"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyCore_CloseMission"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyCore_QuestPage": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    0,
+                    20,
+                    250,
+                    80
+                ],
+                "expected": [
+                    "クエスト"
+                ],
+                "threshold": 0.95
+            },
+            "NavFooter_Home"
+        ]
+    },
+    "DailyCore_Quest": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            585,
+            975,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 2000,
+        "timeout": 30000,
+        "next": [
+            "DailyCore_QuestDispatch"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyCore_QuestDispatch": {
+        "recognition": "And",
+        "all_of": [
+            "DailyCore_QuestPage"
+        ],
+        "post_delay": 0,
+        "next": [
+            "[Anchor]DailyCore_QuestTarget"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

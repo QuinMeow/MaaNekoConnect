@@ -5,7 +5,6 @@
     "contact": "https://github.com/QuinMeow/MaaNekoConnect/issues",
     "license": "MIT",
     "github": "https://github.com/QuinMeow/MaaNekoConnect",
-    "version": "0.1.0",
     "controller": [
         {
             "name": "Android",
@@ -33,16 +32,37 @@
     },
     "task": [
         {
-            "name": "框架测试：启动游戏并截图",
-            "entry": "TestLaunchAndCapture",
-            "controller": [
-                "Android"
-            ]
+            "name": "启动游戏",
+            "entry": "DailyLogin_Start",
+            "controller": ["Android"],
+            "description": "游戏未在前台时启动或切回游戏，已在前台则直接继续；登录并确认首页，关闭登录奖励、公告和活动提示。"
         },
         {
-            "name": "Soleil：循环强化最低等级的 5 件家具（消耗强化券）",
-            "label": "家具强化：单轮／间隔补位",
-            "description": "每轮为当前列表前五格补位，最多启动五件，轮末至多点击一次依頼。默认仅运行一轮；间隔模式按配置轮数运行。使用现有排序时不保证等级最低。",
+            "name": "好友问候",
+            "entry": "DailyFriend_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "好友列表一键问候。"
+        },
+        {
+            "name": "营业收入领取",
+            "entry": "DailyIncome_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "领取普通营业收入，不追加收益。"
+        },
+        {
+            "name": "配送管理",
+            "entry": "DailyDelivery_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "先领取已完成单、自动编队派完当前订单，再用每日一次免费刷新并派完新单。"
+        },
+        {
+            "name": "家具强化",
             "entry": "FurnitureSchedule_Start",
             "controller": [
                 "Android"
@@ -51,10 +71,106 @@
                 "FurnitureSchedule",
                 "UseExistingSort",
                 "AutoRequest"
+            ],
+            "default_check": false,
+            "resource": [],
+            "description": "为列表前五位的家具启用强化"
+        },
+        {
+            "name": "邮箱领取",
+            "entry": "DailyMail_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "领取邮箱可领取内容；"
+        },
+        {
+            "name": "社团事务",
+            "entry": "DailyGuild_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "进入社团执行已配置日常。",
+            "option": [
+                "DailyGuildGoldDonation"
+            ]
+        },
+        {
+            "name": "礼物关卡",
+            "entry": "DailyGift_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "选择列表最下方已通关关卡，默认快速开店一次；"
+        },
+        {
+            "name": "VR猫爬塔",
+            "entry": "DailyVR_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "使用免费次数完成VR猫爬塔"
+        },
+        {
+            "name": "竞技场",
+            "entry": "DailyContest_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "使用现有队伍进行一次免费JJC挑战"
+        },
+        {
+            "name": "交换所兑换",
+            "entry": "DailyExchange_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "仅购买现有随机商品一件、数量一、1000金币；不刷新，不使用其他货币。"
+        },
+        {
+            "name": "广告抽卡",
+            "entry": "DailyGacha_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "独立进入免费广告入口；只在确认免费许可和明确关闭控件时继续。"
+        },
+        {
+            "name": "任务奖励领取",
+            "entry": "DailyRewards_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "仅领取每日、汇总及已达标DayPt奖励，不执行其他玩法；请在需要的任务之后勾选。",
+            "option": [
+                "DailyMilestones"
             ]
         }
     ],
     "option": {
+        "DailyMilestones": {
+            "type": "switch",
+            "label": "领取已达标的DayPt阶段奖励",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "Daily_Milestone": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "Daily_Milestone": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
         "UseExistingSort": {
             "type": "switch",
             "label": "使用现有排序",
@@ -314,6 +430,32 @@
                     }
                 }
             }
+        },
+        "DailyGuildGoldDonation": {
+            "type": "switch",
+            "label": "社团金币赞助（每次1000，最多10次）",
+            "description": "默认关闭。只点击上方金币按钮，每次确认余数递减后继续，最多10000金币；不使用钻石。",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "DailyGuild_DonateSelect": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "DailyGuild_DonateSelect": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
         }
-    }
+    },
+    "group": [],
+    "version": "1.0.0"
 }

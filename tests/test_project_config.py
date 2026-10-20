@@ -35,10 +35,15 @@ def test_tests_stay_within_the_physical_line_budget():
         assert len(path.read_text("utf-8").splitlines()) <= 200, path.name
 
 
-def test_launch_pipeline_starts_only_the_target_game_and_captures_png(pipelines):
-    start = pipelines["TestLaunchAndCapture"]
-    assert start["action"] == "StartApp"
-    assert start["package"] == "jp.goodsmile.nekoconne"
-    assert start["post_delay"] >= 20000
-    capture = pipelines[start["next"][0]]
-    assert capture["action"] == "Screencap" and capture["format"] == "png"
+def test_public_tasks_use_operation_names_without_framework_diagnostics(pipelines):
+    tasks = json.loads((ROOT / "assets/interface.json").read_text("utf-8"))["task"]
+    assert "TestLaunchAndCapture" not in pipelines and "TestCaptureScreen" not in pipelines
+    assert all(not task["entry"].startswith("Test") for task in tasks)
+    names = {task["entry"]: task.get("label", task["name"]) for task in tasks}
+    assert names["DailyExchange_Start"] == "交换所兑换"
+    assert names["DailyVR_Start"] == "VR猫爬塔"
+    for task in tasks:
+        for name in (task["name"], names[task["entry"]]):
+            assert not any(word in name for word in ("日常：", "一次", "一件", "用尽"))
+            assert not any(char.isdigit() for char in name)
+        assert pipelines[task["entry"]]["doc"] == names[task["entry"]]

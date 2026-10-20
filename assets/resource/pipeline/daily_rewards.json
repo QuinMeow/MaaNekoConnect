@@ -1,0 +1,510 @@
+{
+    "Daily_ClaimGate": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Claim"
+        ],
+        "post_delay": 0,
+        "next": [
+            "Daily_Claim",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_MilestoneClaim": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Milestone"
+        ],
+        "action": "Click",
+        "target": true,
+        "max_hit": 5,
+        "post_delay": 1500,
+        "anchor": {
+            "Daily_AfterReward": "Daily_RewardsReturn"
+        },
+        "next": [
+            "Daily_RewardWait"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Claim": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/receive.png",
+                "roi": [
+                    480,
+                    310,
+                    165,
+                    610
+                ],
+                "threshold": 0.94,
+                "sub_name": "receive"
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": "receive",
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 2500
+            }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "target": true,
+        "max_hit": 12,
+        "post_delay": 1000,
+        "anchor": {
+            "Daily_AfterReward": "Daily_RewardsReturn"
+        },
+        "next": [
+            "Daily_RewardWait"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Reward": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/reward.png",
+                "roi": [
+                    270,
+                    380,
+                    180,
+                    70
+                ],
+                "threshold": 0.97
+            },
+            "NavHome_CloseReady"
+        ]
+    },
+    "Daily_RewardWait": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_PostError",
+            "Daily_DismissReward"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_DismissReward": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Reward"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 2200,
+        "next": [
+            "[Anchor]Daily_AfterReward"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Summary": {
+        "recognition": "TemplateMatch",
+        "template": "daily/summary.png",
+        "roi": [
+            80,
+            300,
+            285,
+            610
+        ],
+        "threshold": 0.97
+    },
+    "Daily_EndSeen": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            "Daily_Summary"
+        ],
+        "post_delay": 500,
+        "next": [
+            "Daily_Finish"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Finish": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 3000,
+        "next": [
+            "Daily_PostError",
+            "Daily_Milestone",
+            "Daily_SummaryDone",
+            "Daily_PartialCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_Milestone": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "Or",
+                "any_of": [
+                    {
+                        "recognition": "ColorMatch",
+                        "method": 4,
+                        "roi": [
+                            280,
+                            174,
+                            53,
+                            62
+                        ],
+                        "lower": [
+                            220,
+                            55,
+                            55
+                        ],
+                        "upper": [
+                            255,
+                            145,
+                            155
+                        ],
+                        "count": 700
+                    },
+                    {
+                        "recognition": "ColorMatch",
+                        "method": 4,
+                        "roi": [
+                            357,
+                            174,
+                            53,
+                            62
+                        ],
+                        "lower": [
+                            220,
+                            55,
+                            55
+                        ],
+                        "upper": [
+                            255,
+                            145,
+                            155
+                        ],
+                        "count": 700
+                    },
+                    {
+                        "recognition": "ColorMatch",
+                        "method": 4,
+                        "roi": [
+                            435,
+                            174,
+                            53,
+                            62
+                        ],
+                        "lower": [
+                            220,
+                            55,
+                            55
+                        ],
+                        "upper": [
+                            255,
+                            145,
+                            155
+                        ],
+                        "count": 700
+                    },
+                    {
+                        "recognition": "ColorMatch",
+                        "method": 4,
+                        "roi": [
+                            512,
+                            174,
+                            53,
+                            62
+                        ],
+                        "lower": [
+                            220,
+                            55,
+                            55
+                        ],
+                        "upper": [
+                            255,
+                            145,
+                            155
+                        ],
+                        "count": 700
+                    },
+                    {
+                        "recognition": "ColorMatch",
+                        "method": 4,
+                        "roi": [
+                            589,
+                            174,
+                            53,
+                            62
+                        ],
+                        "lower": [
+                            220,
+                            55,
+                            55
+                        ],
+                        "upper": [
+                            255,
+                            145,
+                            155
+                        ],
+                        "count": 700
+                    }
+                ]
+            }
+        ],
+        "box_index": 1,
+        "post_delay": 0,
+        "next": [
+            "Daily_MilestoneClaim",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_SummaryDone": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/summary.png",
+                "roi": [
+                    80,
+                    300,
+                    285,
+                    610
+                ],
+                "threshold": 0.97,
+                "sub_name": "summary"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "summary",
+                "roi_offset": [
+                    265,
+                    -4,
+                    -180,
+                    8
+                ],
+                "expected": [
+                    "^[（(]?9[/／]9[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            },
+            {
+                "recognition": "OCR",
+                "roi": [
+                    90,
+                    257,
+                    85,
+                    35
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^100[PpＰ]$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "next": [
+            "Daily_CompleteCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_CompleteCapture": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_CompleteClose"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "action": "Screencap",
+        "filename": "daily_complete",
+        "format": "png",
+        "attach": {
+            "result": "complete"
+        }
+    },
+    "Daily_CompleteClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Daily_CompleteHome"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_CompleteHome": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "post_delay": 0,
+        "attach": {
+            "result": "complete"
+        },
+        "next": [
+            "[Anchor]Daily_FinishReturn"
+        ]
+    },
+    "Daily_PartialCapture": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_PartialClose"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "action": "Screencap",
+        "filename": "daily_partial",
+        "format": "png",
+        "attach": {
+            "result": "partial"
+        }
+    },
+    "Daily_PartialClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Daily_PartialHome"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_PartialHome": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "post_delay": 0,
+        "attach": {
+            "result": "partial"
+        },
+        "next": [
+            "[Anchor]Daily_FinishReturn"
+        ]
+    },
+    "DailyRewards_Start": {
+        "doc": "任务奖励领取",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "Daily_Open",
+            "Daily_ScanReturn": "DailyRewards_Scan",
+            "Daily_FinishReturn": "DailyCore_Done"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyRewards_Scan": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page"
+        ],
+        "post_delay": 0,
+        "timeout": 10000,
+        "next": [
+            "Daily_PostError",
+            "Daily_ClaimGate",
+            "Daily_EndSeen",
+            "Daily_Scroll",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_RewardsReturn": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "[Anchor]Daily_ScanReturn"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    }
+}

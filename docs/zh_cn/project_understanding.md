@@ -6,6 +6,18 @@
 
 上游 `MaaNekoConnect_Codex` 的主要内容是双仓库协作、环境准备、研究记录和 Agent 长期记忆治理；其任务清单只明确完成框架基线并要求继续研究实际游戏流程，没有给出具体玩法功能的优先级列表。本文提出的后续顺序属于基于差距的建议，需与用户确定业务目标。
 
+2026-10-19 北京时间 23 点后的[跨日观测](develop/daily_observation_20261019.md)新增日期变化恢复，以及有共享次数上限的通用登录提示清理。用户停止手机操作并重新授权后，继续至 10 月 20 日 00:50 的[每日任务人工探索](develop/daily_tasks_research.md)：九项独立条件加汇总，验证收入、问候、旧配送领取、VR 免费跳过及一次免费比赛，最终 80 DayPt、8/9，仅交换未做。另采集访问拒绝和游玩设备确认并加入公共异常恢复，有限确认耗尽即停止，不穿透底层 Close。该人工探索阶段尚未自动执行每日任务；新增自动恢复路径以离线测试为证据，不把手动观察算成自动全链验收。
+
+2026-10-20 随后开始[每日自动化实验](develop/daily_automation.md)：旧组合入口通过独立 OCR 按每日未完成条件调度，自动实测一次随机交换所 1000 金币兑换及后续领奖，账号到 9/9、100P，再次运行未重复消费。该结果承接上文人工/手机已完成的八项，不是全新游戏日九项全自动验收；旧版关闭新配送/礼物、广告仅定位的配置也只是这一历史阶段。
+
+本轮按用户新要求改为任务列表内可选择、排序的 12 个独立每日模块：九项每日条件对应的玩法/登录，加邮箱、社团和领奖，领奖最后；已选玩法不再因每日已 1/1 或 9/9 而屏蔽。CLI 使用显式 `--tasks` 顺序列表，同一入口只执行一次，失败停止后续项，模块回首页只报告执行结束而非游戏条件完成。`DailyLogin_Start` / CLI `login` 位于界面日常列表首项，只经 `NavHome_Ensure` 到首页、清理登录奖励与公告，不执行玩法或每日列表领奖；其他模块仍自行导航，不强制依赖先运行登录。当前架构为 `daily_core.json` 共享导航与收尾、独立 `daily_*.json` 业务流程，加小型必要扩展：[`agent/delivery.py`](../../agent/delivery.py) 聚合原生地图识别、在 Context 中保存选中 pin 并确认派出，广告关闭扩展仅提供有界关闭和默认不外发的可选视觉 provider，不替代 JSON 调度。配送最多 36 单、每单仅允许已知的 `1000/2500/5000/10000` 电池成本，订单计数与 pin 数一致且全部启动后才允许一次每日免费更新；没有钻石更新或立即完成路径。好友改为一键问候；VR 目标为用尽当前免费次数，但每次精确读取 `N` 后，领奖后必须恰好为 `N-1` 才能继续，计数不变、跳变、增加或缺失均停止、不重放；礼物使用最高已通关关卡快速开店，邮件容量不足和工会可选捐款各自有界。细节与实现边界见[每日自动化说明](develop/daily_automation.md)。
+
+新模块本轮实机只补充了配送六旧单批量领取、一次免费更新和一份 `1000` 电池新单倒计时确认，以及礼物一次人工快速开店胜利，不能据此声称独立入口全链已验收。首次自动批次 `friend vr gift rewards` 被新的「登录失败，结束游戏」提示阻断：报告 `stopped`、消费尝试为空，后三项 `not_run`；不是好友模板失效。通用 Close 当时误关闭该提示，有界重启后停在启动器，后续多次启动仍未进入游戏、未取得 crashlog，现已停止实机。新增该提示优先判定、一次确认和沿用原重启预算的修复以离线回归为证据，尚未实机验收；不反复启动、不重放业务，也不将旧总入口的成功当作新模块验证。
+
+2026-10-20 用户实测单任务后，继续进行[串行衔接调试](develop/daily_automation.md#串行衔接修复与-mpe-验证)。各入口和 `daily_core.json` 收尾适配统一调用 `navigation.json` 的纯 `NavHome_Normalize`，从已知业务页/弹窗回首页再交还本次调用方，不继承前 Task 业务锚点；正常静态业务页不因卡在旧入口而重启。实机发现并修正社团标题被爪印裁切干扰的 OCR ROI。MPE 正反序各五项均最终到首页，十二日常入口及家具衔接有原生离线模拟；最新全套 606 passed、2 skipped，后者是 Windows junction 权限限制。社团重复问候无奖励、收入入口未确认的实际结果仍分别保留停止/恢复未确认，不等同所有业务完成。浏览器原有勾选、顺序和设置已恢复，游戏保留首页，未执行家具或其他资源消费。
+
+登录入口随后增加[条件启动与实机验收](develop/daily_automation.md#登录启动本轮验证)：仅通过已绑定 Maa 控制器只读核对前台 Activity，未在前台时由原生 `StartApp` 启动/切回一次，已打开直接继续，不先强制停止。启动后最多等待已知 UI 120 秒，再复用标题登录/提示清理。CLI 仅对无重启、无消费且已正向回首页的登录恢复允许继续后续项，不放宽其他业务。进程退出后的冷启动→邮箱→好友及已打开→好友→邮箱均有完整成功审计，进程不重复重启；最新全套 638 passed、2 skipped。MPE 旧控制器释放超时后，经用户确认仅重启本项目 LocalBridge，已恢复固定设备的实时首页画面，游戏进程未变；此次未重跑任务，不把连接恢复或旧完成数当作新的串行成功证据。
+
 ## 当前 Python 环境与交付
 
 当前新增[项目便携 Python](portable_python.md)：Windows x64 上运行 `scripts/setup_python.ps1` 即可准备 `.runtime/python/python.exe`，不要求全局 Python、Conda 或 Python 的 `PATH`。锁文件固定 Astral Python Build Standalone CPython 3.11.17，以及 MaaFw 5.14.3、numpy、MaaAgentBinary、StrEnum 的版本和哈希；生产应用依赖不含 pytest。开发测试可使用独立 bootstrap/venv，不能把临时验证环境写进 Agent 配置。
@@ -63,7 +75,7 @@ scripts/test_nekoconne.ps1
   -> 检查截图为本次生成的 PNG，宽高为 720×1280
 ```
 
-实现证据为 [`scripts/test_nekoconne.ps1`](../../scripts/test_nekoconne.ps1)、[`tools/run_launch_capture.py`](../../tools/run_launch_capture.py) 和 [`framework_test.json`](../../assets/resource/pipeline/framework_test.json)。默认地址 `127.0.0.1:5557`，找不到精确设备即报错；允许显式传入地址，但没有自动回退。默认 ADB 候选是代码中的两条 MuMu 安装路径，不能假定在当前电脑存在，应使用真实 `--adb-path` / `-AdbPath`。
+实现证据为 [`scripts/test_nekoconne.ps1`](../../scripts/test_nekoconne.ps1) 和 [`tools/run_launch_capture.py`](../../tools/run_launch_capture.py)。2026-10-20 命名整理时已删除正式资源中的 `framework_test.json` 和 Interface 框架测试任务，启动截图诊断流程改由脚本在显式运行时注入。默认地址 `127.0.0.1:5557`，找不到精确设备即报错；允许显式传入地址，但没有自动回退。默认 ADB 候选是代码中的两条 MuMu 安装路径，不能假定在当前电脑存在，应使用真实 `--adb-path` / `-AdbPath`。
 
 控制器固定 `EncodeToFileAndPull` 截图方式。输出为 `debug/screencap/nekoconne_launch.png`。检查覆盖任务成功状态、输出修改时间、PNG 头及尺寸，不包含页面内容识别；固定等待 20 秒不是“已登录”或“首页就绪”的判据。
 

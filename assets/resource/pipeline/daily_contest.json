@@ -1,0 +1,293 @@
+{
+    "Daily_PendingContest": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_contest.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    221,
+                    -2,
+                    -159,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "box_index": 1
+    },
+    "Daily_ChooseContest": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_contest.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    221,
+                    -2,
+                    -159,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/challenge.png",
+                "roi": "row",
+                "roi_offset": [
+                    390,
+                    65,
+                    -49,
+                    82
+                ],
+                "threshold": 0.94
+            }
+        ],
+        "enabled": true,
+        "box_index": 3,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 45000,
+        "next": [
+            "Daily_ContestBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_ContestPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/contest_title.png",
+        "roi": [
+            35,
+            25,
+            155,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "Daily_ContestBegin": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_ContestOpponent"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_ContestOpponent": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_ContestPage",
+            "NavFooter_Home",
+            {
+                "recognition": "Or",
+                "any_of": [
+                    {
+                        "recognition": "TemplateMatch",
+                        "template": "daily/contest_free3.png",
+                        "roi": [
+                            50,
+                            745,
+                            180,
+                            50
+                        ],
+                        "threshold": 0.97
+                    },
+                    {
+                        "recognition": "TemplateMatch",
+                        "template": "daily/contest_free2.png",
+                        "roi": [
+                            50,
+                            745,
+                            180,
+                            50
+                        ],
+                        "threshold": 0.97
+                    }
+                ]
+            }
+        ],
+        "action": "Click",
+        "target": [
+            380,
+            970,
+            35,
+            30
+        ],
+        "post_delay": 2500,
+        "max_hit": 1,
+        "timeout": 12000,
+        "next": [
+            "Daily_PostError",
+            "Daily_ContestSpend"
+        ],
+        "on_error": [
+            "Daily_Return"
+        ]
+    },
+    "Daily_ContestSpend": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_PrepPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/contest_prep_free.png",
+                "roi": [
+                    40,
+                    1105,
+                    190,
+                    55
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/start.png",
+                "roi": [
+                    220,
+                    1085,
+                    280,
+                    90
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 4000,
+                "roi": [
+                    245,
+                    1113,
+                    225,
+                    35
+                ]
+            },
+            {
+                "recognition": "OCR",
+                "roi": [
+                    173,
+                    1117,
+                    17,
+                    25
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^[1-3]$"
+                ]
+            }
+        ],
+        "box_index": 2,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 2000,
+        "timeout": 180000,
+        "next": [
+            "Daily_BattleResult"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyContest_Start": {
+        "doc": "竞技场",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyCore_Quest",
+            "DailyCore_QuestTarget": "DailyContest_Open"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyContest_Open": {
+        "recognition": "And",
+        "all_of": [
+            "DailyCore_QuestPage"
+        ],
+        "action": "Click",
+        "target": [
+            405,
+            669,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 30000,
+        "next": [
+            "Daily_ContestBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

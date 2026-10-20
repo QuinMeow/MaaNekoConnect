@@ -1,7 +1,8 @@
 # Navigation UI Fixtures
 
-These fixtures are UI-only crops of existing 720 x 1280 screenshots observed on
-2026-10-19. No new device capture or input was used to produce them. Balances,
+These fixtures are UI-only crops of 720 x 1280 screenshots observed on
+2026-10-19. The original navigation set reused earlier captures; the popup set
+below was captured during an authorized live exploration. Balances,
 account identifiers, complete screens, and full characters are not retained.
 
 | Fixture | Existing source screenshot | Retained regions |
@@ -48,3 +49,42 @@ page exposing a similar footer. Some positive images are template sources;
 the later home capture is a separate observation, not independent general
 visual validation. Real zero-consumption navigation smoke tests remain a
 separate acceptance step.
+
+## Cross-Day and Login Popup Observations
+
+Source: game 2.2.0, JP2, Japanese, 720 x 1280, 2026-10-19 23:02-23:13 CST
+(2026-10-20 JST). Original files are ignored local evidence under
+`debug/screencap/daily_20261019_*.png`. Only UI crops are retained here.
+
+| Fixture | Source suffix | Regions `[x,y,width,height]` |
+| --- | --- | --- |
+| `date_changed` | `03_reset_notice` | `date_message` `[255,515,215,40]`, `date_button` `[211,635,298,62]` |
+| `monthly_bonus` | `10_monthly_ready` | `reward_banner` `[32,97,47,52]`, `reward_panel` `[0,1150,720,34]`, `reward_blank` `[280,1200,160,55]` |
+| `event_bonus` | `12_event_dismiss` | same shared reward chrome regions |
+| `half_bonus` | `14_half_continue` | same shared reward chrome regions |
+| `event_promo` | `15_half_dismiss` | `promo_continue` `[240,1204,240,27]`, home regions above |
+| `gacha_promo` | `18_gacha_promo_dismiss` | same regions as `event_promo` |
+| `notice_list` | `20_pickup2_dismiss` | `close` `[310,1135,100,100]`, home regions above |
+
+After the user's generalization request, production uses only the shared
+banner ornament, continue text and circular Close. Reward panel/blank colors
+are native ColorMatch checks. Reward titles, item/stamp details, notice titles
+and checkbox text are not retained or required. There are no per-campaign
+templates. Date templates live in `image/common_recovery/`; the generic popup
+templates live in `image/navigation/`.
+
+Observed overlay crops preserve their dimmed home UI so tests reject false
+home arrival. Removing each required shared marker and multiplying reward/Close
+brightness by 0.75 are synthetic negatives. The reward-panel and Close brightness
+gates are not applied to promo text, whose background is already dim. Native
+flow tests simulate different-length chains, popup recurrence after returning
+home, shared dismissal exhaustion, and date-change relogin without business
+actions. Inputs are simulated callbacks, never ADB. The budget flow uses a
+shortened limit of three to keep execution lightweight, not a production reset.
+
+Templates and most positives share source images. The other reward captures
+and second promo are separate observations of the same shared chrome; they
+do not prove arbitrary future layouts. No characters or promo artwork are
+used as markers. Close is generic and no longer depends on notice titles/tabs.
+A synthetic date-error screen includes a matching Close underneath: flow
+tests prove that the special error confirmation wins instead of closing it.

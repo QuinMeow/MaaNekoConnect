@@ -1,5 +1,6 @@
 {
     "FurnitureSchedule_Start": {
+        "doc": "家具强化",
         "recognition": "DirectHit",
         "post_delay": 0,
         "anchor": {

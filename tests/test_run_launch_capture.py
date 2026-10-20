@@ -11,11 +11,21 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 from run_launch_capture import (
+    LAUNCH_CAPTURE_PIPELINE,
     controller_options,
     ensure_package_installed,
     find_exact_device,
     read_png_size,
 )
+
+
+def test_diagnostic_pipeline_is_private_and_keeps_target_and_png_contract():
+    start = LAUNCH_CAPTURE_PIPELINE["TestLaunchAndCapture"]
+    assert start["action"] == "StartApp" and start["package"] == "jp.goodsmile.nekoconne"
+    assert start["post_delay"] >= 20000
+    capture = LAUNCH_CAPTURE_PIPELINE[start["next"][0]]
+    assert capture["action"] == "Screencap" and capture["format"] == "png"
+    assert capture["filename"] == "nekoconne_launch"
 
 
 def test_find_exact_device_selects_5557_instead_of_5555():
