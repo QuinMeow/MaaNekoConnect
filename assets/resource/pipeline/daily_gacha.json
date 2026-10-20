@@ -1,0 +1,388 @@
+{
+    "Daily_PendingGacha": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_gacha.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    148,
+                    -2,
+                    -86,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "box_index": 1
+    },
+    "Daily_ChooseGacha": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_gacha.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    148,
+                    -2,
+                    -86,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/challenge.png",
+                "roi": "row",
+                "roi_offset": [
+                    390,
+                    65,
+                    24,
+                    82
+                ],
+                "threshold": 0.94
+            }
+        ],
+        "enabled": false,
+        "box_index": 3,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 45000,
+        "next": [
+            "Daily_GachaBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_GachaPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/gacha_title.png",
+        "roi": [
+            35,
+            25,
+            125,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "Daily_GachaBegin": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_PostError",
+            "Daily_AdPreview",
+            "DailyGacha_AdEmpty",
+            "DailyGacha_NextGate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_GachaNext": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_GachaPage",
+            "NavFooter_Home"
+        ],
+        "action": "Click",
+        "target": [
+            635,
+            880,
+            30,
+            30
+        ],
+        "max_hit": 5,
+        "post_delay": 1600,
+        "next": [
+            "Daily_GachaBegin"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "Daily_AdPreview": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGacha_AdReady"
+        ],
+        "action": "Click",
+        "target": [300, 1040, 120, 60],
+        "max_hit": 1,
+        "next": [
+            "DailyGacha_ConfirmGate"
+        ],
+        "post_delay": 1600,
+        "on_error": ["CommonRecoveryEnter"],
+        "attach": {
+            "result": "free_ad_confirmation_opened",
+            "draw": false
+        }
+    },
+    "DailyGacha_AdReady": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_GachaPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/ad_free.png",
+                "roi": [
+                    255,
+                    995,
+                    220,
+                    50
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "OCR",
+                "roi": [385, 1123, 50, 27],
+                "expected": ["^1回$"],
+                "replace": [["\\s", ""]],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ]
+    },
+    "DailyGacha_AdEmpty": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_GachaPage",
+            {"recognition": "TemplateMatch", "template": "daily/ad_free.png",
+             "roi": [255, 995, 220, 50], "threshold": 0.97},
+            {"recognition": "OCR", "roi": [385, 1123, 50, 27], "expected": ["^0回$"],
+             "replace": [["\\s", ""]], "only_rec": true, "threshold": 0.95}
+        ],
+        "post_delay": 0,
+        "next": ["Daily_Return"],
+        "attach": {"result": "no_free_ad_attempt"}
+    },
+    "DailyGacha_NextGate": {
+        "recognition": "And",
+        "all_of": ["Daily_GachaPage", "NavFooter_Home"],
+        "post_delay": 0,
+        "next": ["Daily_GachaNext", "Daily_StopCapture"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGacha_ConfirmGuard": {
+        "recognition": "And",
+        "all_of": [
+            {"recognition": "OCR", "roi": [220, 337, 285, 42],
+             "expected": ["^ネコガチャ[（(]広告視聴[)）]$"], "replace": [["\\s", ""]],
+             "only_rec": true, "threshold": 0.95},
+            {"recognition": "OCR", "roi": [420, 780, 200, 36],
+             "expected": ["^広告視聴で1回無料$"], "replace": [["\\s", ""]],
+             "only_rec": true, "threshold": 0.95},
+            {"recognition": "OCR", "roi": [490, 815, 60, 45],
+             "expected": ["^1回$"], "replace": [["\\s", ""]],
+             "only_rec": true, "threshold": 0.95},
+            {"recognition": "ColorMatch", "method": 4, "roi": [395, 820, 245, 35],
+             "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 4000}
+        ]
+    },
+    "DailyGacha_ConfirmGate": {
+        "recognition": "And",
+        "all_of": ["DailyGacha_ConfirmGuard"],
+        "post_delay": 0,
+        "next": ["DailyGacha_AdSpend", "Daily_StopCapture"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGacha_AdSpend": {
+        "recognition": "And",
+        "all_of": ["DailyGacha_ConfirmGuard"],
+        "action": "Click",
+        "target": [485, 820, 70, 30],
+        "max_hit": 1,
+        "post_delay": 3000,
+        "anchor": {"CommonRecoveryResume": "Daily_StopCapture"},
+        "next": ["DailyGacha_AdPoll"],
+        "on_error": ["Daily_StopCapture"],
+        "attach": {"attempt": "free_advertisement_gacha", "paid": false}
+    },
+    "DailyGacha_AdPoll": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": ["Daily_PostError", "DailyGacha_ConfirmStillVisible",
+                 "DailyGacha_AdQuotaConsumed", "DailyGacha_GameStillVisible", "DailyGacha_AdStep"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGacha_ConfirmStillVisible": {
+        "recognition": "And",
+        "all_of": ["DailyGacha_ConfirmGuard"],
+        "post_delay": 0,
+        "next": ["Daily_StopCapture"]
+    },
+    "DailyGacha_AdQuotaConsumed": {
+        "recognition": "And",
+        "all_of": ["DailyGacha_AdEmpty", "NavFooter_Home"],
+        "action": "Screencap",
+        "filename": "daily_ad_quota_consumed",
+        "format": "png",
+        "post_delay": 0,
+        "next": ["Daily_Return"],
+        "on_error": ["Daily_StopCapture"],
+        "attach": {"result": "free_ad_quota_consumed", "draw_result_page_observed": false}
+    },
+    "DailyGacha_GameStillVisible": {
+        "recognition": "And",
+        "all_of": ["Daily_GachaPage", "NavFooter_Home"],
+        "post_delay": 0,
+        "next": ["DailyGacha_WaitForSDK", "DailyGacha_AdUnavailable"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGacha_WaitForSDK": {
+        "recognition": "DirectHit",
+        "max_hit": 7,
+        "post_delay": 3000,
+        "next": ["DailyGacha_AdPoll"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGacha_AdUnavailable": {
+        "recognition": "DirectHit",
+        "action": "Screencap",
+        "filename": "daily_ad_unavailable",
+        "format": "png",
+        "post_delay": 0,
+        "next": ["Daily_StopCapture"],
+        "attach": {"result": "advertisement_not_observed_no_draw_credit_confirmed"}
+    },
+    "DailyGacha_AdStep": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "AdCloseControl",
+        "custom_action_param": {},
+        "max_hit": 41,
+        "post_delay": 3000,
+        "next": ["DailyGacha_AdPoll"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGacha_Choose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_gacha.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/challenge.png",
+                "roi": "row",
+                "roi_offset": [
+                    390,
+                    65,
+                    24,
+                    82
+                ],
+                "threshold": 0.94
+            }
+        ],
+        "enabled": true,
+        "box_index": 2,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 45000,
+        "next": [
+            "Daily_GachaBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGacha_Start": {
+        "doc": "广告抽卡",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyGacha_OpenHome"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGacha_OpenHome": {
+        "recognition": "And",
+        "all_of": ["NavHome_Ready"],
+        "action": "Click",
+        "target": [65, 1200, 30, 30],
+        "max_hit": 3,
+        "post_delay": 2500,
+        "next": ["Daily_GachaBegin"],
+        "on_error": ["CommonRecoveryEnter"]
+    },
+    "DailyGacha_AdCloseNative": {
+        "recognition": "DirectHit",
+        "enabled": false
+    },
+    "DailyGacha_AdState": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "AdCloseControl",
+        "custom_action_param": {"frames": 0, "calls": 0, "clicks": 0},
+        "enabled": false
+    }
+}

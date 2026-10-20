@@ -1,0 +1,897 @@
+{
+    "Daily_PendingVR": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_vr.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    400,
+                    -2,
+                    -338,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "box_index": 1
+    },
+    "Daily_ChooseVR": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_vr.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    400,
+                    -2,
+                    -338,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/challenge.png",
+                "roi": "row",
+                "roi_offset": [
+                    390,
+                    65,
+                    -228,
+                    82
+                ],
+                "threshold": 0.94
+            }
+        ],
+        "enabled": true,
+        "box_index": 3,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 45000,
+        "next": [
+            "Daily_VRBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_VRPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/vr_title.png",
+        "roi": [
+            35,
+            25,
+            185,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "Daily_VRBegin": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "Daily_VRMainOpen"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_VRMainOpen": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/vr_main.png",
+                "roi": [
+                    240,
+                    1020,
+                    255,
+                    70
+                ],
+                "threshold": 0.97
+            }
+        ],
+        "action": "Click",
+        "target": [
+            345,
+            825,
+            30,
+            30
+        ],
+        "post_delay": 2000,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_QuotaDispatch"
+        ],
+        "on_error": [
+            "Daily_Return"
+        ]
+    },
+    "Daily_VRSpend": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRPage",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    510,
+                    1025,
+                    115,
+                    40
+                ],
+                "template": "daily/vr_free_label.png",
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "lower": [
+                    80,
+                    175,
+                    205
+                ],
+                "upper": [
+                    180,
+                    245,
+                    255
+                ],
+                "count": 2200,
+                "roi": [
+                    525,
+                    1075,
+                    125,
+                    30
+                ]
+            },
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^[1-9]回$"
+                ]
+            }
+        ],
+        "action": "Click",
+        "target": [
+            575,
+            1070,
+            30,
+            30
+        ],
+        "max_hit": 9,
+        "post_delay": 1500,
+        "timeout": 30000,
+        "anchor": {
+            "Daily_AfterReward": "DailyVR_AfterReward"
+        },
+        "next": [
+            "Daily_RewardWait"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Start": {
+        "doc": "VR猫爬塔",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "DailyVR_ExpectedAfter": "DailyVR_NoProof",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyCore_Quest",
+            "DailyCore_QuestTarget": "DailyVR_Open"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyVR_Open": {
+        "recognition": "And",
+        "all_of": [
+            "DailyCore_QuestPage"
+        ],
+        "action": "Click",
+        "target": [
+            535,
+            380,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 30000,
+        "next": [
+            "Daily_VRBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyVR_AfterReward": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "Daily_PostError",
+            "[Anchor]DailyVR_ExpectedAfter"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_QuotaDispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "Daily_PostError",
+            "DailyVR_Read9",
+            "DailyVR_Read8",
+            "DailyVR_Read7",
+            "DailyVR_Read6",
+            "DailyVR_Read5",
+            "DailyVR_Read4",
+            "DailyVR_Read3",
+            "DailyVR_Read2",
+            "DailyVR_Read1",
+            "DailyVR_Exhausted",
+            "DailyVR_Unavailable"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_NoProof": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read9": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^9回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify8"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read8": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^8回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify7"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read7": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^7回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify6"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read6": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^6回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify5"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read5": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^5回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify4"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read4": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^4回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify3"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read3": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^3回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify2"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read2": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^2回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify1"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Read1": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^1回$"
+                ]
+            }
+        ],
+        "anchor": {
+            "DailyVR_ExpectedAfter": "DailyVR_Verify0"
+        },
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_FreeGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify8": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^8回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read8"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify7": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^7回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read7"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify6": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^6回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read6"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify5": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^5回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read5"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify4": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^4回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read4"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify3": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^3回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read3"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify2": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^2回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read2"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify1": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^1回$"
+                ]
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Read1"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Verify0": {
+        "recognition": "And",
+        "all_of": [
+            "DailyVR_Exhausted"
+        ],
+        "post_delay": 0,
+        "timeout": 8000,
+        "next": [
+            "DailyVR_Exhausted"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_FreeGate": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRSpend"
+        ],
+        "post_delay": 0,
+        "next": [
+            "Daily_VRSpend",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_Exhausted": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRPage",
+            "NavFooter_Home",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    615,
+                    1031,
+                    43,
+                    29
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^0回$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "next": [
+            "Daily_Return"
+        ],
+        "attach": {
+            "result": "verified_no_free_quota"
+        }
+    },
+    "DailyVR_Unavailable": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRPage",
+            "NavFooter_Home"
+        ],
+        "action": "Screencap",
+        "filename": "daily_vr_unverified_free",
+        "post_delay": 0,
+        "next": [
+            "Daily_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "attach": {
+            "result": "free_quota_not_verified",
+            "paid_fallback": false
+        }
+    }
+}

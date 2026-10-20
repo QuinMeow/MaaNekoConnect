@@ -1,3 +1,4 @@
+import re
 import struct
 import sys
 from pathlib import Path
@@ -10,11 +11,21 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
 from run_launch_capture import (
+    LAUNCH_CAPTURE_PIPELINE,
     controller_options,
     ensure_package_installed,
     find_exact_device,
     read_png_size,
 )
+
+
+def test_diagnostic_pipeline_is_private_and_keeps_target_and_png_contract():
+    start = LAUNCH_CAPTURE_PIPELINE["TestLaunchAndCapture"]
+    assert start["action"] == "StartApp" and start["package"] == "jp.goodsmile.nekoconne"
+    assert start["post_delay"] >= 20000
+    capture = LAUNCH_CAPTURE_PIPELINE[start["next"][0]]
+    assert capture["action"] == "Screencap" and capture["format"] == "png"
+    assert capture["filename"] == "nekoconne_launch"
 
 
 def test_find_exact_device_selects_5557_instead_of_5555():
@@ -33,7 +44,9 @@ def test_find_exact_device_never_falls_back():
         find_exact_device(devices, "127.0.0.1:5557")
 
 
-def test_controller_uses_compatible_lossless_screencap_method():
+def test_controller_uses_compatible_lossless_screencap_method(monkeypatch):
+    system = {"win32": "Windows", "darwin": "Darwin", "linux": "Linux"}[sys.platform]
+    monkeypatch.setattr("platform.system", lambda: system)
     from maa.define import MaaAdbScreencapMethodEnum
 
     device = SimpleNamespace(
@@ -95,3 +108,25 @@ def test_package_check_targets_only_requested_device(monkeypatch):
             "jp.goodsmile.nekoconne",
         ]
     ]
+
+
+def test_launch_script_defaults_to_the_project_python():
+    script = (ROOT / "scripts/test_nekoconne.ps1").read_text("utf-8")
+    assert '[string]$CondaEnv = ""' in script.split("$ErrorActionPreference")[0]
+    assert re.search(r'\$Python\s*=\s*Join-Path\s+\$ProjectRoot\s+"\.runtime\\python\\python.exe"', script)
+
+
+def test_conda_is_only_an_explicit_alternative():
+    script = (ROOT / "scripts/test_nekoconne.ps1").read_text("utf-8")
+    branch = script.split("if ($CondaEnv) {", 1)[1].split("} else {", 1)[0]
+    assert '"run", "-n", $CondaEnv, "python"' in branch
+    assert "& conda @CondaArguments" in branch
+
+
+def test_missing_project_python_stops_with_setup_guidance_without_fallback():
+    script = (ROOT / "scripts/test_nekoconne.ps1").read_text("utf-8")
+    branch = script.split("} else {", 1)[1]
+    assert branch.index("Test-Path") < branch.index("throw") < branch.index("& $Python @Arguments")
+    assert "setup_python.ps1" in branch
+    assert "catch" not in script
+    assert re.search(r"&\s+(?:python|python\.exe)\b", script, re.I) is None

@@ -1,0 +1,13 @@
+{
+    "SoleilUpgradeLoop": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureSchedule_Start"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

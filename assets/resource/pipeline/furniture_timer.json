@@ -1,0 +1,483 @@
+{
+    "FurnitureTimer_State": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "state"
+        }
+    },
+    "FurnitureTimer_Start": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "begin"
+        },
+        "anchor": {
+            "CommonRecoveryResume": "FurnitureTimer_Resume",
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureTimer_AfterEnsure"
+        },
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ]
+    },
+    "FurnitureTimer_Resume": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "resume"
+        },
+        "anchor": {
+            "CommonRecoveryResume": "FurnitureTimer_Resume",
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureTimer_AfterEnsure"
+        },
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ]
+    },
+    "FurnitureTimer_AfterEnsure": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Sample": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard"
+        ],
+        "next": [
+            "FurnitureTimer_Select1",
+            "FurnitureTimer_Select2",
+            "FurnitureTimer_Select3",
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select1": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy1"
+        ],
+        "action": "Click",
+        "target": [
+            90,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read1",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read1": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy1",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 1
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue1": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select2",
+            "FurnitureTimer_Select3",
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select2": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy2"
+        ],
+        "action": "Click",
+        "target": [
+            220,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read2",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read2": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy2",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 2
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue2": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select3",
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select3": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy3"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read3",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read3": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy3",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 3
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue3": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select4": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy4"
+        ],
+        "action": "Click",
+        "target": [
+            480,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read4",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read4": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy4",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 4
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue4": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select5": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy5"
+        ],
+        "action": "Click",
+        "target": [
+            610,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read5",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read5": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy5",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 5
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue5": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_SamplingChanged": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_ReadyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "missing"
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Finalize": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "finalize"
+        },
+        "next": [
+            "FurnitureTimer_Wait"
+        ]
+    },
+    "FurnitureTimer_Wait": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "wait"
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Done": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "[Anchor]FurnitureTimer_Return"
+        ]
+    },
+    "FurnitureTimer_OCR": {
+        "recognition": "OCR",
+        "roi": [
+            525,
+            1030,
+            100,
+            28
+        ],
+        "only_rec": true,
+        "expected": [
+            "^[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+        ],
+        "threshold": 0.9
+    }
+}

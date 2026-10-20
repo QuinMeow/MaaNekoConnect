@@ -1,0 +1,370 @@
+{
+    "DailyMail_Start": {
+        "doc": "邮箱领取",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "NavHome_Return": "DailyMail_Open",
+            "Daily_AfterWork": "DailyCore_Done"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyMail_Open": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            635,
+            490,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "timeout": 30000,
+        "next": [
+            "DailyMail_Dispatch"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyMail_Ready": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    180,
+                    80,
+                    360,
+                    70
+                ],
+                "expected": ["^プレゼントボックス$"],
+                "threshold": 0.95
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    55,
+                    1018,
+                    230,
+                    44
+                ],
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 4000
+            },
+            "NavHome_CloseReady"
+        ]
+    },
+    "DailyMail_BatchReady": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_Ready",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/mail_batch.png",
+                "roi": [
+                    235,
+                    920,
+                    250,
+                    65
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    270,
+                    945,
+                    180,
+                    25
+                ],
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 3000
+            }
+        ]
+    },
+    "DailyMail_Dispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "Daily_PostError",
+            "DailyMail_BatchGate",
+            "DailyMail_BoxGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_BatchGate": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_BatchReady"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyMail_Collect",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_Collect": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_BatchReady"
+        ],
+        "action": "Click",
+        "target": [
+            345,
+            943,
+            30,
+            25
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "timeout": 30000,
+        "next": [
+            "DailyMail_AfterCollect"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_AfterCollect": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "Daily_PostError",
+            "DailyMail_RewardGate",
+            "DailyMail_CapacityGate",
+            "DailyMail_BoxGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_Capacity": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/capacity_header.png",
+                "roi": [
+                    75,
+                    188,
+                    185,
+                    45
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/capacity_footer.png",
+                "roi": [
+                    200,
+                    905,
+                    330,
+                    55
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    210,
+                    919,
+                    310,
+                    30
+                ],
+                "lower": [
+                    220,
+                    220,
+                    220
+                ],
+                "upper": [
+                    255,
+                    255,
+                    255
+                ],
+                "count": 5000
+            },
+            "NavHome_CloseReady"
+        ]
+    },
+    "DailyMail_ClosePermit": {
+        "recognition": "DirectHit",
+        "max_hit": 3,
+        "post_delay": 0,
+        "next": [
+            "[Anchor]DailyMail_CloseTarget"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_Home": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyCore_Done"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_RewardGate": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Reward"
+        ],
+        "anchor": {
+            "DailyMail_CloseTarget": "DailyMail_RewardClose"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyMail_ClosePermit",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_RewardClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Reward"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1500,
+        "timeout": 15000,
+        "next": [
+            "DailyMail_AfterCollect"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_CapacityGate": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_Capacity"
+        ],
+        "anchor": {
+            "DailyMail_CloseTarget": "DailyMail_CapacityClose"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyMail_ClosePermit",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_CapacityClose": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_Capacity"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1500,
+        "timeout": 15000,
+        "next": [
+            "DailyMail_AfterCollect"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "attach": {
+            "result": "capacity_limited",
+            "retry_batch": false
+        }
+    },
+    "DailyMail_BoxGate": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_Ready"
+        ],
+        "anchor": {
+            "DailyMail_CloseTarget": "DailyMail_BoxClose"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyMail_ClosePermit",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyMail_BoxClose": {
+        "recognition": "And",
+        "all_of": [
+            "DailyMail_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "post_delay": 1500,
+        "timeout": 15000,
+        "next": [
+            "DailyMail_Home"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    }
+}

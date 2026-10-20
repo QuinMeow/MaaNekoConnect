@@ -1,0 +1,61 @@
+{
+    "FurnitureSchedule_Start": {
+        "doc": "家具强化",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "FurnitureEnhance_OnComplete": "FurnitureSchedule_Dispatch",
+            "FurnitureTimer_Return": "FurnitureEnhance_BeginRound"
+        },
+        "next": ["FurnitureTimer_Config"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureTimer_Config": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {"op": "config", "mode": "fixed"},
+        "post_delay": 0,
+        "next": ["FurnitureTimer_IntervalConfig"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureTimer_IntervalConfig": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {"op": "interval", "seconds": 60},
+        "post_delay": 0,
+        "next": ["FurnitureSchedule_Dispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_Dispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": ["FurnitureSchedule_Permit", "FurnitureSchedule_Complete"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_Permit": {
+        "recognition": "DirectHit",
+        "max_hit": 1,
+        "post_delay": 0,
+        "next": ["FurnitureSchedule_FirstRound", "FurnitureSchedule_PrepareWait"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_FirstRound": {
+        "recognition": "DirectHit",
+        "max_hit": 1,
+        "post_delay": 0,
+        "next": ["FurnitureEnhance_BeginRound"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_PrepareWait": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": ["FurnitureTimer_Start"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_Complete": {
+        "recognition": "DirectHit",
+        "post_delay": 0
+    }
+}

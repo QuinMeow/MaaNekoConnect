@@ -1,0 +1,61 @@
+{
+    "DailyLogin_Start": {
+        "doc": "启动游戏",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyCore_Done"
+        },
+        "timeout": 10000,
+        "rate_limit": 1000,
+        "next": ["DailyLogin_Foreground", "DailyLogin_Launch"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_Foreground": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyLoginAppState",
+        "custom_recognition_param": {"foreground": true},
+        "post_delay": 0,
+        "next": ["DailyLogin_WaitUi"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_WaitUi": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 120000,
+        "rate_limit": 1000,
+        "next": ["DailyLogin_GameUi"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_GameUi": {
+        "recognition": "Or",
+        "any_of": [
+            "Daily_Error",
+            "CommonTitleReady",
+            "NavHome_Ready",
+            "NavHome_KnownBusinessReady",
+            "NavHome_KnownModal",
+            "NavHome_CloseReady",
+            "NavHome_PromoPage",
+            "NavHome_RewardPage"
+        ],
+        "post_delay": 0,
+        "next": ["NavHome_Ensure"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_Launch": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyLoginAppState",
+        "custom_recognition_param": {"foreground": false},
+        "action": "StartApp",
+        "package": "jp.goodsmile.nekoconne",
+        "max_hit": 1,
+        "post_delay": 3000,
+        "timeout": 45000,
+        "rate_limit": 1000,
+        "next": ["DailyLogin_Foreground"],
+        "on_error": ["Daily_StopCapture"]
+    }
+}

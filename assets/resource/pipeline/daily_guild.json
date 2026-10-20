@@ -1,0 +1,1389 @@
+{
+    "DailyGuild_CloseReady": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [310, 1165, 110, 60],
+                "expected": ["^Close$"],
+                "threshold": 0.95
+            },
+            "NavHome_CloseBright"
+        ]
+    },
+    "DailyGuild_Start": {
+        "doc": "社团事务",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyGuild_Open"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGuild_Open": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            639,
+            695,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 2200,
+        "timeout": 30000,
+        "next": [
+            "DailyGuild_HelpOpen"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGuild_Page": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    0,
+                    20,
+                    300,
+                    80
+                ],
+                "expected": [
+                    "^サークル$"
+                ],
+                "threshold": 0.95
+            },
+            "NavFooter_Home"
+        ]
+    },
+    "DailyGuild_HelpOpen": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_Page"
+        ],
+        "action": "Click",
+        "target": [
+            542,
+            945,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_HelpDispatch"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGuild_HelpPage": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_help_title.png",
+                "roi": [
+                    250,
+                    75,
+                    220,
+                    65
+                ],
+                "threshold": 0.97
+            },
+                "DailyGuild_CloseReady"
+        ]
+    },
+    "DailyGuild_HelpReady": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_HelpPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_help_batch.png",
+                "roi": [
+                    200,
+                    985,
+                    320,
+                    85
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    235,
+                    1014,
+                    245,
+                    30
+                ],
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 4000
+            }
+        ]
+    },
+    "DailyGuild_HelpDispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_PostError",
+            "DailyGuild_HelpGate",
+            "DailyGuild_NoHelp"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "timeout": 15000
+    },
+    "DailyGuild_HelpGate": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_HelpReady"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_HelpBatch",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_HelpBatch": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_HelpReady"
+        ],
+        "action": "Click",
+        "target": [
+            345,
+            1013,
+            30,
+            25
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_HelpDispatch"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_NoHelp": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_HelpPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_help_none.png",
+                "roi": [
+                    210,
+                    640,
+                    300,
+                    65
+                ],
+                "threshold": 0.97
+            }
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_HelpClose"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_HelpClose": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_HelpPage"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 1500,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_AfterHelp"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_AfterHelp": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_PostError",
+            "DailyGuild_DonateSelect",
+            "DailyGuild_MembersOpen"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "timeout": 20000
+    },
+    "DailyGuild_DonateSelect": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_Page"
+        ],
+        "enabled": false,
+        "action": "Click",
+        "target": [
+            550,
+            870,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_DonateDispatch"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGuild_DonatePage": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_donate_title.png",
+                "roi": [
+                    235,
+                    170,
+                    250,
+                    70
+                ],
+                "threshold": 0.97
+            },
+                "DailyGuild_CloseReady"
+        ]
+    },
+    "DailyGuild_DonateBase": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_DonatePage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_coin.png",
+                "roi": [
+                    450,
+                    410,
+                    55,
+                    55
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "OCR",
+                "roi": [
+                    555,
+                    415,
+                    80,
+                    40
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^1[,，]?000$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            }
+        ]
+    },
+    "DailyGuild_DonateReady": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_DonateBase",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_donate_button.png",
+                "roi": [
+                    485,
+                    470,
+                    110,
+                    50
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    445,
+                    480,
+                    190,
+                    70
+                ],
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 4000
+            },
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^(?:[1-9]|10)[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            }
+        ]
+    },
+    "DailyGuild_DonateDispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_PostError",
+            "DailyGuild_DonateQuota10",
+            "DailyGuild_DonateQuota9",
+            "DailyGuild_DonateQuota8",
+            "DailyGuild_DonateQuota7",
+            "DailyGuild_DonateQuota6",
+            "DailyGuild_DonateQuota5",
+            "DailyGuild_DonateQuota4",
+            "DailyGuild_DonateQuota3",
+            "DailyGuild_DonateQuota2",
+            "DailyGuild_DonateQuota1",
+            "DailyGuild_DonateZero"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "timeout": 30000
+    },
+    "DailyGuild_DonateGate": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_DonateSpend"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateSpend",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSpend": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_DonateReady"
+        ],
+        "action": "Click",
+        "target": [
+            523,
+            499,
+            30,
+            30
+        ],
+        "max_hit": 10,
+        "post_delay": 1400,
+        "timeout": 15000,
+        "next": [
+            "DailyGuild_DonateAwaitDecrease"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "attach": {
+            "currency": "gold",
+            "amount": 1000,
+            "paid_gem_branch": false
+        }
+    },
+    "DailyGuild_DonateAwaitDecrease": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_PostError",
+            "[Anchor]DailyGuild_ExpectedRemaining"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "timeout": 8000
+    },
+    "DailyGuild_DonateZero": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_DonateBase",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^0[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateClose"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateClose": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_DonatePage"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 1500,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_MembersOpen"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_MembersOpen": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_Page"
+        ],
+        "action": "Click",
+        "target": [
+            554,
+            245,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 2000,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_MembersDispatch"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyGuild_MembersPage": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    0,
+                    20,
+                    210,
+                    80
+                ],
+                "expected": [
+                    "^サークルメンバー$"
+                ],
+                "threshold": 0.95
+            },
+            "NavFooter_Home"
+        ]
+    },
+    "DailyGuild_GreetReady": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_MembersPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/guild_greet_batch.png",
+                "roi": [
+                    215,
+                    1065,
+                    290,
+                    90
+                ],
+                "threshold": 0.97
+            },
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    250,
+                    1097,
+                    220,
+                    30
+                ],
+                "lower": [
+                    220,
+                    45,
+                    55
+                ],
+                "upper": [
+                    255,
+                    130,
+                    145
+                ],
+                "count": 4000
+            }
+        ]
+    },
+    "DailyGuild_MembersDispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_PostError",
+            "DailyGuild_GreetGate",
+            "DailyGuild_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "timeout": 12000
+    },
+    "DailyGuild_GreetGate": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_GreetReady"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_GreetBatch",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_GreetBatch": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_GreetReady"
+        ],
+        "action": "Click",
+        "target": [
+            345,
+            1095,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "timeout": 15000,
+        "next": [
+            "DailyGuild_RewardWait"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_RewardWait": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "Daily_PostError",
+            "DailyGuild_RewardGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "timeout": 15000
+    },
+    "DailyGuild_RewardGate": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Reward"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_RewardClose",
+            "Daily_StopCapture"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_RewardClose": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Reward"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 1500,
+        "timeout": 15000,
+        "next": [
+            "DailyGuild_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_Return": {
+        "recognition": "And",
+        "all_of": [
+            "DailyGuild_MembersPage"
+        ],
+        "action": "Click",
+        "target": [
+            345,
+            1220,
+            30,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 2000,
+        "timeout": 20000,
+        "next": [
+            "DailyGuild_Home"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_Home": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyCore_Done"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota10": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^10[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen9"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota9": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^9[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen8"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen9": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^9[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota9"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota8": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^8[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen7"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen8": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^8[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota8"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota7": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^7[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen6"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen7": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^7[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota7"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota6": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^6[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen5"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen6": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^6[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota6"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota5": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^5[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen4"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen5": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^5[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota5"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota4": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^4[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen3"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen4": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^4[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota4"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota3": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^3[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen2"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen3": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^3[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota3"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota2": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^2[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateSeen1"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen2": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^2[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota2"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateQuota1": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^1[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateReady"
+        ],
+        "anchor": {
+            "DailyGuild_ExpectedRemaining": "DailyGuild_DonateZero"
+        },
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateGate"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyGuild_DonateSeen1": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "OCR",
+                "roi": [
+                    550,
+                    518,
+                    68,
+                    28
+                ],
+                "only_rec": true,
+                "expected": [
+                    "^1[/／]10$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "threshold": 0.95
+            },
+            "DailyGuild_DonateBase"
+        ],
+        "post_delay": 0,
+        "next": [
+            "DailyGuild_DonateQuota1"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    }
+}

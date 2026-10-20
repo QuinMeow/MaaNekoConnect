@@ -1,0 +1,181 @@
+{
+    "Daily_PendingIncome": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_income.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    203,
+                    -2,
+                    -141,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "box_index": 1
+    },
+    "Daily_ChooseIncome": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Page",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/pending_income.png",
+                "roi": [
+                    85,
+                    300,
+                    555,
+                    600
+                ],
+                "threshold": 0.9,
+                "sub_name": "row"
+            },
+            {
+                "recognition": "OCR",
+                "roi": "row",
+                "roi_offset": [
+                    203,
+                    -2,
+                    -141,
+                    4
+                ],
+                "expected": [
+                    "^[（(]?0[/／]1[)）]?$"
+                ],
+                "replace": [
+                    [
+                        "\\s",
+                        ""
+                    ]
+                ],
+                "only_rec": true,
+                "threshold": 0.95
+            }
+        ],
+        "enabled": true,
+        "box_index": 1,
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 45000,
+        "next": [
+            "Daily_IncomeBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_IncomeBegin": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/sales_bubble.png",
+                "roi": [
+                    430,
+                    1025,
+                    75,
+                    85
+                ],
+                "threshold": 0.97
+            }
+        ],
+        "action": "Click",
+        "target": [
+            455,
+            1055,
+            20,
+            20
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Daily_IncomeClaim"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_IncomeClaim": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/sales_title.png",
+                "roi": [
+                    80,
+                    190,
+                    180,
+                    55
+                ],
+                "threshold": 0.97
+            },
+            "NavHome_CloseReady"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            1175,
+            20,
+            20
+        ],
+        "max_hit": 1,
+        "post_delay": 1800,
+        "anchor": {
+            "Daily_AfterReward": "Daily_Return"
+        },
+        "next": [
+            "Daily_RewardWait"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
+    },
+    "DailyIncome_Start": {
+        "doc": "营业收入领取",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "Daily_IncomeBegin"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

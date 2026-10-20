@@ -454,3 +454,4 @@ config
 debug
 .pytest_cache/
 assets/resource/model/ocr/
+.runtime/
