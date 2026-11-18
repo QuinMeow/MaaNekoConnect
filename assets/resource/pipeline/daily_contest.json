@@ -1,0 +1,214 @@
+{
+    "Daily_ContestPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/contest_title.png",
+        "roi": [
+            35,
+            25,
+            155,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "Daily_ContestBegin": {
+        "recognition": "And",
+        "all_of": ["Daily_ContestPage", "NavFooter_Home"],
+        "action": "Custom", "custom_action": "DailyContestControl",
+        "custom_action_param": {"op": "decide"},
+        "post_delay": 0,
+        "timeout": 30000,
+        "next": [
+            "DailyContest_Log"
+        ],
+        "on_error": [
+            "DailyContest_Stop"
+        ]
+    },
+    "Daily_ContestOpponent": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_ContestPage",
+            "NavFooter_Home",
+            {
+                "recognition": "Or",
+                "any_of": [
+                    {
+                        "recognition": "OCR", "only_rec": true, "roi": [60, 752, 158, 35],
+                        "expected": ["^無料挑戦[:：]残り1回$"], "replace": [["\\s", ""]], "threshold": 0.95
+                    },
+                    {
+                        "recognition": "TemplateMatch",
+                        "template": "daily/contest_free3.png",
+                        "roi": [
+                            50,
+                            745,
+                            180,
+                            50
+                        ],
+                        "threshold": 0.97
+                    },
+                    {
+                        "recognition": "TemplateMatch",
+                        "template": "daily/contest_free2.png",
+                        "roi": [
+                            50,
+                            745,
+                            180,
+                            50
+                        ],
+                        "threshold": 0.97
+                    }
+                ]
+            }
+        ],
+        "action": "Click",
+        "target": [
+            380,
+            850,
+            35,
+            30
+        ],
+        "post_delay": 2500,
+        "max_hit": 1,
+        "timeout": 12000,
+        "next": [
+            "Daily_PostError",
+            "Daily_ContestSpend"
+        ],
+        "on_error": [
+            "Daily_Return"
+        ],
+        "focus": {"Node.Action.Succeeded": "竞技场：已选择对手"}
+    },
+    "Daily_ContestSpend": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_PrepPage",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/contest_prep_free.png",
+                "roi": [
+                    40,
+                    1105,
+                    190,
+                    55
+                ],
+                "threshold": 0.97
+            },
+            "DailyCore_StartButton",
+            "DailyCore_StartBright",
+            {
+                "recognition": "OCR",
+                "roi": [
+                    173,
+                    1117,
+                    17,
+                    25
+                ],
+                "only_rec": true,
+                "threshold": 0.95,
+                "expected": [
+                    "^[1-3]$"
+                ]
+            }
+        ],
+        "box_index": 2,
+        "action": "Click",
+        "target": true,
+        "max_hit": 1,
+        "post_delay": 2000,
+        "timeout": 180000,
+        "next": [
+            "Daily_BattleResult"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ],
+        "focus": {"Node.Action.Succeeded": "竞技场：已开始 1 次免费挑战"}
+    },
+    "DailyContest_Start": {
+        "doc": "竞技场",
+        "focus": {"Node.Action.Succeeded": "竞技场：开始"},
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyCore_Quest",
+            "DailyCore_QuestTarget": "DailyContest_Open"
+        },
+        "next": [
+            "DailyContest_PositionConfig"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyContest_State": {
+        "recognition": "DirectHit", "enabled": false,
+        "action": "Custom", "custom_action": "DailyContestControl",
+        "custom_action_param": {"position": "top", "threshold": 0, "previous": null, "quota": null}
+    },
+    "DailyContest_PositionConfig": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "action": "Custom", "custom_action": "DailyContestControl",
+        "custom_action_param": {"op": "position", "position": "top"},
+        "next": ["DailyContest_ThresholdConfig"], "on_error": ["DailyContest_Stop"]
+    },
+    "DailyContest_ThresholdConfig": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "action": "Custom", "custom_action": "DailyContestControl",
+        "custom_action_param": {"op": "threshold", "threshold": 0},
+        "next": ["NavHome_Ensure"], "on_error": ["DailyContest_Stop"]
+    },
+    "DailyContest_RatingOCR": {
+        "recognition": "OCR", "only_rec": true, "roi": [548, 813, 115, 43],
+        "expected": ["^[0-9][0-9,.]*[KM]?$"], "replace": [["\\s", ""]], "threshold": 0.95
+    },
+    "DailyContest_Log": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "竞技场：选择配置栏位的对手"},
+        "next": ["[Anchor]DailyContest_Next"]
+    },
+    "DailyContest_RefreshOCR": {
+        "recognition": "OCR", "only_rec": true, "roi": [537, 754, 78, 30],
+        "expected": ["^あと[0-3]回$"], "replace": [["\\s", ""]], "threshold": 0.95
+    },
+    "DailyContest_Refresh": {
+        "recognition": "And", "all_of": ["Daily_ContestPage", "NavFooter_Home", "DailyContest_RefreshOCR"],
+        "action": "Custom", "custom_action": "DailyContestControl", "custom_action_param": {"op": "refresh"},
+        "max_hit": 3, "post_delay": 1200, "timeout": 10000,
+        "next": ["Daily_PostError", "Daily_ContestBegin"], "on_error": ["DailyContest_Stop"],
+        "focus": {"Node.Action.Succeeded": "竞技场：已免费更新 1 次"}
+    },
+    "DailyContest_RefreshClick": {
+        "recognition": "DirectHit", "action": "Click", "target": [635, 758, 16, 18], "post_delay": 0
+    },
+    "DailyContest_Stop": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "竞技场：评分或免费更新次数未识别，已停止"},
+        "next": ["Daily_StopCapture"]
+    },
+    "DailyContest_Open": {
+        "recognition": "And",
+        "all_of": [
+            "DailyCore_QuestPage"
+        ],
+        "action": "Click",
+        "target": [
+            405,
+            669,
+            30,
+            30
+        ],
+        "max_hit": 1,
+        "post_delay": 2500,
+        "timeout": 30000,
+        "next": [
+            "Daily_ContestBegin"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

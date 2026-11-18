@@ -1,0 +1,263 @@
+{
+    "DailyDelivery_PaidRefreshCost": {
+        "recognition": "OCR",
+        "roi": [
+            233,
+            1106,
+            45,
+            30
+        ],
+        "only_rec": true,
+        "threshold": 0.95,
+        "expected": [
+            "^100$"
+        ]
+    },
+    "Daily_DeliveryPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/delivery_title.png",
+        "roi": [
+            35,
+            25,
+            90,
+            60
+        ],
+        "threshold": 0.97
+    },
+    "DailyDelivery_OpenSoleil": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": [
+            "NavSoleil_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyDelivery_Start": {
+        "focus": {"Node.Action.Succeeded": "[配送] 开始；food=未识别，sweets=未识别，drive=未识别。"},
+        "doc": "配送管理",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyDelivery_OpenSoleil",
+            "NavSoleil_Return": "DailyDelivery_OpenMap",
+            "DailyDelivery_AfterBatch": "DailyDelivery_RefreshCheck"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "DailyDelivery_State": {
+        "recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe",
+        "custom_recognition_param": {"selected": null, "started": [], "refresh_seen": null}
+    },
+    "DailyDelivery_Pins": {
+        "doc": "仅由 Agent 传入去底色图案图；三类主体复用五档颜色，三种尺寸覆盖呼吸动画。",
+        "recognition": "TemplateMatch", "roi": [0, 145, 710, 855], "threshold": 0.90,
+        "template": [
+            "daily/delivery_glyph/food_small.png", "daily/delivery_glyph/food_normal.png", "daily/delivery_glyph/food_large.png",
+            "daily/delivery_glyph/food_left_small.png", "daily/delivery_glyph/food_left_normal.png", "daily/delivery_glyph/food_left_large.png",
+            "daily/delivery_glyph/food_right_small.png", "daily/delivery_glyph/food_right_normal.png", "daily/delivery_glyph/food_right_large.png",
+            "daily/delivery_glyph/sweets_small.png", "daily/delivery_glyph/sweets_normal.png", "daily/delivery_glyph/sweets_large.png",
+            "daily/delivery_glyph/sweets_current_small.png", "daily/delivery_glyph/sweets_current_normal.png", "daily/delivery_glyph/sweets_current_large.png",
+            "daily/delivery_glyph/drive_small.png", "daily/delivery_glyph/drive_normal.png", "daily/delivery_glyph/drive_large.png",
+            "daily/delivery_glyph/drive_alt_small.png", "daily/delivery_glyph/drive_alt_normal.png", "daily/delivery_glyph/drive_alt_large.png"
+        ]
+    },
+    "DailyDelivery_OrderCount": {
+        "recognition": "OCR", "roi": [530, 102, 180, 38], "threshold": 0.95,
+        "expected": ["^依頼数[:：][0-9]{1,2}[/／]18件$"], "replace": [["\\s", ""]]
+    },
+    "DailyDelivery_CounterOccluded": {
+        "recognition": "And", "all_of": [
+            {"recognition": "TemplateMatch", "template": "daily/delivery_timer_tag.png",
+             "roi": [525, 108, 155, 48], "threshold": 0.95},
+            {"recognition": "OCR", "roi": [525, 108, 155, 48], "threshold": 0.95,
+             "expected": ["^[0-9]{2}:[0-5][0-9]:[0-5][0-9]$"]}
+        ]
+    },
+    "DailyDelivery_Markers": {
+        "doc": "去底色图像上的订单尾部轮廓，与主体图案独立匹配；只用于确认倒计时遮挡时的交叉核对。",
+        "recognition": "TemplateMatch", "roi": [0, 145, 710, 855], "threshold": 0.90,
+        "template": ["daily/delivery_glyph/marker_small.png",
+                     "daily/delivery_glyph/marker_normal.png", "daily/delivery_glyph/marker_large.png"]
+    },
+    "DailyDelivery_Status": {
+        "recognition": "OCR", "roi": [0, 100, 710, 900], "threshold": 0.95,
+        "expected": ["^([0-9]{1,2}:[0-5][0-9]:[0-5][0-9]|配達完了[!！])$"]
+    },
+    "DailyDelivery_Complete": {
+        "recognition": "OCR", "expected": ["^配達完了[!！]$"],
+        "roi": [0, 100, 710, 900], "threshold": 0.95
+    },
+    "DailyDelivery_Tag": {
+        "recognition": "TemplateMatch", "template": ["daily/delivery_timer_tag.png",
+            "daily/delivery_timer_left.png", "daily/delivery_timer_right.png",
+            "daily/complete_pin.png", "daily/delivery_complete_current.png"],
+        "roi": [0, 145, 710, 855], "threshold": 0.95
+    },
+    "DailyDelivery_OpenMap": {
+        "recognition": "And", "all_of": ["NavSoleil_Ready"],
+        "action": "Click", "target": [80, 930, 30, 30], "max_hit": 1, "post_delay": 3000,
+        "next": ["DailyDelivery_Scan"], "on_error": ["CommonRecoveryEnter"]
+    },
+    "DailyDelivery_Scan": {
+        "recognition": "Or", "any_of": [
+            {"recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home"]},
+            "DailyDelivery_SpeedupPage"
+        ],
+        "post_delay": 700, "timeout": 30000,
+        "next": ["Daily_PostError", "DailyDelivery_CloseSpeedup", "DailyDelivery_CollectGate", "DailyDelivery_Select", "DailyDelivery_AllStarted", "DailyDelivery_RetryScan", "Daily_StopCapture"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_RetryScan": {
+        "doc": "动画或暂时遮挡仅重扫，整个任务共用六次额度，不重放派送或刷新。",
+        "recognition": "DirectHit", "post_delay": 400, "max_hit": 6,
+        "next": ["DailyDelivery_Scan"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_CollectGate": {
+        "recognition": "And", "all_of": ["Daily_MapPage",
+            "DailyDelivery_Complete",
+            {"recognition": "TemplateMatch", "template": "daily/delivery_collect_all.png", "roi": [390, 1080, 175, 60], "threshold": 0.97},
+            {"recognition": "ColorMatch", "method": 4, "roi": [400, 1130, 150, 10], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 900}
+        ], "next": ["DailyDelivery_Collect", "Daily_StopCapture"], "post_delay": 0
+    },
+    "DailyDelivery_Collect": {
+        "focus": {"Node.Action.Succeeded": "[配送] 批量领取；钻石=未识别。", "Node.Action.Failed": "[配送] 批量领取失败。"},
+        "recognition": "And", "all_of": ["DailyDelivery_CollectGate"], "action": "Click",
+        "target": [430, 1090, 90, 30], "max_hit": 2, "post_delay": 2200,
+        "anchor": {"Daily_AfterReward": "DailyDelivery_Scan"},
+        "next": ["Daily_RewardWait"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_Select": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "select"}}
+        ], "box_index": 2,
+        "action": "Click", "target": true, "max_hit": 36, "post_delay": 2200,
+        "next": ["Daily_PostError", "DailyDelivery_CloseSpeedup", "DailyDelivery_Auto"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_SpeedupPage": {
+        "recognition": "OCR", "roi": [60, 70, 320, 100],
+        "expected": ["^配達加速$"], "threshold": 0.95
+    },
+    "DailyDelivery_CloseSpeedup": {
+        "focus": {"Node.Action.Succeeded": "[配送] 关闭加速页面。"},
+        "recognition": "And", "all_of": ["DailyDelivery_SpeedupPage", "NavHome_CloseBright",
+            {"recognition": "OCR", "roi": [295, 1120, 130, 130], "expected": ["^Close$"], "threshold": 0.95}
+        ],
+        "action": "Click", "target": [335, 1160, 50, 35], "max_hit": 6, "post_delay": 500,
+        "next": ["DailyDelivery_Verify", "DailyDelivery_Scan"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_Auto": {
+        "recognition": "And", "all_of": ["Daily_DeliveryPage",
+            {"recognition": "TemplateMatch", "template": "daily/auto_team.png", "roi": [15, 960, 190, 75], "threshold": 0.97}
+        ], "action": "Click", "target": [60, 984, 100, 20], "max_hit": 36, "post_delay": 1300,
+        "next": ["Daily_PostError", "DailyDelivery_CloseSpeedup", "DailyDelivery_Spend"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_Spend": {
+        "focus": {"Node.Action.Succeeded": "[配送] 已派出，读取总览倒计时。", "Node.Action.Failed": "[配送] 派出失败。"},
+        "recognition": "And", "all_of": ["Daily_DeliveryPage", "NavFooter_Home",
+            {"recognition": "TemplateMatch", "template": "daily/delivery_battery.png", "roi": [360, 1080, 40, 45], "threshold": 0.97},
+            {"recognition": "OCR", "roi": [397, 1084, 68, 36], "only_rec": true, "threshold": 0.95, "expected": ["^(1000|2500|5000|10000)$"]},
+            {"recognition": "OCR", "roi": [262, 1080, 77, 48], "threshold": 0.95, "expected": ["^配達$"]},
+            {"recognition": "ColorMatch", "method": 4, "roi": [245, 1127, 225, 11], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 1500}
+        ], "action": "Click", "target": [300, 1090, 120, 25], "max_hit": 36, "post_delay": 3000, "timeout": 30000,
+        "next": ["DailyDelivery_Verify"], "on_error": ["Daily_StopCapture"],
+        "attach": {"max_dispatches": 36, "max_battery_each": 10000, "diamond_finish": false}
+    },
+    "DailyDelivery_Verify": {
+        "focus": {"Node.Action.Succeeded": "[配送] 订单已开始。"},
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "verify"}}
+        ], "box_index": 2,
+        "action": "DoNothing", "timeout": 30000, "post_delay": 0,
+        "next": ["DailyDelivery_Scan"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_AllStarted": {
+        "focus": {"Node.Action.Succeeded": "[配送] 当前订单全部已开始。"},
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "started"}}
+        ], "box_index": 2,
+        "post_delay": 0, "next": ["[Anchor]DailyDelivery_AfterBatch"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_FreeLabel": {
+        "recognition": "TemplateMatch", "template": "daily/delivery_free_refresh.png", "roi": [155, 1100, 175, 45], "threshold": 0.97
+    },
+    "DailyDelivery_RefreshCheck": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home"], "post_delay": 0,
+        "next": ["DailyDelivery_FreeRefreshPrepare", "DailyDelivery_PaidRefreshPermit", "DailyDelivery_NoFreeRefresh"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_FreeRefreshPrepare": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home", "DailyDelivery_FreeLabel",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "refresh_prepare"}}
+        ], "action": "DoNothing", "max_hit": 1, "post_delay": 0,
+        "next": ["DailyDelivery_OpenRefresh"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_OpenRefresh": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "DailyDelivery_FreeLabel"],
+        "action": "Click", "target": [190, 1080, 100, 30], "max_hit": 1, "post_delay": 1300,
+        "next": ["DailyDelivery_RefreshSpend"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_RefreshSpend": {
+        "focus": {"Node.Action.Succeeded": "[配送] 免费更新一次。", "Node.Action.Failed": "[配送] 免费更新失败。"},
+        "recognition": "And", "all_of": [
+            {"recognition": "TemplateMatch", "template": "daily/delivery_refresh_message.png", "roi": [195, 450, 330, 55], "threshold": 0.97},
+            {"recognition": "OCR", "roi": [370, 630, 300, 75], "threshold": 0.95, "expected": ["^確定$"]},
+            {"recognition": "ColorMatch", "method": 4, "roi": [400, 680, 240, 10], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 1600}
+        ], "action": "Click", "target": [480, 650, 80, 25], "max_hit": 1, "post_delay": 2000,
+        "next": ["DailyDelivery_RefreshVerified"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_RefreshVerified": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            "DailyDelivery_PaidRefreshCost",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "refreshed"}}
+        ], "action": "DoNothing", "post_delay": 0, "timeout": 30000,
+        "next": ["DailyDelivery_Scan"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_PaidRefreshPermit": {
+        "doc": "默认关闭，每个任务最多一次100钻石更新。",
+        "enabled": false, "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            "DailyDelivery_PaidRefreshCost",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "paid_prepare"}}
+        ], "action": "DoNothing", "max_hit": 1, "post_delay": 0,
+        "next": ["DailyDelivery_OpenPaidRefresh"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_OpenPaidRefresh": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home", "DailyDelivery_PaidRefreshCost",
+            {"recognition": "OCR", "roi": [175, 1067, 145, 38], "threshold": 0.95, "expected": ["^依頼更新$"]},
+            {"recognition": "TemplateMatch", "template": "daily/delivery_paid_refresh_map_gem.png", "roi": [208, 1102, 35, 33], "threshold": 0.97},
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "paid_ready"}}
+        ], "action": "Click", "target": [190, 1080, 100, 30], "max_hit": 1, "post_delay": 1300,
+        "next": ["DailyDelivery_PaidRefreshSpend"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_PaidRefreshSpend": {
+        "focus": {"Node.Action.Succeeded": "[配送] 100钻石更新一次。", "Node.Action.Failed": "[配送] 100钻石更新失败。"},
+        "recognition": "And", "all_of": [
+            {"recognition": "TemplateMatch", "template": "daily/delivery_paid_refresh_message.png", "roi": [125, 455, 480, 65], "threshold": 0.97},
+            {"recognition": "OCR", "roi": [211, 463, 45, 26], "only_rec": true, "threshold": 0.95, "expected": ["^100$"]},
+            {"recognition": "TemplateMatch", "template": "daily/delivery_paid_refresh_gem.png", "roi": [192, 534, 48, 44], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/delivery_paid_refresh_confirm.png", "roi": [475, 640, 90, 50], "threshold": 0.97},
+            {"recognition": "ColorMatch", "method": 4, "roi": [400, 683, 240, 7], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 1000}
+        ], "action": "Click", "target": [485, 650, 65, 28], "max_hit": 1, "post_delay": 2200,
+        "anchor": {"DailyDelivery_AfterBatch": "Daily_Return"},
+        "next": ["DailyDelivery_PaidRefreshVerified"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_PaidRefreshVerified": {
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            {"recognition": "Custom", "custom_recognition": "DailyDeliveryMapProbe", "custom_recognition_param": {"op": "refreshed"}}
+        ], "action": "DoNothing", "post_delay": 0, "timeout": 30000,
+        "next": ["DailyDelivery_Scan"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyDelivery_NoFreeRefresh": {
+        "focus": {"Node.Action.Succeeded": "[配送] 更新结束。"},
+        "recognition": "And", "all_of": ["Daily_MapPage", "NavFooter_Home",
+            "DailyDelivery_PaidRefreshCost"
+        ], "post_delay": 0, "next": ["Daily_Return"], "on_error": ["Daily_StopCapture"]
+    }
+}

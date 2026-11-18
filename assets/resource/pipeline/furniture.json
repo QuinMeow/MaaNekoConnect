@@ -1,0 +1,2433 @@
+{
+    "FurnitureSchedule_Start": {
+        "focus": {"Node.Action.Succeeded": "[家具] 开始强化调度"},
+        "doc": "家具强化",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "FurnitureEnhance_OnComplete": "FurnitureSchedule_Dispatch",
+            "FurnitureTimer_Return": "FurnitureEnhance_BeginRound"
+        },
+        "next": ["FurnitureTimer_Config"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureTimer_Config": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {"op": "config", "mode": "fixed"},
+        "post_delay": 0,
+        "next": ["FurnitureTimer_IntervalConfig"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureTimer_IntervalConfig": {
+        "recognition": "DirectHit",
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {"op": "interval", "seconds": 60},
+        "post_delay": 0,
+        "next": ["FurnitureSchedule_Dispatch"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_Dispatch": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": ["FurnitureSchedule_Permit", "FurnitureSchedule_Complete"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_Permit": {
+        "recognition": "DirectHit",
+        "max_hit": 1,
+        "post_delay": 0,
+        "next": ["FurnitureSchedule_FirstRound", "FurnitureSchedule_PrepareWait"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_FirstRound": {
+        "recognition": "DirectHit",
+        "max_hit": 1,
+        "post_delay": 0,
+        "next": ["FurnitureEnhance_BeginRound"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_PrepareWait": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "next": ["FurnitureTimer_Start"],
+        "on_error": ["CommonRecoveryStopCapture"]
+    },
+    "FurnitureSchedule_Complete": {
+        "focus": {"Node.Action.Succeeded": "[家具] 已结束本次调度。"},
+        "recognition": "DirectHit",
+        "post_delay": 0
+    },
+    "FurnitureEnhance_BeginRound": {
+        "focus": {"Node.Action.Succeeded": "[家具] 开始新一轮，检查前五格可强化家具。"},
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit0",
+            "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete",
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureEnhance_Prepare",
+            "CommonRecoveryResume": "FurnitureEnhance_RecoveryResume"
+        }
+    },
+    "FurnitureEnhance_RecoveryResume": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureEnhance_Prepare"
+        }
+    },
+    "FurnitureEnhance_EnsurePage": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "CommonNetworkInterrupt",
+            "FurnitureEnhance_PageReady",
+            "FurnitureEnhance_Open",
+            "NavSoleil_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "NavSoleil_Return": "FurnitureEnhance_Open"
+        }
+    },
+    "FurnitureEnhance_PageReady": {
+        "recognition": "And",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_EnsurePage_Return"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ]
+    },
+    "FurnitureEnhance_Open": {
+        "recognition": "And",
+        "post_delay": 700,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_PageReady"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Click",
+        "target": [
+            635,
+            450,
+            25,
+            25
+        ],
+        "all_of": [
+            "NavSoleil_Ready"
+        ]
+    },
+    "FurnitureEnhance_Prepare": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_ScrollTop"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_ScrollTop": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 1000,
+        "timeout": 15000,
+        "action": "Swipe",
+        "begin": [
+            370,
+            460
+        ],
+        "end": [
+            [
+                370,
+                823
+            ]
+        ],
+        "duration": 150,
+        "repeat": 12,
+        "repeat_delay": 100,
+        "next": [
+            "FurnitureEnhance_Scan"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Page": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            0,
+            20,
+            160,
+            70
+        ],
+        "template": "soleil/page.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_Furniture": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            30,
+            1088,
+            215,
+            55
+        ],
+        "template": "soleil/furniture.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_PageGuard": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Page",
+            "FurnitureEnhance_Furniture"
+        ]
+    },
+    "FurnitureEnhance_ListTop": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            685,
+            433,
+            16,
+            39
+        ],
+        "template": "soleil/top.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_OrdinaryUpgrade": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            230,
+            998,
+            260,
+            70
+        ],
+        "template": "soleil/upgrade.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_Speedup": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            230,
+            998,
+            260,
+            70
+        ],
+        "template": "soleil/speedup.png",
+        "threshold": 0.95
+    },
+    "FurnitureEnhance_RefillGuard": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_ListTop"
+        ]
+    },
+    "FurnitureEnhance_Scan": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy1",
+            "FurnitureEnhance_Select1",
+            "FurnitureEnhance_Busy2",
+            "FurnitureEnhance_Select2",
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available1": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            125,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    65,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy2",
+            "FurnitureEnhance_Select2",
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available1"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            90,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy1",
+            "FurnitureEnhance_Ready1"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    37,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy2",
+            "FurnitureEnhance_Select2",
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available1",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    37,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start1": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready1"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available2": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            255,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    195,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available2"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            220,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy2",
+            "FurnitureEnhance_Ready2"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    167,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy3",
+            "FurnitureEnhance_Select3",
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available2",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    167,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start2": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready2"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available3": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            385,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    325,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available3"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            350,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy3",
+            "FurnitureEnhance_Ready3"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    297,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy4",
+            "FurnitureEnhance_Select4",
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available3",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    297,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start3": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready3"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available4": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            515,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    455,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available4"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            480,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy4",
+            "FurnitureEnhance_Ready4"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    427,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Busy5",
+            "FurnitureEnhance_Select5",
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available4",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    427,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start4": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready4"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Available5": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            645,
+            435,
+            40,
+            40
+        ],
+        "template": "soleil/available.png",
+        "threshold": 0.9
+    },
+    "FurnitureEnhance_Busy5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    585,
+                    460,
+                    70,
+                    65
+                ],
+                "template": "soleil/running.png",
+                "threshold": 0.72
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Select5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Available5"
+        ],
+        "post_delay": 450,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            610,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "FurnitureEnhance_SelectedBusy5",
+            "FurnitureEnhance_Ready5"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SelectedBusy5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    555,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_NoCandidate"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Ready5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_Available5",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [
+                    555,
+                    470,
+                    3,
+                    40
+                ],
+                "lower": [
+                    220,
+                    55,
+                    65
+                ],
+                "upper": [
+                    245,
+                    105,
+                    110
+                ],
+                "count": 30
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_RoundPermit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Start5": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_Ready5"
+        ],
+        "post_delay": 700,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            345,
+            1025,
+            30,
+            15
+        ],
+        "next": [
+            "FurnitureEnhance_Started"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_Started": {
+        "focus": {"Node.Action.Succeeded": "[家具] 开始升级；等级=未识别，最大耗时=未识别"},
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureEnhance_Speedup",
+            "FurnitureEnhance_ButtonBright"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_AfterStart"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_AfterStart": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Scan"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_PostRound": "FurnitureEnhance_ReturnForRequest"
+        }
+    },
+    "FurnitureEnhance_RoundPermit0": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit1"
+        }
+    },
+    "FurnitureEnhance_RoundPermit1": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit2"
+        }
+    },
+    "FurnitureEnhance_RoundPermit2": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit3"
+        }
+    },
+    "FurnitureEnhance_RoundPermit3": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit4"
+        }
+    },
+    "FurnitureEnhance_RoundPermit4": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_SessionSpendPermit",
+            "FurnitureEnhance_SessionLimit"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_RoundPermit": "FurnitureEnhance_RoundPermit5"
+        }
+    },
+    "FurnitureEnhance_RoundPermit5": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_RoundFinish"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SessionSpendPermit": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_Start1",
+            "FurnitureEnhance_Start2",
+            "FurnitureEnhance_Start3",
+            "FurnitureEnhance_Start4",
+            "FurnitureEnhance_Start5"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_SessionLimit": {
+        "focus": {"Node.Action.Succeeded": "[家具] 尝试预算已耗尽，停止新增强化。"},
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_RoundFinish"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "FurnitureEnhance_OnComplete": "FurnitureSchedule_Complete"
+        }
+    },
+    "FurnitureEnhance_NoCandidate": {
+        "focus": {"Node.Action.Succeeded": "[家具] 前五格无可确认的新候选，本轮收尾。"},
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_RoundFinish"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_RoundFinish": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_PostRound"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_ReturnForRequest": {
+        "recognition": "And",
+        "post_delay": 700,
+        "timeout": 15000,
+        "next": [
+            "Soleil_RequestPrepare"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Click",
+        "target": [
+            140,
+            1220,
+            20,
+            20
+        ],
+        "anchor": {
+            "CommonRecoveryResume": "Soleil_RequestResume"
+        },
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "NavFooter_Back"
+        ]
+    },
+    "FurnitureEnhance_RoundComplete": {
+        "focus": {"Node.Action.Succeeded": "[家具] 本轮处理结束。"},
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "[Anchor]FurnitureEnhance_OnComplete"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureEnhance_ButtonBright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [
+            265,
+            1005,
+            180,
+            50
+        ],
+        "lower": [
+            220,
+            55,
+            65
+        ],
+        "upper": [
+            255,
+            115,
+            125
+        ],
+        "count": 4000
+    },
+    "FurnitureEnhance_BusyPreview": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Speedup",
+            "FurnitureEnhance_ButtonBright"
+        ]
+    },
+    "FurnitureEnhance_ReadyPreview": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_OrdinaryUpgrade",
+            "FurnitureEnhance_ButtonBright"
+        ]
+    },
+    "FurnitureFilter_Level": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            495,
+            865,
+            80,
+            55
+        ],
+        "template": "soleil/lv.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_Ascending": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            645,
+            867,
+            52,
+            52
+        ],
+        "template": "soleil/up.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_Descending": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            645,
+            867,
+            52,
+            52
+        ],
+        "template": "soleil/down.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_SortDialog": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            275,
+            170,
+            180,
+            65
+        ],
+        "template": "soleil/sort_dialog.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_FilterHeader": {
+        "recognition": "TemplateMatch",
+        "roi": [
+            80,
+            270,
+            290,
+            45
+        ],
+        "template": "soleil/filter_header.png",
+        "threshold": 0.95
+    },
+    "FurnitureFilter_FilterGuard": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_SortDialog",
+            "FurnitureFilter_FilterHeader"
+        ]
+    },
+    "FurnitureFilter_OpenSort": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 400,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            500,
+            875,
+            25,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_ChooseLevel"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_ChooseLevel": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_SortDialog"
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            75,
+            270,
+            25,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_OpenFilter"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_OpenFilter": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_SortDialog"
+        ],
+        "post_delay": 300,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            495,
+            845,
+            30,
+            25
+        ],
+        "next": [
+            "FurnitureFilter_ResetFilters"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_ResetFilters": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    460,
+                    755,
+                    190,
+                    55
+                ],
+                "template": "soleil/filter_reset.png",
+                "threshold": 0.9
+            }
+        ],
+        "post_delay": 350,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            530,
+            770,
+            30,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_FilterUpgradeable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FilterUpgradeable": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_UpgradeableOn"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FilterPlaced": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_PlacedOn"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableOn": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_UpgradeableChecked",
+            "FurnitureFilter_EnableUpgradeable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableOff": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_UpgradeableUnchecked",
+            "FurnitureFilter_DisableUpgradeable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableChecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    635,
+                    40,
+                    40
+                ],
+                "template": "soleil/checkbox_on.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_FilterPlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_UpgradeableUnchecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    635,
+                    40,
+                    40
+                ],
+                "template": "soleil/checkbox_off.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_FilterPlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_EnableUpgradeable": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_UpgradeableUnchecked"
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            645,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_UpgradeableChecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_DisableUpgradeable": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_UpgradeableChecked"
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            645,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_UpgradeableUnchecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedOn": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_PlacedChecked",
+            "FurnitureFilter_EnablePlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedOff": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_PlacedUnchecked",
+            "FurnitureFilter_DisablePlaced"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedChecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    780,
+                    40,
+                    42
+                ],
+                "template": "soleil/placed_on.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_ApplyLevel"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_PlacedUnchecked": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    88,
+                    780,
+                    40,
+                    42
+                ],
+                "template": "soleil/placed_off.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_ApplyLevel"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_EnablePlaced": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_PlacedUnchecked"
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            790,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_PlacedChecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_DisablePlaced": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_PlacedChecked"
+        ],
+        "post_delay": 250,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            99,
+            790,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_PlacedUnchecked"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_ApplyLevel": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_FilterGuard",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    440,
+                    900,
+                    160,
+                    65
+                ],
+                "template": "soleil/apply.png",
+                "threshold": 0.95
+            }
+        ],
+        "post_delay": 500,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            500,
+            920,
+            35,
+            20
+        ],
+        "next": [
+            "FurnitureFilter_Direction"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_Direction": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureFilter_AscendingReady",
+            "FurnitureFilter_FlipToAscending"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_AscendingReady": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureFilter_Level",
+            "FurnitureFilter_Ascending"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_ScrollTop"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_DescendingReady": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureEnhance_PageGuard",
+            "FurnitureFilter_Level",
+            "FurnitureFilter_Descending"
+        ],
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "FurnitureEnhance_ScrollTop"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FlipToAscending": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_DescendingReady"
+        ],
+        "post_delay": 500,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            663,
+            885,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_AscendingReady"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureFilter_FlipToDescending": {
+        "recognition": "And",
+        "all_of": [
+            "FurnitureFilter_AscendingReady"
+        ],
+        "post_delay": 500,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            663,
+            885,
+            15,
+            15
+        ],
+        "next": [
+            "FurnitureFilter_DescendingReady"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "FurnitureTimer_State": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "state"
+        }
+    },
+    "FurnitureTimer_Start": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "begin"
+        },
+        "anchor": {
+            "CommonRecoveryResume": "FurnitureTimer_Resume",
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureTimer_AfterEnsure"
+        },
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ]
+    },
+    "FurnitureTimer_Resume": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "resume"
+        },
+        "anchor": {
+            "CommonRecoveryResume": "FurnitureTimer_Resume",
+            "FurnitureEnhance_EnsurePage_Return": "FurnitureTimer_AfterEnsure"
+        },
+        "next": [
+            "FurnitureEnhance_EnsurePage"
+        ]
+    },
+    "FurnitureTimer_AfterEnsure": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Sample": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard"
+        ],
+        "next": [
+            "FurnitureTimer_Select1",
+            "FurnitureTimer_Select2",
+            "FurnitureTimer_Select3",
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select1": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy1"
+        ],
+        "action": "Click",
+        "target": [
+            90,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read1",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read1": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy1",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 1
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue1": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select2",
+            "FurnitureTimer_Select3",
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select2": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy2"
+        ],
+        "action": "Click",
+        "target": [
+            220,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read2",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read2": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy2",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 2
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue2": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select3",
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select3": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy3"
+        ],
+        "action": "Click",
+        "target": [
+            350,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read3",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read3": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy3",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 3
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue3": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select4",
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select4": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy4"
+        ],
+        "action": "Click",
+        "target": [
+            480,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read4",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read4": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy4",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 4
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue4": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Select5",
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_Select5": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 250,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_RefillGuard",
+            "FurnitureEnhance_Busy5"
+        ],
+        "action": "Click",
+        "target": [
+            610,
+            485,
+            20,
+            20
+        ],
+        "next": [
+            "CommonNetworkInterrupt",
+            "CommonLoadingInterrupt",
+            "FurnitureTimer_Read5",
+            "FurnitureTimer_SamplingChanged"
+        ]
+    },
+    "FurnitureTimer_Read5": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_SelectedBusy5",
+            "FurnitureEnhance_BusyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "collect",
+            "slot": 5
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Continue5": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "FurnitureTimer_Finalize"
+        ]
+    },
+    "FurnitureTimer_SamplingChanged": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_ReadyPreview"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "missing"
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Finalize": {
+        "recognition": "And",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "all_of": [
+            "FurnitureEnhance_PageGuard"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "finalize"
+        },
+        "next": [
+            "FurnitureTimer_Wait"
+        ]
+    },
+    "FurnitureTimer_Wait": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "action": "Custom",
+        "custom_action": "FurnitureTimerControl",
+        "custom_action_param": {
+            "op": "wait"
+        },
+        "next": [
+            "[Anchor]FurnitureTimer_Next"
+        ]
+    },
+    "FurnitureTimer_Done": {
+        "recognition": "DirectHit",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "timeout": 5000,
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "next": [
+            "[Anchor]FurnitureTimer_Return"
+        ]
+    },
+    "FurnitureTimer_OCR": {
+        "recognition": "OCR",
+        "roi": [
+            525,
+            1030,
+            100,
+            28
+        ],
+        "only_rec": true,
+        "expected": [
+            "^[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+        ],
+        "threshold": 0.9
+    },
+    "Soleil_RequestResume": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "CommonNetworkInterrupt",
+            "Soleil_RequestPrepare",
+            "FurnitureEnhance_ReturnForRequest",
+            "NavSoleil_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "NavSoleil_Return": "Soleil_RequestPrepare"
+        }
+    },
+    "Soleil_RequestPrepare": {
+        "recognition": "And",
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": [
+            "Soleil_RequestSupport"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ],
+        "anchor": {
+            "CommonRecoveryResume": "FurnitureEnhance_RoundComplete",
+            "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete"
+        },
+        "all_of": [
+            "NavSoleil_Ready"
+        ]
+    },
+    "Soleil_RequestSupport": {
+        "focus": {"Node.Action.Succeeded": "[家具] 已点击依頼", "Node.Action.Failed": "[家具] 依頼点击失败"},
+        "recognition": "And",
+        "all_of": [
+            "NavSoleil_Ready",
+            {
+                "recognition": "TemplateMatch",
+                "roi": [
+                    610,
+                    630,
+                    85,
+                    90
+                ],
+                "template": "soleil/request.png",
+                "threshold": 0.9
+            }
+        ],
+        "post_delay": 600,
+        "timeout": 15000,
+        "action": "Click",
+        "target": [
+            635,
+            660,
+            25,
+            25
+        ],
+        "next": [
+            "FurnitureEnhance_RoundComplete"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

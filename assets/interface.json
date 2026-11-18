@@ -5,7 +5,6 @@
     "contact": "https://github.com/QuinMeow/MaaNekoConnect/issues",
     "license": "MIT",
     "github": "https://github.com/QuinMeow/MaaNekoConnect",
-    "version": "0.1.0",
     "controller": [
         {
             "name": "Android",
@@ -26,18 +25,532 @@
         }
     ],
     "agent": {
-        "child_exec": "python",
+        "child_exec": "../.runtime/python/python.exe",
         "child_args": [
             "../agent/main.py"
         ]
     },
     "task": [
         {
-            "name": "框架测试：启动游戏并截图",
-            "entry": "TestLaunchAndCapture",
+            "name": "启动游戏",
+            "entry": "DailyLogin_Start",
+            "controller": ["Android"],
+            "description": "游戏未在前台时启动或切回游戏，已在前台则直接继续；登录并确认首页，关闭登录奖励、公告和活动提示。"
+        },
+        {
+            "name": "好友问候",
+            "entry": "DailyFriend_Start",
             "controller": [
                 "Android"
+            ],
+            "description": "好友列表一键问候。"
+        },
+        {
+            "name": "营业收入领取",
+            "entry": "DailyIncome_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "领取普通营业收入，不追加收益。"
+        },
+        {
+            "name": "Soleil",
+            "entry": "Soleil_DailyStart",
+            "controller": ["Android"],
+            "description": "按勾选执行配送、浴室收菜、当番换班和家具升级。浴室在换班前执行，家具升级最后执行。",
+            "option": ["SoleilModules"]
+        },
+        {
+            "name": "邮箱领取",
+            "entry": "DailyMail_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "领取邮箱可领取内容；"
+        },
+        {
+            "name": "社团事务",
+            "entry": "DailyGuild_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "进入社团执行已配置日常。",
+            "option": [
+                "DailyGuildGoldDonation"
+            ]
+        },
+        {
+            "name": "礼物关卡",
+            "entry": "DailyGift_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "左右栏分别选择最高已通关关卡快速开店，默认各三次；以剩余免费次数为限，不购买次数。",
+            "option": ["DailyGiftRuns"]
+        },
+        {
+            "name": "VR猫爬塔",
+            "entry": "DailyVR_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "使用免费次数完成VR猫爬塔"
+        },
+        {
+            "name": "竞技场",
+            "entry": "DailyContest_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "使用现有队伍免费挑战一次；默认上栏，可选中栏或下栏。可按首位对手评分阈值使用免费更新，不付费刷新。",
+            "option": ["DailyContestPosition", "DailyContestRatingThreshold"]
+        },
+        {
+            "name": "交换所兑换",
+            "entry": "DailyExchange_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "默认购买随机页最多四种金币商品，每种一份；可选用尽当天免费更新并购买各页，不买全库存、不付费刷新。",
+            "option": ["DailyExchangePurchaseMode"]
+        },
+        {
+            "name": "广告抽卡",
+            "entry": "DailyGacha_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "先双击程序目录的 ConfigureAdAI.vbs，在设置窗口填写 DeepSeek Key 并启用；开发仓库入口在 scripts 目录。配置加密保存在本机，无需环境变量。仅等待和关闭广告，不操作试玩、不跳转商店、不安装购买；未配置不会打开广告。"
+        },
+        {
+            "name": "任务奖励领取",
+            "entry": "DailyRewards_Start",
+            "controller": [
+                "Android"
+            ],
+            "description": "仅领取每日、汇总及已达标DayPt奖励，不执行其他玩法；请在需要的任务之后勾选。",
+            "option": [
+                "DailyMilestones"
             ]
         }
-    ]
+    ],
+    "option": {
+        "SoleilModules": {
+            "type": "checkbox",
+            "label": "执行内容",
+            "default_case": ["Delivery", "Bath", "Duty"],
+            "cases": [
+                {
+                    "name": "Delivery", "label": "配送",
+                    "option": ["DailyDeliveryPaidRefresh"],
+                    "pipeline_override": {"Soleil_DeliveryRun": {"enabled": true}}
+                },
+                {
+                    "name": "Bath", "label": "浴室收菜",
+                    "pipeline_override": {"Soleil_BathRun": {"enabled": true}}
+                },
+                {
+                    "name": "Duty", "label": "当番换班",
+                    "pipeline_override": {"Soleil_DutyRun": {"enabled": true}}
+                },
+                {
+                    "name": "Furniture", "label": "家具升级",
+                    "option": ["FurnitureSchedule", "UseExistingSort", "AutoRequest"],
+                    "pipeline_override": {"Soleil_FurnitureRun": {"enabled": true}}
+                }
+            ]
+        },
+        "DailyDeliveryPaidRefresh": {
+            "type": "switch",
+            "label": "全部配送出发后使用100钻石刷新",
+            "description": "默认关闭。全部订单出发后追加一次100钻石刷新，优先使用每日免费刷新；开启后最多派出54单。",
+            "default_case": "No",
+            "cases": [
+                {"name": "Yes", "pipeline_override": {
+                    "DailyDelivery_PaidRefreshPermit": {"enabled": true},
+                    "DailyDelivery_Select": {"max_hit": 54},
+                    "DailyDelivery_Auto": {"max_hit": 54},
+                    "DailyDelivery_Spend": {"max_hit": 54, "attach": {
+                        "max_dispatches": 54, "max_battery_each": 10000, "diamond_finish": false
+                    }}
+                }},
+                {"name": "No", "pipeline_override": {
+                    "DailyDelivery_PaidRefreshPermit": {"enabled": false},
+                    "DailyDelivery_Select": {"max_hit": 36},
+                    "DailyDelivery_Auto": {"max_hit": 36},
+                    "DailyDelivery_Spend": {"max_hit": 36, "attach": {
+                        "max_dispatches": 36, "max_battery_each": 10000, "diamond_finish": false
+                    }}
+                }}
+            ]
+        },
+        "DailyMilestones": {
+            "type": "switch",
+            "label": "领取已达标的DayPt阶段奖励",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "Daily_Milestone": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "Daily_Milestone": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "UseExistingSort": {
+            "type": "switch",
+            "label": "使用现有排序",
+            "description": "开启时不更改当前排序和筛选。关闭后显示下方排序与筛选设置。",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureEnhance_Prepare": {
+                            "next": [
+                                "FurnitureEnhance_ScrollTop"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "option": [
+                        "SortOrder",
+                        "OnlyPlaced",
+                        "OnlyUpgradeable"
+                    ],
+                    "pipeline_override": {
+                        "FurnitureEnhance_Prepare": {
+                            "next": [
+                                "FurnitureFilter_OpenSort"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "SortOrder": {
+            "type": "select",
+            "label": "排序方式",
+            "default_case": "lv_asc",
+            "cases": [
+                {
+                    "name": "lv_asc",
+                    "label": "Lv 升序",
+                    "pipeline_override": {
+                        "FurnitureFilter_Direction": {
+                            "next": [
+                                "FurnitureFilter_AscendingReady",
+                                "FurnitureFilter_FlipToAscending"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "lv_desc",
+                    "label": "Lv 降序",
+                    "pipeline_override": {
+                        "FurnitureFilter_Direction": {
+                            "next": [
+                                "FurnitureFilter_DescendingReady",
+                                "FurnitureFilter_FlipToDescending"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "OnlyPlaced": {
+            "type": "switch",
+            "label": "仅已配置家具",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterPlaced": {
+                            "next": [
+                                "FurnitureFilter_PlacedOn"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterPlaced": {
+                            "next": [
+                                "FurnitureFilter_PlacedOff"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "OnlyUpgradeable": {
+            "type": "switch",
+            "label": "仅可升级家具",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterUpgradeable": {
+                            "next": [
+                                "FurnitureFilter_UpgradeableOn"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "FurnitureFilter_FilterUpgradeable": {
+                            "next": [
+                                "FurnitureFilter_UpgradeableOff"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "AutoRequest": {
+            "type": "switch",
+            "label": "本轮补位完成后点击依頼",
+            "description": "仅本轮至少确认一次新强化后请求，整轮最多点击一次；关闭时轮末直接结束或等待。",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "FurnitureEnhance_AfterStart": {
+                            "anchor": {
+                                "FurnitureEnhance_PostRound": "FurnitureEnhance_ReturnForRequest"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "FurnitureEnhance_AfterStart": {
+                            "anchor": {
+                                "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "FurnitureSchedule": {
+            "type": "select",
+            "label": "运行方式",
+            "description": "单轮立即补位后结束。间隔模式首轮立即执行，后续按固定或可见忙碌家具的剩余时间等待；识别失败回退固定间隔。",
+            "default_case": "single",
+            "cases": [
+                {
+                    "name": "single",
+                    "label": "仅运行一轮",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "fixed"
+                            }
+                        },
+                        "FurnitureSchedule_Permit": {
+                            "max_hit": 1
+                        }
+                    }
+                },
+                {
+                    "name": "fixed",
+                    "label": "固定间隔",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "fixed"
+                            }
+                        }
+                    },
+                    "option": [
+                        "FurnitureRounds",
+                        "FurnitureInterval"
+                    ]
+                },
+                {
+                    "name": "shortest",
+                    "label": "最短剩余时间",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "shortest"
+                            }
+                        }
+                    },
+                    "option": [
+                        "FurnitureRounds",
+                        "FurnitureInterval"
+                    ]
+                },
+                {
+                    "name": "longest",
+                    "label": "最长剩余时间",
+                    "pipeline_override": {
+                        "FurnitureTimer_Config": {
+                            "custom_action_param": {
+                                "op": "config",
+                                "mode": "longest"
+                            }
+                        }
+                    },
+                    "option": [
+                        "FurnitureRounds",
+                        "FurnitureInterval"
+                    ]
+                }
+            ]
+        },
+        "FurnitureRounds": {
+            "type": "input",
+            "label": "总轮数",
+            "description": "含立即执行的首轮；1 至 10000，每轮最多尝试启动五件。",
+            "inputs": [
+                {
+                    "name": "Rounds",
+                    "label": "轮数",
+                    "default": "1",
+                    "pipeline_type": "int",
+                    "verify": "^(?:[1-9][0-9]{0,3}|10000)$",
+                    "pattern_msg": "请输入 1 至 10000 的整数"
+                }
+            ],
+            "pipeline_override": {
+                "FurnitureSchedule_Permit": {
+                    "max_hit": "{Rounds}"
+                }
+            }
+        },
+        "FurnitureInterval": {
+            "type": "input",
+            "label": "固定／回退间隔",
+            "description": "单位为秒，10 至 86400。动态倒计时未识别时使用此值。",
+            "inputs": [
+                {
+                    "name": "Seconds",
+                    "label": "秒",
+                    "default": "60",
+                    "pipeline_type": "int",
+                    "verify": "^(?:[1-9][0-9]{1,3}|[1-7][0-9]{4}|8[0-5][0-9]{3}|86[0-3][0-9]{2}|86400)$",
+                    "pattern_msg": "请输入 10 至 86400 的整数"
+                }
+            ],
+            "pipeline_override": {
+                "FurnitureTimer_IntervalConfig": {
+                    "custom_action_param": {
+                        "op": "interval",
+                        "seconds": "{Seconds}"
+                    }
+                }
+            }
+        },
+        "DailyGuildGoldDonation": {
+            "type": "switch",
+            "label": "社团金币赞助（每次1000，最多10次）",
+            "description": "默认关闭。只点击上方金币按钮，每次确认余数递减后继续，最多10000金币；不使用钻石。",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "DailyGuild_DonateSelect": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "DailyGuild_DonateSelect": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "DailyExchangePurchaseMode": {
+            "type": "select",
+            "label": "金币商品购买范围",
+            "description": "仅金币商品，每种一份；跳过其他货币。免费更新模式最多五次，每次必须确认免费余数减一，不进行付费更新。",
+            "default_case": "Page",
+            "cases": [
+                {"name": "Page", "label": "当前页全部金币商品", "pipeline_override": {
+                    "DailyExchange_Config": {"custom_action_param": {"op": "config", "mode": "page"}}
+                }},
+                {"name": "FreePages", "label": "用尽免费更新并购买每页", "pipeline_override": {
+                    "DailyExchange_Config": {"custom_action_param": {"op": "config", "mode": "free_pages"}}
+                }}
+            ]
+        },
+        "DailyGiftRuns": {
+            "type": "input",
+            "label": "礼物关卡次数",
+            "description": "左右栏各 0 至 3 次，0 跳过该栏；默认各三次。只使用当前剩余免费次数，不补次数。",
+            "inputs": [
+                {"name": "Left", "label": "左栏", "default": "3", "pipeline_type": "int",
+                 "verify": "^[0-3]$", "pattern_msg": "请输入 0 至 3 的整数"},
+                {"name": "Right", "label": "右栏", "default": "3", "pipeline_type": "int",
+                 "verify": "^[0-3]$", "pattern_msg": "请输入 0 至 3 的整数"}
+            ],
+            "pipeline_override": {
+                "DailyGift_LeftConfig": {"custom_action_param": {"op": "left", "count": "{Left}"}},
+                "DailyGift_RightConfig": {"custom_action_param": {"op": "right", "count": "{Right}"}}
+            }
+        },
+        "DailyContestPosition": {
+            "type": "select",
+            "label": "挑战对手位置",
+            "description": "难度由上到下递减。评分筛选始终比较第一位对手，最后挑战此处选定的位置。",
+            "default_case": "top",
+            "cases": [
+                {"name": "top", "label": "上栏（最高难度）", "pipeline_override": {
+                    "DailyContest_PositionConfig": {"custom_action_param": {"op": "position", "position": "top"}}
+                }},
+                {"name": "middle", "label": "中栏", "pipeline_override": {
+                    "DailyContest_PositionConfig": {"custom_action_param": {"op": "position", "position": "middle"}}
+                }},
+                {"name": "bottom", "label": "下栏（最低难度）", "pipeline_override": {
+                    "DailyContest_PositionConfig": {"custom_action_param": {"op": "position", "position": "bottom"}}
+                }}
+            ]
+        },
+        "DailyContestRatingThreshold": {
+            "type": "input",
+            "label": "首位对手评分阈值",
+            "description": "0 表示不筛选；正数表示评分须小于此值，否则使用免费更新，直到满足或免费更新耗尽。按原始整数填写，例如 6000000，不写 K/M。",
+            "inputs": [{
+                "name": "Rating", "label": "评分", "default": "0", "pipeline_type": "int",
+                "verify": "^(?:0|[1-9][0-9]{0,11}|1000000000000)$",
+                "pattern_msg": "请输入 0 至 1000000000000 的整数"
+            }],
+            "pipeline_override": {
+                "DailyContest_ThresholdConfig": {"custom_action_param": {"op": "threshold", "threshold": "{Rating}"}}
+            }
+        }
+    },
+    "group": [],
+    "version": "1.0.0"
 }

@@ -11,6 +11,7 @@ on:
       - ".github/workflows/check.yml"
       - "agent/**"
       - "assets/**"
+      - "deps/tools/**"
       - "tests/**"
       - "tools/**"
       - "requirements.txt"
@@ -21,6 +22,7 @@ on:
       - ".github/workflows/check.yml"
       - "agent/**"
       - "assets/**"
+      - "deps/tools/**"
       - "tests/**"
       - "tools/**"
       - "requirements.txt"
@@ -56,6 +58,9 @@ jobs:
 
       - name: Check Python syntax
         run: python -m compileall -q agent tools tests
+
+      - name: Configure OCR models for tests
+        run: python tools/configure.py
 
       - name: Run tests
         run: python -m pytest -q

@@ -1,0 +1,140 @@
+{
+    "DailyFriend_TabSelected": {
+        "recognition": "TemplateMatch",
+        "template": "daily/friend_tab.png",
+        "roi": [
+            65,
+            1010,
+            170,
+            65
+        ],
+        "threshold": 0.97
+    },
+    "Daily_FriendPage": {
+        "recognition": "TemplateMatch",
+        "template": "daily/friend_title.png",
+        "roi": [
+            270,
+            75,
+            180,
+            65
+        ],
+        "threshold": 0.97
+    },
+    "Daily_FriendBegin": {
+        "recognition": "And",
+        "all_of": [
+            "NavHome_Ready"
+        ],
+        "action": "Click",
+        "target": [
+            640,
+            190,
+            30,
+            30
+        ],
+        "post_delay": 2000,
+        "next": [
+            "Daily_FriendMenu"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendMenu": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_Menu",
+            {
+                "recognition": "TemplateMatch",
+                "template": "daily/menu_friend.png",
+                "roi": [
+                    205,
+                    505,
+                    155,
+                    125
+                ],
+                "threshold": 0.97
+            }
+        ],
+        "box_index": 1,
+        "action": "Click",
+        "target": true,
+        "post_delay": 2200,
+        "next": [
+            "Daily_FriendTab"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendTab": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage"
+        ],
+        "action": "Click",
+        "target": [
+            130,
+            1030,
+            30,
+            25
+        ],
+        "post_delay": 1800,
+        "next": [
+            "DailyFriend_Batch",
+            "Daily_FriendUnavailable"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    },
+    "Daily_FriendUnavailable": {
+        "focus": {"Node.Action.Succeeded": "[好友] 暂无可问候好友，已跳过。"},
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage",
+            "DailyFriend_TabSelected"
+        ],
+        "next": [
+            "Daily_Return"
+        ],
+        "attach": {
+            "result": "no_greetable_friend"
+        },
+        "post_delay": 0
+    },
+    "DailyFriend_Batch": {
+        "focus": {"Node.Action.Succeeded": "[好友] 已点击一键问候。", "Node.Action.Failed": "[好友] 异常：问候点击失败。"},
+        "recognition": "And",
+        "all_of": [
+            "Daily_FriendPage",
+            "DailyFriend_TabSelected",
+            {"recognition": "TemplateMatch", "template": "daily/friend_batch.png", "roi": [490, 925, 175, 60], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/friend_batch_alert.png", "roi": [625, 915, 35, 40], "threshold": 0.97},
+            {"recognition": "ColorMatch", "method": 4, "roi": [85, 1026, 120, 35], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 2500}
+        ],
+        "action": "Click", "target": [550, 943, 60, 20], "max_hit": 1,
+        "post_delay": 2200,
+        "anchor": {"Daily_AfterReward": "Daily_Return"},
+        "next": ["Daily_RewardWait"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyFriend_Start": {
+        "focus": {"Node.Action.Succeeded": "[好友] 开始一键问候。"},
+        "doc": "好友问候",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "Daily_FriendBegin"
+        },
+        "next": [
+            "NavHome_Ensure"
+        ],
+        "on_error": [
+            "CommonRecoveryEnter"
+        ]
+    }
+}

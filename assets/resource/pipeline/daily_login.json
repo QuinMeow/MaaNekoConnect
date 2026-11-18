@@ -1,0 +1,81 @@
+{
+    "DailyLogin_Start": {
+        "doc": "启动游戏",
+        "focus": {"Node.Action.Succeeded": "开始启动游戏", "Node.Action.Failed": "游戏启动检查失败"},
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "anchor": {
+            "CommonRecoveryResume": "DailyCore_Recover",
+            "Daily_AfterWork": "DailyCore_Done",
+            "NavHome_Return": "DailyCore_Done"
+        },
+        "timeout": 10000,
+        "rate_limit": 1000,
+        "next": ["DailyLogin_Foreground", "DailyLogin_Launch"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_Foreground": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyLoginAppState",
+        "custom_recognition_param": {"foreground": true},
+        "post_delay": 0,
+        "next": ["DailyLogin_WaitUi"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_WaitUi": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 120000,
+        "rate_limit": 1000,
+        "next": ["DailyLogin_TapTitle", "DailyLogin_GameUi"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_TapTitle": {
+        "recognition": "And",
+        "all_of": ["CommonTitleText"],
+        "action": "Click",
+        "target": [350, 1070, 20, 20],
+        "max_hit": 3,
+        "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "已点击 TAP TO START，等待首页"},
+        "next": ["DailyLogin_AfterTitle"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_AfterTitle": {
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 120000,
+        "rate_limit": 500,
+        "next": ["DailyLogin_GameUi"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_GameUi": {
+        "recognition": "Or",
+        "any_of": [
+            "Daily_Error",
+            "NavHome_Ready",
+            "NavHome_KnownBusinessReady",
+            "NavHome_KnownModal",
+            "NavHome_CloseReady",
+            "NavHome_PromoPage",
+            "NavHome_RewardPage"
+        ],
+        "post_delay": 0,
+        "next": ["NavHome_Ensure"],
+        "on_error": ["Daily_StopCapture"]
+    },
+    "DailyLogin_Launch": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyLoginAppState",
+        "custom_recognition_param": {"foreground": false},
+        "action": "StartApp",
+        "package": "jp.goodsmile.nekoconne",
+        "focus": {"Node.Action.Succeeded": "已启动游戏，等待界面", "Node.Action.Failed": "启动游戏失败"},
+        "max_hit": 1,
+        "post_delay": 0,
+        "timeout": 45000,
+        "rate_limit": 1000,
+        "next": ["DailyLogin_Foreground"],
+        "on_error": ["Daily_StopCapture"]
+    }
+}
