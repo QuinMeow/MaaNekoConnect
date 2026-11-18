@@ -59,5 +59,8 @@ jobs:
       - name: Check Python syntax
         run: python -m compileall -q agent tools tests
 
+      - name: Configure OCR models for tests
+        run: python tools/configure.py
+
       - name: Run tests
         run: python -m pytest -q
