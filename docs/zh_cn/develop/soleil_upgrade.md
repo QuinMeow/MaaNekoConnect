@@ -7,15 +7,11 @@
 | 模块 | 职责 |
 | --- | --- |
 | [navigation.json](../../../assets/resource/pipeline/navigation.json) | NavHome_* 返回首页；NavSoleil_* 进入咖啡店。页面到达正向确认、调用方返回锚点，见[契约](navigation.md) |
-| [furniture_filter.json](../../../assets/resource/pipeline/furniture_filter.json) | FurnitureFilter_*：Lv 排序、仅已配置、仅可升级，复选框幂等确认 |
-| [furniture_enhance.json](../../../assets/resource/pipeline/furniture_enhance.json) | FurnitureEnhance_*：进入强化页、单轮最多 5 次普通强化尝试、重新扫描、轮末退出 |
-| [soleil_shop.json](../../../assets/resource/pipeline/soleil_shop.json) | Soleil_*：咖啡店依頼，一轮至多尝试点击一次 |
-| [furniture_schedule.json](../../../assets/resource/pipeline/furniture_schedule.json) | FurnitureSchedule_*：有限轮数，首轮立即执行，后续轮前等待 |
-| [furniture_timer.json](../../../assets/resource/pipeline/furniture_timer.json) | FurnitureTimer_*：选择可见忙碌家具、确认选中、原生 OCR、等待接入 |
+| [furniture.json](../../../assets/resource/pipeline/furniture.json) | FurnitureFilter_* 筛选、FurnitureEnhance_* 单轮强化、Soleil_* 轮末依頼、FurnitureSchedule_* 有限轮数及 FurnitureTimer_* 计时与等待；同一业务集中维护 |
 | [common_recovery.json](../../../assets/resource/pipeline/common_recovery.json) | 共用[网络、冻结和有界重启](common_recovery.md) |
 | [agent/furniture_timer.py](../../../agent/furniture_timer.py) | 严格解析时间、min/max 计算、Context 局部状态及可取消分段等待，不实现选家具状态机或图像比较器 |
 
-对外入口为 FurnitureSchedule_Start，独立单轮入口为 FurnitureEnhance_Round。原 SoleilUpgradeLoop 只保留兼容转发，不再包含业务。PI 旧 task.name 保留为配置 ID，显示名与节点名区分咖啡店、强化、筛选、调度。编辑单个模块时仍需加载完整资源，不能只加载兼容文件运行。
+对外在 `Soleil` 任务中勾选“家具升级”，内部仍调用 `FurnitureSchedule_Start`。单轮与多轮通过原 Interface 运行方式配置，全部排序、筛选和计时选项保留；家具在所选 Soleil 子项的最后执行。原 SoleilUpgradeLoop 兼容转发已移除。编辑家具文件后仍需加载完整资源，以解析公共导航与恢复引用。
 
 ## 单轮行为
 
@@ -33,7 +29,7 @@
 
 不要求五件全部空闲，也不强求本轮凑满五件；有空位就补。每次确认后重扫是**有 5 次上限的轮内循环**，不在强化模块里无限等待。橙色 ! 不是空闲证明，忙碌家具也可能保留它。扣券节点只单击一次，不使用 repeat；组合识别复用 ReadyN 不会执行它的 action/next。
 
-单轮使用 6 个原生锚点许可状态，正常新轮才初始化，恢复不能重置。CLI 的 SessionSpendPermit 总消费上限、调度总轮数和通用恢复预算都跨轮保留。不确定的消费尝试也占额度。扣券后只检查详情“時短”，不要求格子仍在原位置，以容许游戏重排。
+单轮使用 6 个原生锚点许可状态，正常新轮才初始化，恢复不能重置。全程消费许可、调度总轮数和通用恢复预算都跨轮保留。不确定的消费尝试也占额度。扣券后只检查详情“時短”，不要求格子仍在原位置，以容许游戏重排。
 
 依頼只在轮末尝试，不再逐件退出；无新增确认则不点。请求前已把恢复锚点切到本轮完成，即使点击失败、网络中断或提示瞬间消失也不盲目重发。点击完成不承诺援助到账、服务端受理或强化完成。
 
@@ -60,30 +56,13 @@
 
 ## 运行与停止
 
-需要 Python 3.11、requirements.txt 的 MaaFw 5.14.3。目标默认仅 127.0.0.1:5557，不回退。示例 ADB 是本机观测路径。
+在在线 MPE 的 Interface 任务列表或 MFAAvalonia 中选择 `Soleil`，勾选“家具升级”，按上表配置排序、轮数和等待方式，再运行。目标默认为 `127.0.0.1:5557`。Agent 使用项目私有 Python 与锁定的 MaaFw 5.14.3；扩展由 [agent/extensions.py](../../../agent/extensions.py) 注册。
 
-单轮、整个运行最多尝试启动 1 件：
-
-```powershell
-$env:PYTHONUTF8 = "1"
-python tools/run_soleil_upgrade.py --execute --max-starts 1 --adb-path "C:\Program Files\NetEase\MuMu\nx_main\adb.exe"
-```
-
-显式运行 3 轮，轮间按可见最短剩余时间，读取失败等 60 秒：
-
-```powershell
-python tools/run_soleil_upgrade.py --execute --rounds 3 --wait-mode shortest --interval 60 --adb-path "C:\Program Files\NetEase\MuMu\nx_main\adb.exe"
-```
-
-最长用 longest，固定用 fixed。默认仅一轮；--one-pass/--one-batch 是兼容参数，也限定一轮。--max-starts 1..5 是**整个运行**硬上限，不是每轮限额；不传时 CLI 总上限为 5 x 轮数。Ctrl+C 停止 Tasker，不取消游戏里已开始的强化。缺少 --execute 或参数无效时不调用 ADB。
-
---configure-sort 默认 Lv 升序、仅已配置、仅可升级；可加 --sort-order lv_desc、--all-furniture、--include-unupgradeable。这些排序参数要求显式 --configure-sort，防止隐藏设置被误当作应用；--no-auto-request 独立可用。选项映射由 [soleil_options.py](../../../tools/soleil_options.py) 提供，与 PI 一致。
-
-CLI 审计全部轮次、累计许可、每轮最多 5 次、共享启动确认、轮末依頼至多一次及恢复完整性。任何未确认消费即使恢复后到达终点仍非零，不用“任务成功”掩盖未知服务端结果。MPE 原始入口不会自动解析 PI 用户配置；要注册 WaitForFrozenScreen 和 FurnitureTimerControl 扩展。CLI 直接注册 Resource，不导入 AgentServer；MFAA 通过 agent/extensions.py 注册。GUI 执行同样会扣券。
+家具业务 CLI 及其选项映射工具已移除，配置以 [interface.json](../../../assets/interface.json) 为唯一来源。MPE 原始节点调试不会自动解析 Interface 用户配置，应优先通过 Interface 任务入口验证配置。停止任务不会撤销游戏里已开始的强化；消费结果未确认时先核对游戏状态，不重跑来补发。
 
 ## MPE 与复用
 
-在线 MPE + 独立 LocalBridge 继续为默认编辑方式。查看上述各模块的真实本地文件；不要用 config 导出覆盖源文件或未保存画布。修改 JSON/图像后停止任务、保存、重载资源即可，不承诺运行中热更新。Python 扩展修改还需重启 Agent/调试任务，已安装客户端也要同步资源和脚本。
+在线 MPE + 独立 LocalBridge 继续为默认编辑方式。查看 `furniture.json` 及公共导航、恢复的真实本地文件；不要用 config 导出覆盖源文件或未保存画布。修改 JSON/图像后停止任务、保存、重载资源即可，不承诺运行中热更新。Python 扩展修改还需重启 Agent/调试任务，已安装客户端也要同步资源和脚本。
 
 通用导航只保证已知页面的正向到达，不夹带强化、依頼或消费。调用方绑定 NavHome_Return / NavSoleil_Return，并持有 CommonRecoveryResume；导航不覆盖业务恢复点。锚点不是函数调用栈，嵌套调用要显式重绑。And/Or 引用只复用识别，不继承节点级 inverse、动作或流程；JumpBack 返回父节点的 next，不是重做父动作。上述语义应以固定版本和原生回归为准。
 
@@ -93,7 +72,7 @@ CLI 审计全部轮次、累计许可、每轮最多 5 次、共享启动确认�
 
 测试精简前的检查点为 658 项 pytest 通过（76.46 秒，无跳过），不是轻量测试规范调整及 MFAA 参数修复后的当前用例数量。当前测试组织和验证边界见[测试说明](../../../tests/README.md)。本机已配置模型并执行过原生 OCR；其他 checkout 缺少模型时，该部分会明确跳过，不能沿用本机结果。
 
-重构前最后一次授权实测：2026-10-19 19:11:43 至 19:13:58，5 次普通强化均获“時短”确认，当时仍为旧逻辑的 5 次逐件依頼，0 恢复、0 重启，运行器退出 0。日志 debug/soleil-execute-20261019-191143.log；本次核对图 debug/soleil-execute-20261019-191143-verified.png 可见五格锤子及余额 19080。它不验证本次“轮末依頼一次”与动态等待。
+重构前最后一次授权实测：2026-10-19 19:11:43 至 19:13:58，5 次普通强化均获“時短”确认，当时仍为旧逻辑的 5 次逐件依頼，0 恢复、0 重启，运行器退出 0。日志 debug/soleil-execute-20261019-191143.log；本次核对图 debug/soleil-execute-20261019-191143-verified.png 可见五格锤子及余额 19080。该证据由现已移除的 CLI 生成，仅记录历史结果，不验证本次“轮末依頼一次”、动态等待或文件合并。
 
 更早的两次 Loading 失败没有取得启动确认，不能断言服务端未受理。零消费网络恢复及受控单次重启后到首页曾通过，但不是现场诱发冻结实测。旧整批 Lv 升序在 13:02:45 通过一次五件启动；这些历史结果与旧 516 项回归数均不替代本次结果。
 

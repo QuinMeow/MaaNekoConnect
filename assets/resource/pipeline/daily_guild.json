@@ -12,6 +12,7 @@
         ]
     },
     "DailyGuild_Start": {
+        "focus": {"Node.Action.Succeeded": "[社团] 开始协助、金币赞助与成员问候。"},
         "doc": "社团事务",
         "recognition": "DirectHit",
         "post_delay": 0,
@@ -173,6 +174,7 @@
         ]
     },
     "DailyGuild_HelpBatch": {
+        "focus": {"Node.Action.Succeeded": "[社团] 已点击一键协助。", "Node.Action.Failed": "[社团] 异常：协助点击失败。"},
         "recognition": "And",
         "all_of": [
             "DailyGuild_HelpReady"
@@ -425,6 +427,7 @@
         ]
     },
     "DailyGuild_DonateSpend": {
+        "focus": {"Node.Action.Succeeded": "[社团] 已点击1000金币赞助。", "Node.Action.Failed": "[社团] 异常：赞助点击失败。"},
         "recognition": "And",
         "all_of": [
             "DailyGuild_DonateReady"
@@ -625,6 +628,7 @@
         ]
     },
     "DailyGuild_GreetBatch": {
+        "focus": {"Node.Action.Succeeded": "[社团] 已点击一键问候。", "Node.Action.Failed": "[社团] 异常：问候点击失败。"},
         "recognition": "And",
         "all_of": [
             "DailyGuild_GreetReady"
@@ -654,9 +658,23 @@
             "DailyGuild_RewardGate"
         ],
         "on_error": [
-            "Daily_StopCapture"
+            "DailyGuild_NoReward"
         ],
-        "timeout": 15000
+        "timeout": 5000
+    },
+    "DailyGuild_NoReward": {
+        "focus": {"Node.Action.Succeeded": "[社团] 暂无新增奖励。"},
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "timeout": 3000,
+        "next": [
+            "Daily_PostError",
+            "DailyGuild_RewardGate",
+            "DailyGuild_Return"
+        ],
+        "on_error": [
+            "Daily_StopCapture"
+        ]
     },
     "DailyGuild_RewardGate": {
         "recognition": "And",

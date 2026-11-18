@@ -16,13 +16,28 @@
 | 便携 Python 准备与完整性 | `test_portable_python.py` |
 | 公共导航 | `test_navigation.py` |
 | 家具筛选 | `test_furniture_filter.py` |
-| 家具单轮强化 | `test_furniture_round.py` |
-| Soleil 店铺依頼 | `test_soleil_shop.py` |
-| 家具调度 | `test_furniture_schedule.py` |
+| 家具单轮强化与轮末店铺依頼 | `test_furniture_round.py` |
+| 家具调度与 Interface 选项覆盖 | `test_furniture_schedule.py` |
 | 家具计时扩展与识别 | `test_furniture_timer.py` |
 | 通用恢复扩展与流程 | `test_recovery.py` |
-| CLI 与编辑器选项映射 | `test_soleil_options.py` |
-| 强化运行入口与结果审计 | `test_run_soleil_upgrade.py` |
+| 日志内容与未知数值 | `test_runtime_logs.py` |
+| Soleil 浴室目标与当番顺序 | `test_soleil_daily.py` |
+| Soleil 复选项组合与家具配置保留 | `test_soleil_task.py` |
+| 免费比赛、对手选择与评分刷新许可 | `test_daily_contest.py` |
+| 交换所逐格购买与免费更新许可 | `test_daily_exchange.py` |
+| 日常领奖与列表切换 | `test_daily_rewards.py` |
+| 日常共享导航与收尾 | `test_daily_core.py` |
+| 登录条件启动 | `test_daily_login.py` |
+| 好友问候 | `test_daily_friend.py` |
+| 邮箱领取 | `test_daily_mail.py` |
+| 社团问候、帮助与赞助 | `test_daily_guild.py` |
+| 配送识别与派单 | `test_delivery.py` |
+| 礼物关卡选择与快速开店 | `test_daily_gift.py` |
+| VR 免费次数核验 | `test_daily_vr.py` |
+| 广告抽卡流程 | `test_daily_gacha.py` |
+| 广告关闭扩展 | `test_ad_close.py` |
+
+每日和家具业务 CLI 已移除，不保留其专用测试或另一套选项映射。家具 Pipeline 合并为一个 JSON 不等于把不同安全契约压进一个超长测试；筛选、单轮、调度、计时仍各自使用一个轻量测试文件。
 
 ## 验证边界
 
@@ -30,4 +45,4 @@
 
 编辑器选项测试按 MFAA 的有序 override 数组调用原生 `post_task`，验证固定/最短/最长模式与 90 秒输入。节点字段覆盖不递归合并 `custom_action_param`；局部参数丢失 `op` 的旧故障保留为拒绝执行回归。
 
-从仓库根目录运行 `python -m pytest -q`；完整离线验证命令见 [AGENTS.md](../AGENTS.md)。2026-10-19 精简前的 658 项回归全部通过；精简后以当前用例为准，不再维护旧版逐字段测试和完整矩阵。
+显式选择独立 Python 3.11 测试环境后，从仓库根目录运行其 `python.exe -m pytest -q --basetemp .pytest_cache/tmp`；复用这一临时目录，不在 `config/` 下为每次测试创建目录。完整离线验证命令见 [AGENTS.md](../AGENTS.md)，不要使用生产 `.runtime/python` 安装 pytest。2026-10-19 精简前的 658 项回归全部通过；精简后以当前用例为准，不再维护旧版逐字段测试和完整矩阵。

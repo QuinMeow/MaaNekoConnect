@@ -23,7 +23,7 @@ REGIONS = {
     "page_title": (0, 20, 250, 80),
 }
 ARRIVALS = ("NavHome_Arrived", "NavSoleil_Arrived")
-MOVES = ("NavSoleil_FromHome", "NavHome_FromSoleil", "NavHome_FromFurnitureEnhance")
+MOVES = ("NavSoleil_FromHome", "NavHome_FromKnownBusiness")
 
 
 def navigate(native, pipelines, images, route="NavHome_Ensure", persistent=False, popup_limit=20):
@@ -46,14 +46,12 @@ def navigate(native, pipelines, images, route="NavHome_Ensure", persistent=False
         "NavHome_Return": "NavDone", "NavSoleil_Return": "NavDone", "CommonRecoveryResume": "NavDone",
         "NavHome_PopupReturn": "NavHome_Normalize"}}
     overrides["NavDone"] = {"recognition": "DirectHit", "post_delay": 0, "next": []}
-    if route in ("NavHome_FromSoleil", "NavHome_FromFurnitureEnhance"):
-        overrides[route].update(recognition="DirectHit", action="DoNothing")
     return [node.name for node in native.run("NavFixture", overrides).nodes], clicks
 
 
 @pytest.mark.parametrize("sample,expected", [
     ("home_ready", (ARRIVALS[0], MOVES[0])), ("home_holdout", (ARRIVALS[0], MOVES[0])),
-    ("cafe", (ARRIVALS[1], MOVES[1])), ("enhance", (MOVES[2],)),
+    ("cafe", (ARRIVALS[1], MOVES[1])), ("enhance", (MOVES[1],)),
     ("home_loading", ()), ("transition_loading", ()),
 ])
 def test_only_ready_supported_pages_allow_arrival_or_navigation(native, frame, sample, expected):
@@ -74,8 +72,8 @@ def test_dimmed_page_cannot_authorize_navigation(native, frame, sample, factor):
     ("home_ready", "home_building", "NavHome_Arrived"),
     ("cafe", "cafe_title", "NavSoleil_Arrived"),
     ("cafe", "enhance_icon", "NavSoleil_Arrived"),
-    ("cafe", "footer_home", "NavHome_FromSoleil"),
-    ("enhance", "footer_home", "NavHome_FromFurnitureEnhance"),
+    ("cafe", "footer_home", "NavHome_FromKnownBusiness"),
+    ("enhance", "footer_home", "NavHome_FromKnownBusiness"),
 ])
 def test_navigation_needs_a_complete_page_and_its_button(native, frame, sample, region, node):
     image = frame("navigation", sample, REGIONS)
@@ -131,8 +129,6 @@ def test_popup_uses_shared_chrome_or_dismiss_control_not_campaign_text(native, f
 
 @pytest.mark.parametrize("route,samples", [
     ("NavHome_Ensure", ["monthly_bonus", "event_bonus", "half_bonus", "event_promo", "gacha_promo", "notice_list"]),
-    ("NavHome_FromSoleil", ["event_promo", "notice_list"]),
-    ("NavHome_FromFurnitureEnhance", ["notice_list"]),
     ("CommonRecoveryDispatch", ["monthly_bonus", "half_bonus", "notice_list"]),
 ])
 def test_variable_popup_chain_returns_to_caller_without_spending(native, pipelines, frame, route, samples):
@@ -168,10 +164,16 @@ def test_known_title_return_error_wins_over_close_visible_underneath(native, pip
 
 @pytest.mark.parametrize("route", ["NavHome_Ensure", "NavSoleil_Ensure", "CommonRecoveryDispatch", "CommonRecoveryFreshCheck"])
 @pytest.mark.parametrize("persistent", [False, True])
-@pytest.mark.parametrize("sample", ["quest", "prep", "delivery"])
+@pytest.mark.parametrize("sample", ["quest", "prep", "delivery", "cafe", "enhance"])
 def test_known_non_home_returns_to_new_caller_once_without_restarting_static_page(native, pipelines, frame, route, persistent, sample):
-    page = (frame("daily_gift", "quest", {"quest_title": (0, 20, 250, 80), "home": (280, 1195, 160, 75)})
-            if sample == "quest" else frame("navigation", "normalize_" + sample, REGIONS))
+    if sample == "quest":
+        page = frame("daily_gift", "quest", {"quest_title": (0, 20, 250, 80), "home": (280, 1195, 160, 75)})
+    else:
+        page = frame("navigation", sample if sample in ("cafe", "enhance") else "normalize_" + sample, REGIONS)
+    if sample == "cafe" and route == "NavSoleil_Ensure":
+        names, clicks = navigate(native, pipelines, [page], route, persistent)
+        assert names[-1] == "NavDone" and not clicks
+        return
     images = [page, frame("navigation", "home_ready", REGIONS)]
     if route == "NavSoleil_Ensure":
         images.append(frame("navigation", "cafe", REGIONS))

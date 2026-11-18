@@ -17,7 +17,7 @@
 
 首页判定沿用既有两份 UI 模板，并增加亮度门禁；不会只因 Soleil 文字仍可见就点击尚未加载好的建筑。咖啡店门禁不再只看“店舗”标题，而同时要求强化入口及明亮状态。当前亮度参数针对已有截图，不能证明所有遮罩或所有主题均已覆盖。
 
-`NavHome_FromFurnitureEnhance` 只复用 `FurnitureEnhance_PageGuard` 的纯页面识别，再与独立 home 按钮门禁组合；不调用家具业务。公共导航不执行普通强化、付费加速、依頼、Android Back 或无条件坐标盲点。
+`NavHome_FromKnownBusiness` 统一处理已知业务页归首页；其中家具页只复用 `FurnitureEnhance_PageGuard` 的纯页面识别，再与独立 home 按钮门禁组合，不调用家具业务。公共导航不执行普通强化、付费加速、依頼、Android Back 或无条件坐标盲点。
 
 2026-10-20 串行调试增加 Quest、地图、VR、比赛、交换、礼物、备战、卡池、社团及成员页的纯识别，再与 `NavFooter_Home` 同时确认。菜单、好友、每日列表、邮箱、容量不足、社团帮助/赞助及普通奖励只关闭，不调用业务模块的领取、帮助或消费节点。首页按钮每 Task 共享最多八次，正常静态业务页不会仅因静止而重启。
 
@@ -63,7 +63,7 @@ Close、继续提示及奖励面板有亮度/颜色门禁，拒绝本次 0.75 �
 
 这是接入示意，不是执行授权。`NavHome_Arrived` 跳转 `[Anchor]NavHome_Return`，`NavSoleil_Arrived` 跳转 `[Anchor]NavSoleil_Return`。锚点由 Task 上下文保存，不是自动调用栈；有多种调用位置时应在调用前重新绑定，避免沿用旧返回点。
 
-`NavHome_Ensure` 私有返回点指向 `NavHome_Arrived`，`NavSoleil_Ensure` 指向 `NavSoleil_FromHome`，日常收尾 `Daily_Return` 则指向 `Daily_OnHome`。三者每次调用均重绑 `NavHome_NormalizeReturn`，不把入口业务的 `NavHome_Return` 用作收尾。旧 `NavHome_FromSoleil` / `NavHome_FromFurnitureEnhance` 兼容入口也自行绑定该私有点，旧 caller 无需新增配置。
+`NavHome_Ensure` 私有返回点指向 `NavHome_Arrived`，`NavSoleil_Ensure` 指向 `NavSoleil_FromHome`，日常收尾 `Daily_Return` 则指向 `Daily_OnHome`。三者每次调用均重绑 `NavHome_NormalizeReturn`，不把入口业务的 `NavHome_Return` 用作收尾。咖啡店和强化页归首页也复用统一分流，不再保留独立兼容入口。
 
 导航不写入或清除 `CommonRecoveryResume`，不重置业务消费与恢复计数。网络中断或页面超时交给[通用恢复](common_recovery.md)，恢复后回调用方安全入口重新判页，不直接跳入消费动作。缺少锚点不是成功到达业务终点，应由调用方测试和结果审计发现。
 

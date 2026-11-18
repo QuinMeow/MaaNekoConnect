@@ -3,7 +3,6 @@
 import base64
 import json
 import math
-import os
 import struct
 import time
 import urllib.parse
@@ -13,6 +12,11 @@ import zlib
 import numpy as np
 
 from maa.custom_action import CustomAction
+from maa.define import Rect
+if __package__:
+    from .ad_settings import load_config
+else:
+    from ad_settings import load_config
 
 
 STATE_NODE = "DailyGacha_AdState"
@@ -20,22 +24,6 @@ _REGIONS = {"top_left": (0, 0), "top_right": (592, 0),
             "bottom_left": (0, 1152), "bottom_right": (592, 1152)}
 _MODEL_FRAMES = (14, 22, 30, 38)
 _LABELS = {"x", "\u00d7", "close", "\u9589\u3058\u308b", "\u5173\u95ed", "\u95dc\u9589"}
-
-
-def load_config(environ):
-    if environ.get("MAANEKO_AD_LLM_ENABLED") != "1":
-        return None
-    values = {key: environ.get(f"MAANEKO_AD_LLM_{key.upper()}", "")
-              for key in ("endpoint", "model", "api_key")}
-    if not all(isinstance(value, str) and value.strip() == value and value for value in values.values()):
-        raise ValueError("Explicit endpoint, model and API key are required")
-    parsed = urllib.parse.urlsplit(values["endpoint"])
-    local = parsed.hostname in ("localhost", "127.0.0.1", "::1")
-    if (parsed.scheme != "https" and not (parsed.scheme == "http" and local)
-            or not parsed.hostname or parsed.username or parsed.password or parsed.query
-            or parsed.fragment or not parsed.path.endswith("/chat/completions")):
-        raise ValueError("Use an explicit HTTPS chat-completions endpoint or loopback HTTP")
-    return values
 
 
 def corner_montage(image):
@@ -111,6 +99,8 @@ def request_decision(montage, config):
                "response_format": {"type": "json_object"}, "messages": [{"role": "user", "content": [
                    {"type": "text", "text": prompt}, {"type": "image_url", "image_url": {
                        "url": "data:image/png;base64," + encoded}}]}]}
+    if urllib.parse.urlsplit(config["endpoint"]).hostname == "api.deepseek.com":
+        payload["thinking"] = {"type": "disabled"}
     request = urllib.request.Request(config["endpoint"], json.dumps(payload).encode("utf-8"),
                                      headers={"Authorization": "Bearer " + config["api_key"],
                                               "Content-Type": "application/json"}, method="POST")
@@ -146,6 +136,8 @@ def _save(context, state):
 
 
 def _native_point(box):
+    if isinstance(box, Rect):
+        box = tuple(box)
     if not isinstance(box, (list, tuple)) or len(box) != 4:
         raise ValueError("Invalid native close rectangle")
     for region, (x, y) in _REGIONS.items():
@@ -170,11 +162,19 @@ class AdCloseControl(CustomAction):
             if controller.post_screencap().wait().succeeded is not True or context.tasker.stopping:
                 return False
             image = controller.cached_image
+            foreground = context.run_recognition("DailyLogin_Foreground", image)
+            if foreground is None or foreground.hit is not True:
+                return False
             montage = corner_montage(image)
-            result = context.run_recognition("DailyGacha_AdCloseNative", image)
+            native = context.get_node_data("DailyGacha_AdCloseNative")
+            if not isinstance(native, dict):
+                return False
+            # Direct run_recognition ignores enabled; never execute the disabled placeholder.
+            result = (context.run_recognition("DailyGacha_AdCloseNative", image)
+                      if native.get("enabled", True) else None)
             point = _native_point(result.box) if result is not None and result.hit is True else None
             if point is None and state["frames"] in _MODEL_FRAMES:
-                config = load_config(os.environ)
+                config = load_config()
                 if config is not None:
                     state["calls"] += 1
                     _save(context, state)
@@ -187,6 +187,9 @@ class AdCloseControl(CustomAction):
                             return True
             if point is None:
                 return True
+            foreground = context.run_recognition("DailyLogin_Foreground", controller.cached_image)
+            if foreground is None or foreground.hit is not True:
+                return False
             state["clicks"] += 1
             _save(context, state)
             if context.tasker.stopping:
@@ -197,6 +200,17 @@ class AdCloseControl(CustomAction):
             return False
 
 
+class AdCloseConfigured(CustomAction):
+    def run(self, context, argv):
+        try:
+            return (not context.tasker.stopping and json.loads(argv.custom_action_param) == {}
+                    and load_config() is not None)
+        except Exception:
+            return False
+
+
 def register_ad_close(registry):
+    if registry.register_custom_action("AdCloseConfigured", AdCloseConfigured()) is not True:
+        raise RuntimeError("Failed to register AdCloseConfigured")
     if registry.register_custom_action("AdCloseControl", AdCloseControl()) is not True:
         raise RuntimeError("Failed to register AdCloseControl")

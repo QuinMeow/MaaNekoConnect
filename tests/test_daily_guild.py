@@ -174,3 +174,23 @@ def test_full_title_survives_repeated_native_page_and_gate_action_checks(native,
     patch["CommonRecoveryStopCapture"]["action"] = "DoNothing"
     names = [value.name for value in native.run("NavHome_KnownBusinessGate", patch).nodes]
     assert names[-1] == "NavHome_FromKnownBusiness" and len(clicks) == 1, names
+
+
+@pytest.mark.parametrize("known_page", [True, False])
+def test_daily_greeting_without_reward_returns_only_from_known_members_page(native, pipelines, frame, known_page):
+    native.controller.image = frame("daily", "guild_members_full", {
+        "title": (0, 20, 300, 80), "footer": (280, 1195, 160, 75)})
+    if not known_page:
+        native.controller.image[:] = 0
+    clicks = []
+    def click(x, y):
+        clicks.append((x, y))
+        native.controller.image = frame("recovery", "home_ready_holdout", REGIONS)
+        return True
+    native.controller.on_click = click
+    patch = {name: {"pre_delay": 0, "post_delay": 0, "timeout": 30, "rate_limit": 1}
+             for name in pipelines}
+    patch["Daily_StopCapture"]["action"] = "DoNothing"
+    names = [n.name for n in native.run("DailyGuild_RewardWait", patch).nodes]
+    assert names[-1] == ("DailyCore_Done" if known_page else "Daily_Stop")
+    assert len(clicks) == int(known_page) and "DailyGuild_GreetBatch" not in names

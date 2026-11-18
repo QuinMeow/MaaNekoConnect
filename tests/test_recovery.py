@@ -95,9 +95,9 @@ def test_native_wait_distinguishes_static_and_moving_frames(native, moving):
 
 
 @pytest.mark.parametrize("sample,node", [
-    ("network_stable", "CommonNetworkConfirm"), ("title_truck", "CommonTitleTap"),
+    ("network_stable", "CommonNetworkReady"), ("title_truck", "CommonTitleTap"),
     ("title_characters", "CommonTitleTap"), ("title_loading", "CommonLoading"),
-    ("enhance_loading", "CommonLoading"), ("home_ready_holdout", "CommonHomeReady"),
+    ("enhance_loading", "CommonLoading"), ("home_ready_holdout", "NavHome_Ready"),
 ])
 def test_observed_recovery_states_and_blank_negatives(native, frame, sample, node):
     assert native.match(node, frame("recovery", sample, REGIONS))

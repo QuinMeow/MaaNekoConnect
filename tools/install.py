@@ -191,6 +191,9 @@ def install_project(
             project_root / "agent", output / "agent",
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"), dirs_exist_ok=True,
         )
+        settings_launcher = project_root / "scripts" / "ConfigureAdAI.vbs"
+        if os_name == "win" and settings_launcher.is_file():
+            shutil.copy2(settings_launcher, output / settings_launcher.name)
         if python_runtime is not None:
             shutil.copytree(
                 python_runtime, output / ".runtime" / "python",

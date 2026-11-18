@@ -118,23 +118,31 @@ def native(tmp_path):
     Tasker.set_save_on_error(False)
     controller, resource, tasker = Controller(), Resource(), Tasker()
     from agent.login import register_login
+    from agent.contest import register_contest
+    from agent.soleil import register_soleil
+    from agent.gift import register_gift
+    from agent.exchange import register_exchange
     register_login(resource)
+    register_contest(resource)
+    register_soleil(resource)
+    register_gift(resource)
+    register_exchange(resource)
     assert controller.post_connection().wait().succeeded
     assert resource.post_bundle(ROOT / "assets/resource").wait().succeeded
     assert tasker.bind(resource, controller)
 
-    def finish(job):
-        deadline = time.monotonic() + 5
+    def finish(job, seconds=5):
+        deadline = time.monotonic() + seconds
         while not job.done and time.monotonic() < deadline:
             time.sleep(0.005)
-        assert job.done, "Offline native job exceeded five seconds"
+        assert job.done, f"Offline native job exceeded {seconds} seconds"
         assert job.succeeded
         detail = job.get()
         assert detail is not None
         return detail
 
-    def match(name, image):
-        detail = finish(tasker.post_recognition("And", JAnd(all_of=[name]), image))
+    def match(name, image, seconds=5):
+        detail = finish(tasker.post_recognition("And", JAnd(all_of=[name]), image), seconds)
         assert len(detail.nodes) == 1 and detail.nodes[0].action is None
         return detail.nodes[0].recognition.hit
 

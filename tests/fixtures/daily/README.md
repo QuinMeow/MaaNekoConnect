@@ -20,15 +20,35 @@ Fixtures do not operate ADB, network, or real controllers.
 
 ## Fixture Files
 
-- `rows.npz`: `header`, `tab`, and Income/Friend/Delivery/VR/Contest/Gold/Gift/Gacha
-  full row crops below. Tests paste them at different vertical positions.
+- `mail_current.npz`: the 2026-10-21 mailbox with eleven unclaimed messages,
+  from `debug/evidence/task-audit-20261021/15_DailyMail_Start/state_DailyMail_BoxGate_29.png`.
+  Retains only the mailbox title `[180,80,360,70]`, batch control
+  `[245,925,230,60]`, selected unclaimed tab `[55,1018,230,44]` and
+  Close control `[310,1135,100,100]`. No message rows, account balances,
+  item icons or reward amounts are retained. The original batch template
+  scored `0.945292` in its existing ROI, while the bright-color gate matched
+  `3233` pixels against its unchanged `3000` requirement. The supplementary
+  production template is the unmodified button at `[250,931,218,49]`;
+  matching remains `0.97`. Native tests replay one batch click followed by
+  reward, capacity rejection, remaining mail and home, without another batch.
+- `vr_reward_current.npz`: 2026-10-20 reward title `[270,380,180,70]`
+  and blue close control `[310,1135,100,100]`, without reward/account data.
+- `vr_last_free_used.npz`: the same run after the last free skip, retaining
+  title, control area `[505,1027,165,98]` and footer; the free badge is absent.
+
 - `controls.npz`: named original control crops below, plus `win_text` from
   `daily_20261019_141_contest_progress.png` at `[0,595,350,130]`.
-- `holdout.npz`: header/tab/Gold row/button from the later
-  `daily_20261019_149_daily_eight_ready.png`, at `[271,117,179,32]`,
-  `[45,1018,105,49]`, `[88,340,458,28]`, and `[493,435,138,45]`.
-  The `complete` crop is real `(1/1)` from `25_missions` at `[208,340,55,28]`;
-  tests place it over each pending progress region in memory to reject replays.
+- `contest_failed.npz`: 2026-10-21 defeat result from the authorized single
+  arena attempt, source `debug/evidence/task-audit-20261021/08_DailyContest_Start/live-failed.png`.
+  Retains only `title` at `[0,595,510,135]` and `top` at `[215,1155,290,90]`.
+  The title keeps the blue Failed lettering and its adjacent white border;
+  all background pixels are replaced by the native green mask. No character,
+  team row, account rank, points, or balance is retained. The corresponding
+  production title template matches only the masked lettering; TOP still
+  requires a 0.97 template match and the original bright-button gate. The
+  current TOP crop at `[232,1172,256,60]` supplements the original control
+  template without lowering its threshold. Win/Lose OCR still uses
+  confidence 0.95; the observed defeat's uncertain OCR is not accepted.
 - `weekly.npz`: the remembered weekly selection in
   `daily_20261019_160_after_gold_attempt.png`, retaining header/tab/Close at
   `[271,117,179,32]`, `[45,1018,105,49]`, and `[310,1135,100,100]`.
@@ -58,30 +78,21 @@ on the members page was observed to merge `?` into the title; it is not fixed
 by lowering confidence or permitting extra characters. These are offline
 regressions from actual UI crops, not successful device navigation evidence.
 
-The holdout is a different screenshot from the task-title source, not a synthetic
-font rendering. Relocated rows, replaced completed progress, missing controls,
-and 0.75/0.7 dimmed canvases are synthetic regressions, not additional device
-observations. Sources shared by templates and fixtures prove observed UI
-distinctions, not independent generalization.
+Missing controls and 0.75/0.7 dimmed canvases are synthetic regressions, not
+additional device observations. Sources shared by templates and fixtures prove
+observed UI distinctions, not independent generalization. The retired combined
+task scheduler's pending-row fixtures have been removed; selected independent
+modules do not consult daily `0/1` progress before running.
 
 ## Source Crops
 
-Rectangles are `[x,y,width,height]`. Pending PNGs retain only the listed title
-width, excluding the progress; their NPZ row retains the original whole crop.
-Progress is separately recognized by native OCR with confidence >= 0.95.
+Rectangles are `[x,y,width,height]`. Shared control archives retain their original
+observed crops; not every archived control is also a current production template.
 
-| Name | Local Source | Rectangle | PNG |
+| Name | Local Source | Rectangle | Crop |
 | --- | --- | --- | --- |
 | `header` | `daily_20261019_25_missions.png` | `[271,117,179,32]` | Original crop |
 | `tab` | `daily_20261019_25_missions.png` | `[45,1018,105,49]` | Original crop |
-| `pending_income` | `daily_20261019_25_missions.png` | `[88,550,257,28]` | PNG title width 201 |
-| `pending_friend` | `daily_20261019_25_missions.png` | `[88,760,369,28]` | PNG title width 309 |
-| `pending_delivery` | `daily_20261019_26_missions_middle.png` | `[88,330,240,28]` | PNG title width 183 |
-| `pending_gift` | `daily_20261019_29_missions_gap.png` | `[88,303,429,28]` | PNG title width 368 |
-| `pending_vr` | `daily_20261019_29_missions_gap.png` | `[88,513,458,28]` | PNG title width 398 |
-| `pending_gold` | `daily_20261019_29_missions_gap.png` | `[88,723,458,28]` | PNG title width 331 |
-| `pending_contest` | `daily_20261019_27_missions_bottom.png` | `[88,469,278,28]` | PNG title width 219 |
-| `pending_gacha` | `daily_20261019_27_missions_bottom.png` | `[88,679,205,28]` | PNG title width 146 |
 | `receive` | `daily_20261019_25_missions.png` | `[494,435,137,44]` | Original crop |
 | `challenge` | `daily_20261019_29_missions_gap.png` | `[493,398,138,45]` | Original crop |
 | `summary` | `daily_20261019_27_missions_bottom.png` | `[88,889,264,28]` | Original crop |
@@ -135,14 +146,19 @@ Progress is separately recognized by native OCR with confidence >= 0.95.
 
 ## Behavior Boundaries
 
-Native tests require the complete page/control combination, reject missing or
-dimmed markers, distinguish `0/1` from `1/1`, exercise bounded attempts and
-claim-gate exhaustion, and explicitly switch a remembered weekly tab before
-scanning. The OCR cases skip when model files have not been provisioned;
-the local final validation used the existing models, not mocked OCR.
+`vr_free_current.npz` retains only title `[35,25,185,60]`, free control
+`[505,1020,165,105]` and footer `[280,1195,160,75]` from the 2026-10-20
+`daily_vr_unverified_free` capture. It reproduces the label-template mismatch
+with one free attempt remaining; semantic OCR must still reject missing label,
+count or button and dimmed controls. No balance, account or character is retained.
 
-The CLI checks nonempty model files before connecting. Models remain deployment
-resources, not fixtures; no tests download them or install packages.
+Native tests require the complete page/control combination, reject missing or
+dimmed markers, exercise bounded attempts and claim-gate exhaustion, and
+explicitly switch a remembered weekly tab before claiming daily rewards.
+OCR cases require provisioned models rather than mocked text results.
+
+Models remain deployment resources, not fixtures; no tests download them or
+install packages.
 Gate/limit flow tests override physical actions with a custom offline controller.
 OCR-only matching never performs an action.
 

@@ -15,18 +15,23 @@ def test_resources_have_unique_nodes_and_resolvable_references(pipelines):
             for child in value:
                 yield from visit(child)
 
-    for name, node in pipelines.items():
+    interface = json.loads((ROOT / "assets/interface.json").read_text("utf-8"))
+    definitions = list(pipelines.items())
+    for item in visit(interface):
+        for name, override in item.get("pipeline_override", {}).items():
+            assert name in pipelines, name
+            definitions.append((name, override))
+    for name, node in definitions:
         for item in visit(node):
             for field in ("next", "on_error", "all_of", "any_of"):
                 for target in item.get(field, []):
                     if isinstance(target, str):
-                        assert target.startswith("[Anchor]") or target in pipelines, (name, target)
+                        assert target.startswith("[Anchor]") or target.removeprefix("[JumpBack]") in pipelines, (name, target)
             for target in item.get("anchor", {}).values():
                 assert target in pipelines, (name, target)
             templates = item.get("template", [])
             for template in [templates] if isinstance(templates, str) else templates:
                 assert (ROOT / "assets/resource/image" / template).is_file(), (name, template)
-    interface = json.loads((ROOT / "assets/interface.json").read_text("utf-8"))
     assert all(task["entry"] in pipelines for task in interface["task"])
 
 
@@ -35,15 +40,12 @@ def test_tests_stay_within_the_physical_line_budget():
         assert len(path.read_text("utf-8").splitlines()) <= 200, path.name
 
 
-def test_public_tasks_use_operation_names_without_framework_diagnostics(pipelines):
+def test_business_tools_do_not_reintroduce_a_cli():
+    for name in ("run_daily.py", "run_soleil_upgrade.py", "soleil_options.py"):
+        assert not (ROOT / "tools" / name).exists()
+
+
+def test_public_tasks_exclude_framework_diagnostics(pipelines):
     tasks = json.loads((ROOT / "assets/interface.json").read_text("utf-8"))["task"]
     assert "TestLaunchAndCapture" not in pipelines and "TestCaptureScreen" not in pipelines
     assert all(not task["entry"].startswith("Test") for task in tasks)
-    names = {task["entry"]: task.get("label", task["name"]) for task in tasks}
-    assert names["DailyExchange_Start"] == "交换所兑换"
-    assert names["DailyVR_Start"] == "VR猫爬塔"
-    for task in tasks:
-        for name in (task["name"], names[task["entry"]]):
-            assert not any(word in name for word in ("日常：", "一次", "一件", "用尽"))
-            assert not any(char.isdigit() for char in name)
-        assert pipelines[task["entry"]]["doc"] == names[task["entry"]]

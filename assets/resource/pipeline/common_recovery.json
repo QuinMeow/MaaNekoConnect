@@ -1,5 +1,6 @@
 {
     "CommonRecoveryEnter": {
+        "focus": {"Node.Action.Succeeded": "[恢复] 异常：开始页面恢复。"},
         "recognition": "DirectHit",
         "anchor": {"CommonRecoveryRoute": "CommonRecoveryDispatch"},
         "post_delay": 0,
@@ -7,6 +8,7 @@
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonRecoveryFrozenEnter": {
+        "focus": {"Node.Action.Succeeded": "[恢复] 异常：页面静止，重新检测。"},
         "recognition": "DirectHit",
         "anchor": {"CommonRecoveryRoute": "CommonRecoveryFreshCheck"},
         "post_delay": 0,
@@ -140,23 +142,27 @@
         "template": "common_recovery/access_message.png",
         "threshold": 0.95
     },
+    "CommonAccessDeniedReady": {
+        "recognition": "And",
+        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"]
+    },
     "CommonAccessDeniedInterrupt": {
         "recognition": "And",
-        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"],
+        "all_of": ["CommonAccessDeniedReady"],
         "post_delay": 0,
         "next": ["CommonRecoveryEnter"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonAccessDeniedGate": {
         "recognition": "And",
-        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"],
+        "all_of": ["CommonAccessDeniedReady"],
         "post_delay": 0,
         "next": ["CommonAccessDeniedConfirm", "CommonRecoveryStopCapture"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonAccessDeniedConfirm": {
         "recognition": "And",
-        "all_of": ["CommonAccessDeniedMessage", "CommonDateChangedButton"],
+        "all_of": ["CommonAccessDeniedReady"],
         "action": "Click",
         "target": [345, 653, 30, 25],
         "max_hit": 3,
@@ -176,23 +182,27 @@
         "template": "common_recovery/date_button.png",
         "threshold": 0.95
     },
+    "CommonDateChangedReady": {
+        "recognition": "And",
+        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"]
+    },
     "CommonDateChangedInterrupt": {
         "recognition": "And",
-        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"],
+        "all_of": ["CommonDateChangedReady"],
         "post_delay": 0,
         "next": ["CommonRecoveryEnter"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonDateChangedGate": {
         "recognition": "And",
-        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"],
+        "all_of": ["CommonDateChangedReady"],
         "post_delay": 0,
         "next": ["CommonDateChangedConfirm", "CommonRecoveryStopCapture"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonDateChangedConfirm": {
         "recognition": "And",
-        "all_of": ["CommonDateChangedMessage", "CommonDateChangedButton"],
+        "all_of": ["CommonDateChangedReady"],
         "action": "Click",
         "target": [345, 653, 30, 25],
         "max_hit": 3,
@@ -212,23 +222,27 @@
         "template": "common_recovery/network_confirm.png",
         "threshold": 0.95
     },
+    "CommonNetworkReady": {
+        "recognition": "And",
+        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"]
+    },
     "CommonNetworkInterrupt": {
         "recognition": "And",
-        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
+        "all_of": ["CommonNetworkReady"],
         "post_delay": 0,
         "next": ["CommonRecoveryEnter"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonNetworkGate": {
         "recognition": "And",
-        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
+        "all_of": ["CommonNetworkReady"],
         "post_delay": 0,
         "next": ["CommonNetworkConfirm", "CommonRecoveryStopCapture"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonNetworkConfirm": {
         "recognition": "And",
-        "all_of": ["CommonNetworkMessage", "CommonNetworkButton"],
+        "all_of": ["CommonNetworkReady"],
         "action": "Click",
         "target": [345, 653, 30, 25],
         "max_hit": 3,
@@ -282,18 +296,15 @@
         "next": ["CommonRecoveryDispatch"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
-    "CommonHomeReady": {
-        "recognition": "And",
-        "all_of": ["NavHome_Ready"]
-    },
     "CommonRecoveryHome": {
         "recognition": "And",
-        "all_of": ["CommonHomeReady"],
+        "all_of": ["NavHome_Ready"],
         "post_delay": 0,
         "next": ["CommonRecoveryRecovered"],
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonRecoveryRecovered": {
+        "focus": {"Node.Action.Succeeded": "[恢复] 页面已恢复，继续任务。"},
         "recognition": "DirectHit",
         "post_delay": 0,
         "next": ["[Anchor]CommonRecoveryResume"],
@@ -342,7 +353,7 @@
     },
     "CommonRecoveryHomeRestart": {
         "recognition": "And",
-        "all_of": ["CommonHomeReady"],
+        "all_of": ["NavHome_Ready"],
         "post_delay": 0,
         "next": ["CommonRecoveryRestartPermit", "CommonRecoveryStopCapture"],
         "on_error": ["CommonRecoveryStopCapture"]
@@ -404,6 +415,7 @@
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonStopGame": {
+        "focus": {"Node.Action.Succeeded": "[恢复] 已停止游戏，准备重新启动。", "Node.Action.Failed": "[恢复] 异常：停止游戏失败。"},
         "recognition": "DirectHit",
         "action": "StopApp",
         "package": "jp.goodsmile.nekoconne",
@@ -420,6 +432,7 @@
         "on_error": ["CommonRecoveryStopCapture"]
     },
     "CommonRecoveryStopCapture": {
+        "focus": {"Node.Action.Succeeded": "[恢复] 异常：页面恢复失败，已保存截图。", "Node.Action.Failed": "[恢复] 异常：保存截图失败。"},
         "recognition": "DirectHit",
         "action": "Screencap",
         "filename": "common_recovery_stopped",

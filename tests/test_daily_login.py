@@ -134,19 +134,17 @@ def test_registration_failure_is_not_ignored():
 
 
 @pytest.mark.parametrize("loading", [False, True])
-def test_cold_launch_via_title_reaches_home_then_continues_cli_selection(native, pipelines, frame, loading):
-    import run_daily
-
+def test_cold_launch_via_title_reaches_home_before_the_next_independent_task(native, pipelines, frame, loading):
     patch = fast(pipelines)
     if loading:
         patch["NavHome_Normalize"]["timeout"] = 1
         if "DailyLogin_WaitUi" in patch:
-            patch["DailyLogin_WaitUi"]["timeout"] = 1000
+            patch["DailyLogin_WaitUi"]["timeout"] = 4000
     patch["DailyMail_Open"].update(action="DoNothing", next=["DailyCore_Done"])
     title = frame("recovery", "title_truck", {
         "title_tap": (248, 1064, 225, 32), "title_logo": (219, 955, 283, 34)})
     native.controller.foreground_package = "com.android.launcher3"
-    starts, stops, posted = [], [], []
+    starts, stops = [], []
 
     def start(package):
         starts.append(package)
@@ -161,29 +159,33 @@ def test_cold_launch_via_title_reaches_home_then_continues_cli_selection(native,
         native.controller.image = home_image()
         return True
 
-    def post(entry, overrides):
-        posted.append(entry)
-        return native.tasker.post_task(entry, patch | overrides)
-
     native.controller.on_start = start
     native.controller.on_stop = lambda package: stops.append(package) or True
     native.controller.on_click = click
-    report = run_daily.execute_tasks(SimpleNamespace(post_task=post), ["login", "mail"], 30, [])
-    assert report["result"] == "finished" and len(posted) == 2, report
+    login = [node.name for node in native.run("DailyLogin_Start", patch).nodes]
+    assert login[-1] == "DailyCore_Done" and "DailyLogin_TapTitle" in login
+    assert "DailyMail_Open" not in login
+    mail = [node.name for node in native.run("DailyMail_Start", patch).nodes]
+    assert mail[-1] == "DailyCore_Done" and "DailyMail_Open" in mail
     assert starts == [PACKAGE] and stops == []
-    assert "CommonTitleTap" in report["tasks"][0]["nodes"]
-    assert report["tasks"][0]["game_completion"] == "unverified"
+    assert not any(node.endswith("Spend") for node in login + mail)
 
 
-@pytest.mark.parametrize("unsafe", ["CommonStopGame", "UnexpectedSpend"])
-def test_login_recovery_exception_cannot_hide_a_restart_or_consumption(unsafe):
-    import run_daily
+def test_visible_tap_to_start_does_not_wait_for_logo_or_recovery(native, pipelines, frame):
+    title = frame("recovery", "title_truck", {
+        "title_tap": (248, 1064, 225, 32), "title_logo": (219, 955, 283, 34)})
+    title[945:995, 205:515] = 0
+    native.controller.image = title
+    clicks = []
 
-    names = ["DailyLogin_Start", "CommonRecoveryRecovered", unsafe, "DailyCore_Done"]
-    detail = SimpleNamespace(nodes=[SimpleNamespace(name=name) for name in names])
-    job = SimpleNamespace(done=True, succeeded=True, get=lambda: detail)
-    calls = []
-    tasker = SimpleNamespace(post_task=lambda entry, overrides: calls.append(entry) or job)
-    report = run_daily.execute_tasks(tasker, ["login", "friend"], 30, [])
-    assert report["result"] == "recovered_unverified" and len(calls) == 1
-    assert report["tasks"][1]["result"] == "not_run"
+    def click(x, y):
+        clicks.append((x, y))
+        native.controller.image = home_image()
+        return True
+
+    native.controller.on_click = click
+    names = [node.name for node in native.run("DailyLogin_Start", fast(pipelines)).nodes]
+    assert names[-1] == "DailyCore_Done" and len(clicks) == 1
+    assert "DailyLogin_TapTitle" in names
+    assert not any(name.startswith("CommonRecovery") for name in names)
+    assert pipelines["DailyLogin_Launch"]["post_delay"] == 0

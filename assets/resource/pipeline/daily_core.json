@@ -1,24 +1,56 @@
 {
-    "Daily_MissionClose": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Header",
-            "NavHome_CloseReady"
+    "DailyCore_StartButton": {
+        "recognition": "TemplateMatch",
+        "template": "daily/start.png",
+        "roi": [
+            220,
+            1085,
+            280,
+            90
         ],
-        "action": "Click",
-        "target": [
-            350,
-            1175,
-            20,
-            20
+        "threshold": 0.97
+    },
+    "DailyCore_StartBright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "lower": [
+            220,
+            45,
+            55
         ],
-        "post_delay": 1500,
-        "next": [
-            "Daily_Resume"
+        "upper": [
+            255,
+            130,
+            145
         ],
-        "on_error": [
-            "CommonRecoveryEnter"
+        "count": 4000,
+        "roi": [
+            245,
+            1113,
+            225,
+            35
         ]
+    },
+    "DailyCore_ResultHomeBright": {
+        "recognition": "ColorMatch",
+        "method": 4,
+        "roi": [
+            250,
+            1185,
+            220,
+            30
+        ],
+        "lower": [
+            220,
+            45,
+            55
+        ],
+        "upper": [
+            255,
+            130,
+            145
+        ],
+        "count": 3500
     },
     "Daily_SelectTab": {
         "recognition": "And",
@@ -121,27 +153,9 @@
         "any_of": [
             "CommonLoginFailedReady",
             "CommonPlayDeviceReady",
-            {
-                "recognition": "And",
-                "all_of": [
-                    "CommonAccessDeniedMessage",
-                    "CommonDateChangedButton"
-                ]
-            },
-            {
-                "recognition": "And",
-                "all_of": [
-                    "CommonDateChangedMessage",
-                    "CommonDateChangedButton"
-                ]
-            },
-            {
-                "recognition": "And",
-                "all_of": [
-                    "CommonNetworkMessage",
-                    "CommonNetworkButton"
-                ]
-            }
+            "CommonAccessDeniedReady",
+            "CommonDateChangedReady",
+            "CommonNetworkReady"
         ]
     },
     "Daily_PostError": {
@@ -200,6 +214,7 @@
         ]
     },
     "Daily_StopCapture": {
+        "focus": {"Node.Action.Succeeded": "[日常] 异常：页面、次数或结果未识别，已保存截图。", "Node.Action.Failed": "[日常] 异常：保存截图失败。"},
         "recognition": "DirectHit",
         "post_delay": 0,
         "timeout": 30000,
@@ -229,27 +244,6 @@
         ],
         "threshold": 0.97
     },
-    "Daily_MenuClose": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Menu",
-            "NavHome_CloseReady"
-        ],
-        "action": "Click",
-        "target": [
-            350,
-            1175,
-            20,
-            20
-        ],
-        "post_delay": 1200,
-        "next": [
-            "Daily_Return"
-        ],
-        "on_error": [
-            "Daily_StopCapture"
-        ]
-    },
     "Daily_MapPage": {
         "recognition": "TemplateMatch",
         "template": "daily/map_title.png",
@@ -271,40 +265,6 @@
             60
         ],
         "threshold": 0.97
-    },
-    "Daily_BusinessPage": {
-        "recognition": "Or",
-        "any_of": [
-            "Daily_MapPage",
-            "Daily_VRPage",
-            "Daily_ContestPage",
-            "Daily_ExchangePage",
-            "Daily_GiftPage",
-            "Daily_DeliveryPage",
-            "Daily_PrepPage",
-            "Daily_GachaPage"
-        ]
-    },
-    "Daily_BusinessHome": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_BusinessPage",
-            "NavFooter_Home"
-        ],
-        "action": "Click",
-        "target": [
-            345,
-            1220,
-            30,
-            20
-        ],
-        "post_delay": 3000,
-        "next": [
-            "Daily_Return"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
     },
     "Daily_OnHome": {
         "recognition": "And",
@@ -334,26 +294,41 @@
             "CommonRecoveryEnter"
         ]
     },
+    "DailyCore_WinText": {
+        "recognition": "Or",
+        "any_of": [
+            {"recognition": "OCR", "roi": [0, 595, 350, 130], "only_rec": true,
+             "expected": ["^Win[!！]?$"], "threshold": 0.95},
+            {"recognition": "TemplateMatch", "template": "daily/win_text.png",
+             "roi": [0, 595, 350, 130], "green_mask": true, "threshold": 0.97}
+        ]
+    },
     "Daily_BattleResult": {
         "recognition": "And",
         "all_of": [
             {
-                "recognition": "OCR",
-                "roi": [
-                    0,
-                    595,
-                    350,
-                    130
-                ],
-                "only_rec": true,
-                "threshold": 0.95,
-                "expected": [
-                    "^(Win|Lose)[!！]?$"
+                "recognition": "Or",
+                "any_of": [
+                    "DailyCore_WinText",
+                    {
+                        "recognition": "OCR",
+                        "roi": [0, 595, 350, 130],
+                        "only_rec": true,
+                        "threshold": 0.95,
+                        "expected": ["^Lose[!！]?$"]
+                    },
+                    {
+                        "recognition": "TemplateMatch",
+                        "template": "daily/contest_failed.png",
+                        "roi": [0, 595, 525, 145],
+                        "green_mask": true,
+                        "threshold": 0.97
+                    }
                 ]
             },
             {
                 "recognition": "TemplateMatch",
-                "template": "daily/result_top.png",
+                "template": ["daily/result_top.png", "daily/contest_result_top.png"],
                 "roi": [
                     215,
                     1155,
@@ -362,27 +337,7 @@
                 ],
                 "threshold": 0.97
             },
-            {
-                "recognition": "ColorMatch",
-                "method": 4,
-                "roi": [
-                    250,
-                    1185,
-                    220,
-                    30
-                ],
-                "lower": [
-                    220,
-                    45,
-                    55
-                ],
-                "upper": [
-                    255,
-                    130,
-                    145
-                ],
-                "count": 3500
-            }
+            "DailyCore_ResultHomeBright"
         ],
         "box_index": 1,
         "action": "Click",
@@ -395,12 +350,8 @@
             "Daily_StopCapture"
         ]
     },
-    "Daily_LegacyDone": {
-        "recognition": "DirectHit",
-        "post_delay": 0,
-        "next": []
-    },
     "DailyCore_Done": {
+        "focus": {"Node.Action.Succeeded": "[日常] 已返回首页，任务结束。"},
         "recognition": "And",
         "all_of": [
             "NavHome_Ready"
@@ -409,63 +360,11 @@
         "next": []
     },
     "DailyCore_Recover": {
+        "focus": {"Node.Action.Succeeded": "[日常] 已恢复首页，本任务结束。"},
         "recognition": "DirectHit",
         "post_delay": 0,
         "next": [
             "Daily_Return"
-        ],
-        "on_error": [
-            "Daily_StopCapture"
-        ]
-    },
-    "DailyCore_CloseMission": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Header",
-            "NavHome_CloseReady"
-        ],
-        "action": "Click",
-        "target": [
-            350,
-            1175,
-            20,
-            20
-        ],
-        "post_delay": 1500,
-        "next": [
-            "Daily_Return"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
-    },
-    "DailyCore_Scan": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page"
-        ],
-        "post_delay": 0,
-        "timeout": 10000,
-        "next": [
-            "Daily_PostError",
-            "[Anchor]DailyCore_Selected",
-            "DailyCore_EndSeen",
-            "Daily_Scroll",
-            "Daily_StopCapture"
-        ],
-        "on_error": [
-            "Daily_StopCapture"
-        ]
-    },
-    "DailyCore_EndSeen": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page",
-            "Daily_Summary"
-        ],
-        "post_delay": 0,
-        "next": [
-            "DailyCore_CloseMission"
         ],
         "on_error": [
             "Daily_StopCapture"

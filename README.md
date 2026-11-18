@@ -2,7 +2,7 @@
 
 基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 的ネココネ自动化项目。
 
-当前包含框架连通性测试和实验性的家具单轮补位强化、间隔调度。
+当前包含可独立选择的[日常模块](docs/zh_cn/develop/daily_automation.md)，以及用复选框选择配送、浴室、当番、家具升级的 `Soleil` 任务。家具原有单轮与间隔配置保留。任务通过 Interface 配置和运行，不提供业务 CLI 或每日总流程；框架连通性诊断仍为独立工具。
 
 框架连通性测试：
 
@@ -11,11 +11,13 @@
 3. 等待 20 秒。
 4. 通过 MaaFramework 截图到 `debug/screencap/nekoconne_launch.png`。
 
-家具强化通过 JSON 为列表前五格的空闲候选补位，一轮最多尝试 5 次，轮末集中点击店铺“依頼”一次。默认单轮、保留现有排序、开启依頼；另支持固定间隔及可见忙碌家具的最短/最长剩余时间调度，读取失败回退固定间隔。公共[首页/Soleil 导航](docs/zh_cn/develop/navigation.md)、筛选、强化、店铺动作、调度与计时已分模块。会消耗强化券，不使用付费加速；异常进入有预算的[通用恢复](docs/zh_cn/develop/common_recovery.md)。使用和配置见[家具强化说明](docs/zh_cn/develop/soleil_upgrade.md)。
+家具强化通过 JSON 为列表前五格的空闲候选补位，一轮最多尝试 5 次，轮末集中点击店铺“依頼”一次。默认单轮、保留现有排序、开启依頼；另支持固定间隔及可见忙碌家具的最短/最长剩余时间调度，读取失败回退固定间隔。筛选、强化、店铺依頼、调度与计时统一在 [furniture.json](assets/resource/pipeline/furniture.json)，复用公共[首页/Soleil 导航](docs/zh_cn/develop/navigation.md)。会消耗强化券，不使用付费加速；异常进入有预算的[通用恢复](docs/zh_cn/develop/common_recovery.md)。使用和配置见[家具强化说明](docs/zh_cn/develop/soleil_upgrade.md)。
 
 重构前已授权实测 5 次强化启动确认，但当时仍为逐件依頼；本次单轮/轮末请求与动态调度使用离线模拟和原生视觉/OCR 验证，未新增实机消费或长时运行验收。历史网络恢复及重启回首页成功不等于现场冻结诱发重启已验证。
 
 ## 开发方式
+
+广告 AI 无需配置环境变量。源码双击 [ConfigureAdAI.vbs](scripts/ConfigureAdAI.vbs)，Windows 发布包双击同名根目录文件，在设置窗口填写 DeepSeek Key 并启用。密钥以 Windows 当前用户加密保存，不随发布包分发。仅等待与关闭、不操作试玩；未配置不打开广告。说明和验证边界见[广告关闭](docs/zh_cn/develop/daily_automation.md#广告关闭与可选模型)。
 
 优先使用 `assets/resource/pipeline/*.json` 和 MaaFramework 现有 API。只有 JSON 无法表达的逻辑才放到 `agent/extensions.py`。
 

@@ -1,432 +1,152 @@
 {
-    "Daily_PendingGold": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page",
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/pending_gold.png",
-                "roi": [
-                    85,
-                    300,
-                    555,
-                    600
-                ],
-                "threshold": 0.9,
-                "sub_name": "row"
-            },
-            {
-                "recognition": "OCR",
-                "roi": "row",
-                "roi_offset": [
-                    333,
-                    -2,
-                    -271,
-                    4
-                ],
-                "expected": [
-                    "^[（(]?0[/／]1[)）]?$"
-                ],
-                "replace": [
-                    [
-                        "\\s",
-                        ""
-                    ]
-                ],
-                "only_rec": true,
-                "threshold": 0.95
-            }
-        ],
-        "box_index": 1
-    },
-    "Daily_ChooseGold": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page",
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/pending_gold.png",
-                "roi": [
-                    85,
-                    300,
-                    555,
-                    600
-                ],
-                "threshold": 0.9,
-                "sub_name": "row"
-            },
-            {
-                "recognition": "OCR",
-                "roi": "row",
-                "roi_offset": [
-                    333,
-                    -2,
-                    -271,
-                    4
-                ],
-                "expected": [
-                    "^[（(]?0[/／]1[)）]?$"
-                ],
-                "replace": [
-                    [
-                        "\\s",
-                        ""
-                    ]
-                ],
-                "only_rec": true,
-                "threshold": 0.95
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/challenge.png",
-                "roi": "row",
-                "roi_offset": [
-                    390,
-                    65,
-                    -161,
-                    82
-                ],
-                "threshold": 0.94
-            }
-        ],
-        "enabled": false,
-        "box_index": 3,
-        "action": "Click",
-        "target": true,
-        "max_hit": 1,
-        "post_delay": 2500,
-        "timeout": 45000,
-        "next": [
-            "Daily_GoldBegin"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
-    },
     "Daily_ExchangePage": {
-        "recognition": "TemplateMatch",
-        "template": "daily/exchange_title.png",
-        "roi": [
-            35,
-            25,
-            120,
-            60
-        ],
-        "threshold": 0.97
+        "recognition": "TemplateMatch", "template": "daily/exchange_title.png",
+        "roi": [35, 25, 120, 60], "threshold": 0.97
+    },
+    "DailyExchange_PageGuard": {
+        "recognition": "And",
+        "all_of": [
+            "Daily_ExchangePage",
+            {"recognition": "TemplateMatch", "template": "daily/random_tab.png", "roi": [350, 1015, 350, 75], "threshold": 0.97},
+            {"recognition": "ColorMatch", "method": 4, "lower": [235, 110, 35], "upper": [255, 195, 120], "count": 5000, "roi": [380, 1037, 290, 25]}
+        ]
     },
     "Daily_GoldBegin": {
-        "recognition": "DirectHit",
-        "post_delay": 0,
-        "timeout": 30000,
-        "next": [
-            "Daily_GoldRandom"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
+        "recognition": "DirectHit", "post_delay": 0,
+        "next": ["Daily_GoldRandom"], "on_error": ["CommonRecoveryEnter"]
     },
     "Daily_GoldRandom": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_ExchangePage",
-            "NavFooter_Home"
-        ],
-        "action": "Click",
-        "target": [
-            500,
-            1035,
-            40,
-            25
-        ],
-        "post_delay": 1800,
-        "timeout": 5000,
-        "next": [
-            "Daily_GoldOffer"
-        ],
-        "on_error": [
-            "Daily_Return"
-        ]
+        "recognition": "And", "all_of": ["Daily_ExchangePage", "NavFooter_Home"],
+        "action": "Click", "target": [500, 1035, 40, 25], "post_delay": 1800,
+        "next": ["DailyExchange_Select"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyExchange_Select": {
+        "action": "Custom", "custom_action": "ExchangeControl", "custom_action_param": {"op": "next"},
+        "post_delay": 0, "next": ["[Anchor]DailyExchange_Next"], "on_error": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Failed": "[交换所] 异常：商品页或免费更新次数未识别。"}
     },
     "Daily_GoldOffer": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_ExchangePage",
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/random_tab.png",
-                "roi": [
-                    350,
-                    1015,
-                    350,
-                    75
-                ],
-                "threshold": 0.97
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/gold_price.png",
-                "roi": [
-                    150,
-                    220,
-                    535,
-                    350
-                ],
-                "threshold": 0.97,
-                "sub_name": "price"
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/exchange_offer.png",
-                "roi": "price",
-                "threshold": 0.97,
-                "roi_offset": [
-                    -12,
-                    43,
-                    30,
-                    15
-                ]
-            },
-            {
-                "recognition": "ColorMatch",
-                "method": 4,
-                "lower": [
-                    235,
-                    110,
-                    35
-                ],
-                "upper": [
-                    255,
-                    195,
-                    120
-                ],
-                "count": 5000,
-                "roi": [
-                    380,
-                    1037,
-                    290,
-                    25
-                ]
-            },
-            {
-                "recognition": "OCR",
-                "roi": "price",
-                "roi_offset": [
-                    82,
-                    -2,
-                    -75,
-                    4
-                ],
-                "only_rec": true,
-                "threshold": 0.95,
-                "expected": [
-                    "^1[,，]?000$"
-                ],
-                "replace": [
-                    [
-                        "\\s",
-                        ""
-                    ]
-                ]
-            }
+        "recognition": "And", "all_of": [
+            "DailyExchange_PageGuard",
+            {"recognition": "TemplateMatch", "template": ["daily/exchange_offer.png", "daily/exchange_offer_lower.png"], "roi": [150, 300, 195, 45], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": ["daily/exchange_gold_marker.png", "daily/exchange_gold_marker_lower.png"], "roi": [174, 260, 40, 36], "threshold": 0.97}
         ],
-        "box_index": 3,
-        "action": "Click",
-        "target": true,
-        "max_hit": 1,
-        "post_delay": 1800,
-        "timeout": 5000,
-        "next": [
-            "Daily_PostError",
-            "Daily_GoldSpend"
-        ],
-        "on_error": [
-            "Daily_Return"
-        ]
+        "box_index": 1, "action": "Click", "target": true, "max_hit": 24,
+        "post_delay": 1800, "timeout": 5000,
+        "next": ["Daily_PostError", "Daily_GoldSpend", "DailyExchange_SkipCurrency"],
+        "on_error": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 已打开商品，兑换数量=1。"}
+    },
+    "DailyExchange_ConfirmPage": {
+        "recognition": "TemplateMatch", "template": "daily/gold_confirm.png", "roi": [270, 165, 190, 65], "threshold": 0.97
     },
     "Daily_GoldSpend": {
         "recognition": "And",
         "all_of": [
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/gold_confirm.png",
-                "roi": [
-                    270,
-                    165,
-                    190,
-                    65
-                ],
-                "threshold": 0.97
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/gold_coin.png",
-                "roi": [
-                    190,
-                    583,
-                    60,
-                    55
-                ],
-                "threshold": 0.97
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/gold_quantity.png",
-                "roi": [
-                    335,
-                    648,
-                    55,
-                    55
-                ],
-                "threshold": 0.97
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/gold_slider.png",
-                "roi": [
-                    220,
-                    685,
-                    280,
-                    60
-                ],
-                "threshold": 0.97
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/gold_submit.png",
-                "roi": [
-                    200,
-                    870,
-                    320,
-                    90
-                ],
-                "threshold": 0.97
-            },
-            {
-                "recognition": "ColorMatch",
-                "method": 4,
-                "lower": [
-                    220,
-                    45,
-                    55
-                ],
-                "upper": [
-                    255,
-                    130,
-                    145
-                ],
-                "count": 4000,
-                "roi": [
-                    235,
-                    902,
-                    245,
-                    35
-                ]
-            },
-            {
-                "recognition": "OCR",
-                "roi": [
-                    345,
-                    655,
-                    32,
-                    35
-                ],
-                "only_rec": true,
-                "threshold": 0.95,
-                "expected": [
-                    "^1$"
-                ]
-            }
+            "DailyExchange_ConfirmPage",
+            {"recognition": "TemplateMatch", "template": "daily/gold_coin.png", "roi": [190, 583, 60, 55], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/gold_quantity.png", "roi": [335, 648, 55, 55], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/gold_slider.png", "roi": [220, 685, 280, 60], "threshold": 0.97},
+            {"recognition": "TemplateMatch", "template": "daily/gold_submit.png", "roi": [200, 870, 320, 90], "threshold": 0.97},
+            {"recognition": "ColorMatch", "method": 4, "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 4000, "roi": [235, 902, 245, 35]},
+            {"recognition": "OCR", "roi": [345, 655, 32, 35], "only_rec": true, "threshold": 0.95, "expected": ["^1$"]}
         ],
-        "box_index": 4,
-        "action": "Click",
-        "target": true,
-        "max_hit": 1,
+        "box_index": 4, "action": "Click", "target": true, "max_hit": 24,
         "post_delay": 1800,
-        "anchor": {
-            "Daily_AfterReward": "Daily_Return"
-        },
-        "next": [
-            "Daily_RewardWait"
+        "anchor": {"Daily_AfterReward": "DailyExchange_Select", "CommonRecoveryResume": "Daily_StopCapture"},
+        "next": ["Daily_RewardWait"], "on_error": ["Daily_StopCapture"],
+        "attach": {"currency": "gold", "quantity": 1, "paid_refresh": false},
+        "focus": {"Node.Action.Succeeded": "[交换所] 已提交金币兑换 1 份。", "Node.Action.Failed": "[交换所] 异常：兑换提交失败。"}
+    },
+    "DailyExchange_CloseReady": {
+        "recognition": "And", "all_of": [
+            {"recognition": "Or", "any_of": [
+                "NavHome_CloseButton",
+                {"recognition": "TemplateMatch", "template": "daily/exchange_close.png",
+                 "roi": [295, 1120, 130, 130], "threshold": 0.97}
+            ]},
+            "NavHome_CloseBright"
+        ]
+    },
+    "DailyExchange_SkipCurrency": {
+        "recognition": "And", "all_of": ["DailyExchange_ConfirmPage", "DailyExchange_CloseReady"],
+        "action": "Click", "target": [350, 1175, 20, 20], "max_hit": 24,
+        "post_delay": 1000, "next": ["DailyExchange_Select"], "on_error": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 当前商品不可兑换，已跳过。"}
+    },
+    "DailyExchange_FreeCount": {
+        "recognition": "OCR", "roi": [585, 103, 55, 29], "expected": ["^[0-5]/5$"],
+        "replace": [["\\s", ""]], "only_rec": true, "threshold": 0.95
+    },
+    "DailyExchange_FreeRefreshGuard": {
+        "recognition": "And", "all_of": [
+            "DailyExchange_PageGuard",
+            {"recognition": "OCR", "roi": [430, 103, 150, 29], "expected": ["^無料更新可能回数$"], "replace": [["\\s", ""]], "only_rec": true, "threshold": 0.95},
+            {"recognition": "OCR", "roi": [585, 103, 55, 29], "expected": ["^[1-5]/5$"], "replace": [["\\s", ""]], "only_rec": true, "threshold": 0.95}
+        ]
+    },
+    "DailyExchange_RefreshOpen": {
+        "recognition": "And", "all_of": ["DailyExchange_FreeRefreshGuard"],
+        "action": "Click", "target": [662, 105, 27, 27], "max_hit": 5, "post_delay": 1800,
+        "anchor": {"CommonRecoveryResume": "Daily_StopCapture"},
+        "next": ["Daily_PostError", "DailyExchange_RefreshPaidBlock", "DailyExchange_RefreshConfirm", "DailyExchange_RefreshVerify"],
+        "on_error": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 已点击免费更新。"}
+    },
+    "DailyExchange_RefreshPaidText": {
+        "recognition": "OCR", "roi": [80, 260, 560, 660],
+        "expected": ["有料|有償|ジュエル|ダイヤ|消費|所持|[0-9]+[個枚]|^[0-9][0-9,，]*$"], "threshold": 0.9
+    },
+    "DailyExchange_RefreshDialogTitle": {
+        "recognition": "OCR", "roi": [120, 170, 480, 240], "expected": ["更新"], "threshold": 0.95
+    },
+    "DailyExchange_RefreshPaidBlock": {
+        "recognition": "And", "all_of": ["DailyExchange_RefreshDialogTitle", "DailyExchange_RefreshPaidText"],
+        "post_delay": 0, "next": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 当前更新需要付费，已跳过。"}
+    },
+    "DailyExchange_RefreshConfirmGuard": {
+        "recognition": "And", "all_of": [
+            "DailyExchange_RefreshDialogTitle",
+            {"recognition": "OCR", "roi": [200, 440, 320, 260], "expected": ["^無料$"], "threshold": 0.95},
+            {"recognition": "OCR", "roi": [365, 600, 300, 320], "expected": ["^(更新|更新する|はい|OK)$"], "replace": [["\\s", ""]], "threshold": 0.95, "sub_name": "confirm"},
+            {"recognition": "ColorMatch", "method": 4, "roi": "confirm", "roi_offset": [-15, -10, 30, 20], "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 500}
         ],
-        "on_error": [
-            "Daily_StopCapture"
-        ],
-        "attach": {
-            "coin_cost": 1000,
-            "quantity": 1,
-            "refresh": false
-        }
+        "box_index": 2
+    },
+    "DailyExchange_RefreshConfirm": {
+        "recognition": "And", "all_of": ["DailyExchange_RefreshConfirmGuard"],
+        "action": "Click", "target": true, "max_hit": 5, "post_delay": 1800,
+        "next": ["DailyExchange_RefreshVerify"], "on_error": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 已确认免费更新。"}
+    },
+    "DailyExchange_RefreshVerify": {
+        "recognition": "And", "all_of": ["DailyExchange_PageGuard"],
+        "action": "Custom", "custom_action": "ExchangeControl", "custom_action_param": {"op": "verify"},
+        "post_delay": 0, "timeout": 8000, "next": ["[Anchor]DailyExchange_Next"], "on_error": ["Daily_StopCapture"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 已免费更新，检查新一页商品。", "Node.Action.Failed": "[交换所] 异常：免费更新次数不符。"}
     },
     "DailyExchange_Start": {
-        "doc": "交换所兑换",
-        "recognition": "DirectHit",
-        "post_delay": 0,
-        "anchor": {
-            "CommonRecoveryResume": "DailyCore_Recover",
-            "Daily_AfterWork": "DailyCore_Done",
-            "NavHome_Return": "DailyExchange_MenuOpen"
-        },
-        "next": [
-            "NavHome_Ensure"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
+        "doc": "交换所兑换", "recognition": "DirectHit", "post_delay": 0,
+        "anchor": {"CommonRecoveryResume": "DailyCore_Recover", "Daily_AfterWork": "DailyCore_Done", "NavHome_Return": "DailyExchange_Config"},
+        "next": ["NavHome_Ensure"], "on_error": ["CommonRecoveryEnter"],
+        "focus": {"Node.Action.Succeeded": "[交换所] 开始兑换金币商品，每种 1 份。"}
+    },
+    "DailyExchange_Config": {
+        "action": "Custom", "custom_action": "ExchangeControl", "custom_action_param": {"op": "config", "mode": "page"},
+        "post_delay": 0, "next": ["DailyExchange_MenuOpen"], "on_error": ["Daily_StopCapture"]
     },
     "DailyExchange_MenuOpen": {
-        "recognition": "And",
-        "all_of": [
-            "NavHome_Ready"
-        ],
-        "action": "Click",
-        "target": [
-            625,
-            175,
-            30,
-            30
-        ],
-        "max_hit": 1,
-        "post_delay": 1800,
-        "next": [
-            "DailyExchange_Open"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
+        "recognition": "And", "all_of": ["NavHome_Ready"], "action": "Click", "target": [625, 175, 30, 30],
+        "max_hit": 1, "post_delay": 1800, "next": ["DailyExchange_Open"], "on_error": ["CommonRecoveryEnter"]
     },
     "DailyExchange_Open": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Menu",
-            {
-                "recognition": "OCR",
-                "roi": [
-                    230,
-                    705,
-                    105,
-                    55
-                ],
-                "expected": [
-                    "交換所"
-                ],
-                "threshold": 0.95
-            }
-        ],
-        "action": "Click",
-        "target": [
-            265,
-            675,
-            30,
-            30
-        ],
-        "max_hit": 1,
-        "post_delay": 2000,
-        "timeout": 15000,
-        "next": [
-            "Daily_GoldBegin"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
+        "recognition": "And", "all_of": ["Daily_Menu", {"recognition": "OCR", "roi": [230, 705, 105, 55], "expected": ["交換所"], "threshold": 0.95}],
+        "action": "Click", "target": [265, 675, 30, 30], "max_hit": 1, "post_delay": 2000,
+        "timeout": 15000, "next": ["Daily_GoldBegin"], "on_error": ["CommonRecoveryEnter"]
+    },
+    "DailyExchange_State": {
+        "enabled": false, "action": "Custom", "custom_action": "ExchangeControl",
+        "custom_action_param": {"mode": "page", "slot": 0, "refreshes": 0, "expected": null}
     }
 }

@@ -3,8 +3,8 @@
 ## 先读与导航
 
 - 先读 [项目理解与计划对照](docs/zh_cn/project_understanding.md)，区分当前实现、上游计划和历史验证。
-- `assets/interface.json`：控制器、资源、Agent 入口和对外任务；`assets/resource/pipeline/`：游戏流程。`navigation.json` 是公共导航，`furniture_enhance.json` 是单轮强化，`furniture_filter.json` 是筛选，`soleil_shop.json` 是店铺依頼，`furniture_schedule.json` / `furniture_timer.json` 是调度与计时；`common_recovery.json` 为共用异常恢复与有界重启。
-- `tools/run_launch_capture.py`、`scripts/test_nekoconne.ps1`：设备连接与启动截图验证。
+- `assets/interface.json`：控制器、资源、Agent 入口和对外独立任务；`assets/resource/pipeline/`：游戏流程。`navigation.json` 是公共导航，`furniture.json` 集中家具筛选、单轮强化、店铺依頼、调度与计时；`daily_core.json` 与独立 `daily_*.json` 为每日模块，未保留每日总流程；`common_recovery.json` 为共用异常恢复与有界重启。
+- `tools/run_launch_capture.py`、`scripts/test_nekoconne.ps1`：最小设备连接与启动截图诊断，不是每日或家具业务 CLI。
 - `agent/main.py`：AgentServer 入口；`agent/extensions.py`：注册必要扩展；`agent/recovery.py`：原生静止检测的布尔识别桥及全黑帧退化边界处理；`agent/furniture_timer.py`：原生 OCR 时间解析、Context 局部计时与可取消等待。
 - `tests/`：离线回归测试；`.github/workflows/check.yml`：开发验证依据。
 - `tools/configure.py`、`tools/install.py`、`.github/workflows/install.yml`：OCR 配置、打包和发布；不是日常测试入口。
@@ -30,7 +30,7 @@
 
 - 默认开发方式为独立 LocalBridge 后台服务 + [在线 MPE](https://mpe.codax.site/stable/)。MPE Desktop 是同一编辑器的另一种入口，不要求同时启动，不默认另装 Desktop、AI 助手或 MCP；已安装的软件不擅自卸载。
 - MPE 是开发编辑器，LocalBridge 负责本地文件与调试通信，MaaFramework 是任务执行引擎；最终用户桌面程序继续采用 MFAAvalonia，不把 MPE Desktop 当作 MaaNekoConnect 用户客户端。
-- 任务源以 `assets/interface.json`、`assets/resource/pipeline/` 和 `assets/resource/image/` 为准。临时导出、下载和本机配置统一放在已忽略的 `config/`，不要把该目录中的副本当作运行资源或用下载文件无意覆盖源文件。
+- 任务源以 `assets/interface.json`、`assets/resource/pipeline/` 和 `assets/resource/image/` 为准。`config/` 只保留本机配置及现有独立测试环境 `test-python/`，不存测试输出、下载包、临时脚本或 Pipeline 副本。测试统一复用 `--basetemp .pytest_cache/tmp`；临时采集、裁剪和下载放在 `debug/tmp/`，完成后删除，需留存的实机截图和审计放在 `debug/evidence/`。这些忽略目录均不是运行资源。
 - 优先直接修改仓库 JSON，再通过 LocalBridge 文件变更通知在在线 MPE 中重载查看；自动重载默认不保证开启。通过图形编辑器修改时，确认画布已关联真实本地路径并显式保存，浏览器缓存、剪贴板导入和临时标签不等于磁盘文件。磁盘与未保存画布冲突时先确认，不覆盖用户编辑。
 - 修改 JSON 流程和识别图片通常无需重新编译桌面程序，但要停止任务、保存并重载资源后再运行；不承诺运行中热更新。仓库资源与发布包内资源是两份副本，修改仓库不会自动同步给已安装的客户端，交付仍需资源同步或重新打包。
 - LocalBridge 仅监听本机回环地址，浏览器来源按需限制；不为连接方便暴露到局域网或公网。连接服务、编辑文件或做只读接口检查，不等于获准连接其他设备、运行游戏任务或消耗强化券。
@@ -62,7 +62,7 @@ $env:PYTHONUTF8 = "1"
 $TestPython = '<独立测试环境的 python.exe 绝对路径>'
 & $TestPython -m compileall -q agent tools tests
 & $TestPython tools/validate_schema.py --schema-dir deps/tools --resource-dirs assets/resource --interface-files assets/interface.json
-& $TestPython -m pytest -q
+& $TestPython -m pytest -q --basetemp .pytest_cache/tmp
 git diff --check
 git status --short --untracked-files=all
 ```

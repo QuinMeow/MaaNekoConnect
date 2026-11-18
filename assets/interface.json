@@ -54,27 +54,11 @@
             "description": "领取普通营业收入，不追加收益。"
         },
         {
-            "name": "配送管理",
-            "entry": "DailyDelivery_Start",
-            "controller": [
-                "Android"
-            ],
-            "description": "先领取已完成单、自动编队派完当前订单，再用每日一次免费刷新并派完新单。"
-        },
-        {
-            "name": "家具强化",
-            "entry": "FurnitureSchedule_Start",
-            "controller": [
-                "Android"
-            ],
-            "option": [
-                "FurnitureSchedule",
-                "UseExistingSort",
-                "AutoRequest"
-            ],
-            "default_check": false,
-            "resource": [],
-            "description": "为列表前五位的家具启用强化"
+            "name": "Soleil",
+            "entry": "Soleil_DailyStart",
+            "controller": ["Android"],
+            "description": "按勾选执行配送、浴室收菜、当番换班和家具升级。浴室在换班前执行，家具升级最后执行。",
+            "option": ["SoleilModules"]
         },
         {
             "name": "邮箱领取",
@@ -101,7 +85,8 @@
             "controller": [
                 "Android"
             ],
-            "description": "选择列表最下方已通关关卡，默认快速开店一次；"
+            "description": "左右栏分别选择最高已通关关卡快速开店，默认各三次；以剩余免费次数为限，不购买次数。",
+            "option": ["DailyGiftRuns"]
         },
         {
             "name": "VR猫爬塔",
@@ -117,7 +102,8 @@
             "controller": [
                 "Android"
             ],
-            "description": "使用现有队伍进行一次免费JJC挑战"
+            "description": "使用现有队伍免费挑战一次；默认上栏，可选中栏或下栏。可按首位对手评分阈值使用免费更新，不付费刷新。",
+            "option": ["DailyContestPosition", "DailyContestRatingThreshold"]
         },
         {
             "name": "交换所兑换",
@@ -125,7 +111,8 @@
             "controller": [
                 "Android"
             ],
-            "description": "仅购买现有随机商品一件、数量一、1000金币；不刷新，不使用其他货币。"
+            "description": "默认购买随机页最多四种金币商品，每种一份；可选用尽当天免费更新并购买各页，不买全库存、不付费刷新。",
+            "option": ["DailyExchangePurchaseMode"]
         },
         {
             "name": "广告抽卡",
@@ -133,7 +120,7 @@
             "controller": [
                 "Android"
             ],
-            "description": "独立进入免费广告入口；只在确认免费许可和明确关闭控件时继续。"
+            "description": "先双击程序目录的 ConfigureAdAI.vbs，在设置窗口填写 DeepSeek Key 并启用；开发仓库入口在 scripts 目录。配置加密保存在本机，无需环境变量。仅等待和关闭广告，不操作试玩、不跳转商店、不安装购买；未配置不会打开广告。"
         },
         {
             "name": "任务奖励领取",
@@ -148,6 +135,55 @@
         }
     ],
     "option": {
+        "SoleilModules": {
+            "type": "checkbox",
+            "label": "执行内容",
+            "default_case": ["Delivery", "Bath", "Duty"],
+            "cases": [
+                {
+                    "name": "Delivery", "label": "配送",
+                    "option": ["DailyDeliveryPaidRefresh"],
+                    "pipeline_override": {"Soleil_DeliveryRun": {"enabled": true}}
+                },
+                {
+                    "name": "Bath", "label": "浴室收菜",
+                    "pipeline_override": {"Soleil_BathRun": {"enabled": true}}
+                },
+                {
+                    "name": "Duty", "label": "当番换班",
+                    "pipeline_override": {"Soleil_DutyRun": {"enabled": true}}
+                },
+                {
+                    "name": "Furniture", "label": "家具升级",
+                    "option": ["FurnitureSchedule", "UseExistingSort", "AutoRequest"],
+                    "pipeline_override": {"Soleil_FurnitureRun": {"enabled": true}}
+                }
+            ]
+        },
+        "DailyDeliveryPaidRefresh": {
+            "type": "switch",
+            "label": "全部配送出发后使用100钻石刷新",
+            "description": "默认关闭。全部订单出发后追加一次100钻石刷新，优先使用每日免费刷新；开启后最多派出54单。",
+            "default_case": "No",
+            "cases": [
+                {"name": "Yes", "pipeline_override": {
+                    "DailyDelivery_PaidRefreshPermit": {"enabled": true},
+                    "DailyDelivery_Select": {"max_hit": 54},
+                    "DailyDelivery_Auto": {"max_hit": 54},
+                    "DailyDelivery_Spend": {"max_hit": 54, "attach": {
+                        "max_dispatches": 54, "max_battery_each": 10000, "diamond_finish": false
+                    }}
+                }},
+                {"name": "No", "pipeline_override": {
+                    "DailyDelivery_PaidRefreshPermit": {"enabled": false},
+                    "DailyDelivery_Select": {"max_hit": 36},
+                    "DailyDelivery_Auto": {"max_hit": 36},
+                    "DailyDelivery_Spend": {"max_hit": 36, "attach": {
+                        "max_dispatches": 36, "max_battery_each": 10000, "diamond_finish": false
+                    }}
+                }}
+            ]
+        },
         "DailyMilestones": {
             "type": "switch",
             "label": "领取已达标的DayPt阶段奖励",
@@ -411,7 +447,7 @@
         "FurnitureInterval": {
             "type": "input",
             "label": "固定／回退间隔",
-            "description": "单位为秒，10 至 86400。动态倒计时无法安全读取时使用此值，不使用零秒重试。",
+            "description": "单位为秒，10 至 86400。动态倒计时未识别时使用此值。",
             "inputs": [
                 {
                     "name": "Seconds",
@@ -454,6 +490,65 @@
                     }
                 }
             ]
+        },
+        "DailyExchangePurchaseMode": {
+            "type": "select",
+            "label": "金币商品购买范围",
+            "description": "仅金币商品，每种一份；跳过其他货币。免费更新模式最多五次，每次必须确认免费余数减一，不进行付费更新。",
+            "default_case": "Page",
+            "cases": [
+                {"name": "Page", "label": "当前页全部金币商品", "pipeline_override": {
+                    "DailyExchange_Config": {"custom_action_param": {"op": "config", "mode": "page"}}
+                }},
+                {"name": "FreePages", "label": "用尽免费更新并购买每页", "pipeline_override": {
+                    "DailyExchange_Config": {"custom_action_param": {"op": "config", "mode": "free_pages"}}
+                }}
+            ]
+        },
+        "DailyGiftRuns": {
+            "type": "input",
+            "label": "礼物关卡次数",
+            "description": "左右栏各 0 至 3 次，0 跳过该栏；默认各三次。只使用当前剩余免费次数，不补次数。",
+            "inputs": [
+                {"name": "Left", "label": "左栏", "default": "3", "pipeline_type": "int",
+                 "verify": "^[0-3]$", "pattern_msg": "请输入 0 至 3 的整数"},
+                {"name": "Right", "label": "右栏", "default": "3", "pipeline_type": "int",
+                 "verify": "^[0-3]$", "pattern_msg": "请输入 0 至 3 的整数"}
+            ],
+            "pipeline_override": {
+                "DailyGift_LeftConfig": {"custom_action_param": {"op": "left", "count": "{Left}"}},
+                "DailyGift_RightConfig": {"custom_action_param": {"op": "right", "count": "{Right}"}}
+            }
+        },
+        "DailyContestPosition": {
+            "type": "select",
+            "label": "挑战对手位置",
+            "description": "难度由上到下递减。评分筛选始终比较第一位对手，最后挑战此处选定的位置。",
+            "default_case": "top",
+            "cases": [
+                {"name": "top", "label": "上栏（最高难度）", "pipeline_override": {
+                    "DailyContest_PositionConfig": {"custom_action_param": {"op": "position", "position": "top"}}
+                }},
+                {"name": "middle", "label": "中栏", "pipeline_override": {
+                    "DailyContest_PositionConfig": {"custom_action_param": {"op": "position", "position": "middle"}}
+                }},
+                {"name": "bottom", "label": "下栏（最低难度）", "pipeline_override": {
+                    "DailyContest_PositionConfig": {"custom_action_param": {"op": "position", "position": "bottom"}}
+                }}
+            ]
+        },
+        "DailyContestRatingThreshold": {
+            "type": "input",
+            "label": "首位对手评分阈值",
+            "description": "0 表示不筛选；正数表示评分须小于此值，否则使用免费更新，直到满足或免费更新耗尽。按原始整数填写，例如 6000000，不写 K/M。",
+            "inputs": [{
+                "name": "Rating", "label": "评分", "default": "0", "pipeline_type": "int",
+                "verify": "^(?:0|[1-9][0-9]{0,11}|1000000000000)$",
+                "pattern_msg": "请输入 0 至 1000000000000 的整数"
+            }],
+            "pipeline_override": {
+                "DailyContest_ThresholdConfig": {"custom_action_param": {"op": "threshold", "threshold": "{Rating}"}}
+            }
         }
     },
     "group": [],

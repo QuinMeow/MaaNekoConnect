@@ -1,6 +1,8 @@
 import pytest
 from maa.custom_recognition import CustomRecognition
 
+from agent.furniture_timer import register_furniture_timer
+
 
 @pytest.mark.parametrize("available,cap,auto_request,fail_start,fail_request,attempts,acks,requests", [
     (0, 99, True, False, False, 0, 0, []),
@@ -33,6 +35,7 @@ def test_round_is_bounded_and_never_refunds_attempts_or_replays_requests(
         return True
 
     native.controller.on_click = click
+    register_furniture_timer(native.resource)
     assert native.resource.register_custom_recognition("RoundCandidate", Candidate())
     overrides = {name: {"recognition": "DirectHit", "pre_delay": 0, "post_delay": 0,
                         "timeout": 50, "rate_limit": 1} for name in pipelines}
@@ -49,18 +52,16 @@ def test_round_is_bounded_and_never_refunds_attempts_or_replays_requests(
     overrides["FurnitureEnhance_EnsurePage"]["next"] = ["FurnitureEnhance_Prepare"]
     overrides["FurnitureEnhance_Prepare"]["next"] = ["FurnitureEnhance_Scan"]
     overrides["FurnitureEnhance_SessionSpendPermit"]["max_hit"] = cap
-    for name in ("FurnitureEnhance_Complete", "FurnitureSchedule_Complete"):
-        overrides[name]["action"] = "DoNothing"
     overrides["CommonRecoveryEnter"]["next"] = ["[Anchor]CommonRecoveryResume"]
     if not auto_request:
         overrides["FurnitureEnhance_AfterStart"]["anchor"] = {
             "FurnitureEnhance_PostRound": "FurnitureEnhance_RoundComplete",
         }
-    names = [node.name for node in native.run("FurnitureEnhance_Round", overrides).nodes]
+    names = [node.name for node in native.run("FurnitureSchedule_Start", overrides).nodes]
     assert observed == {"attempts": attempts, "requests": requests}
     assert names.count("FurnitureEnhance_Started") == acks
     assert names.count("FurnitureEnhance_BeginRound") == 1
-    assert names[-1] in ("FurnitureEnhance_Complete", "FurnitureSchedule_Complete")
+    assert names[-1] == "FurnitureSchedule_Complete"
 
 
 @pytest.mark.parametrize("sample,selected", [("idle_slot1", 1), ("idle_slot2", 2), ("idle_slot5", 5)])
@@ -106,3 +107,27 @@ def test_ack_survives_grid_reordering(native, soleil_image):
     image = soleil_image("active_slot1")
     image[460:525, 65:135] = 0
     assert native.match("FurnitureEnhance_Started", image)
+
+
+@pytest.mark.parametrize("sample,expected", [
+    ("room_request", True), ("idle_slot1", False), ("active_slot1", False),
+    ("filters_both_checked", False), ("home_ready", False), ("network_error", False),
+])
+def test_request_needs_the_shop_page_and_request_button(native, soleil_image, sample, expected):
+    assert native.match("Soleil_RequestSupport", soleil_image(sample)) is expected
+
+
+@pytest.mark.parametrize("roi", [(0, 20, 160, 70), (610, 630, 85, 90)])
+def test_partial_shop_page_cannot_request(native, soleil_image, roi):
+    image = soleil_image("room_request")
+    x, y, width, height = roi
+    image[y:y + height, x:x + width] = 0
+    assert not native.match("Soleil_RequestSupport", image)
+
+
+def test_request_permission_is_consumed_before_a_single_click(pipelines):
+    prepare = pipelines["Soleil_RequestPrepare"]
+    for anchor in ("CommonRecoveryResume", "FurnitureEnhance_PostRound"):
+        assert prepare["anchor"][anchor] == "FurnitureEnhance_RoundComplete"
+    request = pipelines["Soleil_RequestSupport"]
+    assert request["action"] == "Click" and request.get("repeat", 1) == 1

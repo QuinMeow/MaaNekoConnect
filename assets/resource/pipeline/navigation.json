@@ -144,6 +144,8 @@
         "recognition": "Or",
         "any_of": [
             "NavSoleil_Ready",
+            "Soleil_BathPage",
+            "Soleil_DutyPage",
             "FurnitureEnhance_PageGuard",
             "DailyCore_QuestPage",
             "Daily_MapPage",
@@ -294,28 +296,6 @@
             "CommonRecoveryStopCapture"
         ]
     },
-    "NavHome_FromSoleil": {
-        "recognition": "And",
-        "all_of": ["NavSoleil_Ready", "NavFooter_Home"],
-        "action": "Click",
-        "target": [345, 1220, 30, 20],
-        "post_delay": 2000,
-        "timeout": 60000,
-        "anchor": {"NavHome_NormalizeReturn": "NavHome_Arrived", "NavHome_PopupReturn": "NavHome_AwaitHome"},
-        "next": ["NavHome_AwaitHome"],
-        "on_error": ["CommonRecoveryStopCapture"]
-    },
-    "NavHome_FromFurnitureEnhance": {
-        "recognition": "And",
-        "all_of": ["FurnitureEnhance_PageGuard", "NavFooter_Home"],
-        "action": "Click",
-        "target": [345, 1220, 30, 20],
-        "post_delay": 2000,
-        "timeout": 60000,
-        "anchor": {"NavHome_NormalizeReturn": "NavHome_Arrived", "NavHome_PopupReturn": "NavHome_AwaitHome"},
-        "next": ["NavHome_AwaitHome"],
-        "on_error": ["CommonRecoveryStopCapture"]
-    },
     "NavHome_Arrived": {
         "recognition": "And",
         "all_of": ["NavHome_Ready"],
@@ -398,7 +378,7 @@
     "NavHome_CloseButton": {
         "recognition": "TemplateMatch",
         "roi": [295, 1120, 130, 130],
-        "template": "navigation/close.png",
+        "template": ["navigation/close.png", "navigation/close_blue.png"],
         "threshold": 0.95
     },
     "NavHome_CloseBright": {

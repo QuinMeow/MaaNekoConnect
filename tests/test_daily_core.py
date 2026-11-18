@@ -16,11 +16,11 @@ FOREIGN = dict(zip(MODULES, ("gacha", "vr", "quest", "gift", "contest", "exchang
                             "map", "guild", "members", "menu", "friend", "mission")))
 
 
-def test_interface_options_are_reachable_without_retired_daily_switches():
+def test_interface_options_are_reachable_without_retired_daily_switches(pipelines):
     interface = json.loads((ROOT / "assets/interface.json").read_text("utf-8"))
-    assert interface["task"][-1]["entry"] == "DailyRewards_Start"
+    assert not (ROOT / "assets/resource/pipeline/daily.json").exists()
     entries = {task["entry"] for task in interface["task"] if task["entry"].startswith("Daily")}
-    assert entries == {f"Daily{key}_Start" for key in MODULES}
+    assert entries == {f"Daily{key}_Start" for key in MODULES if key != "Delivery"}
     options, reachable = interface["option"], set()
     pending = [name for task in interface["task"] for name in task.get("option", [])]
     while pending:
@@ -32,7 +32,7 @@ def test_interface_options_are_reachable_without_retired_daily_switches():
         pending.extend(options[name].get("option", []))
         pending.extend(child for case in options[name].get("cases", []) for child in case.get("option", []))
     assert set(options) == reachable, f"Unused options: {set(options) - reachable}"
-    assert {name for name in options if name.startswith("Daily")} == {"DailyMilestones", "DailyGuildGoldDonation"}
+    assert not any(name.startswith(("Daily_Pending", "Daily_Choose")) for name in pipelines)
 
 
 @pytest.mark.parametrize("key", MODULES)

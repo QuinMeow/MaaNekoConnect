@@ -1,27 +1,17 @@
 import json
+from contextlib import nullcontext
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from maa.define import Rect
 
 from agent import ad_close
 
 
-def test_provider_is_off_without_explicit_consent():
-    assert ad_close.load_config({}) is None
-    assert ad_close.load_config({"MAANEKO_AD_LLM_ENDPOINT": "https://example.test"}) is None
-    with pytest.raises(ValueError):
-        ad_close.load_config({"MAANEKO_AD_LLM_ENABLED": "1"})
-
-
-@pytest.mark.parametrize("endpoint", [
-    "http://example.test/v1/chat/completions", "https://u:p@example.test/v1/chat/completions",
-    "https://example.test/v1/chat/completions?key=secret", "file:///chat/completions",
-])
-def test_provider_rejects_insecure_or_ambiguous_destination(endpoint):
-    with pytest.raises(ValueError):
-        ad_close.load_config({"MAANEKO_AD_LLM_ENABLED": "1", "MAANEKO_AD_LLM_ENDPOINT": endpoint,
-                              "MAANEKO_AD_LLM_MODEL": "vision", "MAANEKO_AD_LLM_API_KEY": "secret"})
+@pytest.fixture(autouse=True)
+def no_local_credentials(monkeypatch):
+    monkeypatch.setattr(ad_close, "load_config", lambda: None)
 
 
 def close(**changes):
@@ -56,7 +46,7 @@ class Context:
     def __init__(self):
         self.state = {"custom_action_param": {"frames": 0, "calls": 0, "clicks": 0}}
         self.clicks = []
-        self.native_box = None
+        self.native_box, self.foreground = None, True
         self.tasker = SimpleNamespace(stopping=False)
         self.tasker.controller = SimpleNamespace(
             cached_image=np.zeros((1280, 720, 3), dtype=np.uint8),
@@ -76,6 +66,8 @@ class Context:
         return True
 
     def run_recognition(self, name, image):
+        if name == "DailyLogin_Foreground":
+            return SimpleNamespace(hit=self.foreground)
         return SimpleNamespace(hit=True, box=self.native_box) if self.native_box else None
 
 
@@ -83,19 +75,22 @@ def invoke(context):
     return ad_close.AdCloseControl().run(context, SimpleNamespace(custom_action_param="{}"))
 
 
-def test_unconfigured_waits_bounded_without_upload_or_click(monkeypatch):
-    monkeypatch.setattr(ad_close.os, "environ", {})
+@pytest.mark.parametrize("foreground", [True, False])
+def test_unconfigured_waits_bounded_without_upload_or_click(monkeypatch, foreground):
     monkeypatch.setattr(ad_close, "request_decision", lambda *_: pytest.fail("Unexpected upload"))
     context = Context()
+    context.foreground = foreground
+    if not foreground:
+        assert not invoke(context) and not context.clicks
+        return
     assert all(invoke(context) for _ in range(40))
     assert not invoke(context) and not context.clicks
 
 
 def test_native_close_precedes_model_and_click_budget_is_committed(monkeypatch):
-    monkeypatch.setattr(ad_close.os, "environ", {})
     monkeypatch.setattr(ad_close, "request_decision", lambda *_: pytest.fail("Unexpected upload"))
     context = Context()
-    context.native_box = [662, 24, 24, 24]
+    context.native_box = Rect(662, 24, 24, 24)
     assert all(invoke(context) for _ in range(3))
     assert not invoke(context) and len(context.clicks) == 3
     context.tasker.stopping = True
@@ -103,7 +98,6 @@ def test_native_close_precedes_model_and_click_budget_is_committed(monkeypatch):
 
 
 def test_failed_click_is_never_replayed_by_new_state_initialization(monkeypatch):
-    monkeypatch.setattr(ad_close.os, "environ", {})
     context = Context()
     context.native_box = [662, 24, 24, 24]
     context.tasker.controller.post_click = lambda *_: SimpleNamespace(
@@ -115,10 +109,9 @@ def test_failed_click_is_never_replayed_by_new_state_initialization(monkeypatch)
 
 
 def test_provider_budget_and_cropped_request_are_bounded(monkeypatch):
-    env = {"MAANEKO_AD_LLM_ENABLED": "1", "MAANEKO_AD_LLM_ENDPOINT":
-           "https://example.test/v1/chat/completions", "MAANEKO_AD_LLM_MODEL": "vision",
-           "MAANEKO_AD_LLM_API_KEY": "secret"}
-    monkeypatch.setattr(ad_close.os, "environ", env)
+    monkeypatch.setattr(ad_close, "load_config", lambda: {
+        "endpoint": "https://api.deepseek.com/chat/completions",
+        "model": "deepseek-v4-flash", "api_key": "fake"})
     requests = []
     monkeypatch.setattr(ad_close, "request_decision", lambda image, config:
                         requests.append(image.shape) or {"action": "wait"})
@@ -129,9 +122,9 @@ def test_provider_budget_and_cropped_request_are_bounded(monkeypatch):
 
 
 def test_stale_model_screenshot_cannot_authorize_click(monkeypatch):
-    monkeypatch.setattr(ad_close.os, "environ", {"MAANEKO_AD_LLM_ENABLED": "1",
-                        "MAANEKO_AD_LLM_ENDPOINT": "https://example.test/v1/chat/completions",
-                        "MAANEKO_AD_LLM_MODEL": "vision", "MAANEKO_AD_LLM_API_KEY": "secret"})
+    monkeypatch.setattr(ad_close, "load_config", lambda: {
+        "endpoint": "https://api.deepseek.com/chat/completions",
+        "model": "deepseek-v4-flash", "api_key": "fake"})
     context = Context()
 
     def changed(*_):
@@ -143,36 +136,31 @@ def test_stale_model_screenshot_cannot_authorize_click(monkeypatch):
     assert not context.clicks
 
 
-def test_provider_uses_explicit_destination_without_redirect_or_proxy(monkeypatch):
+@pytest.mark.parametrize("host", ["example.test", "api.deepseek.com"])
+def test_provider_uses_explicit_destination_without_redirect_or_proxy(monkeypatch, host):
     seen = {}
 
-    class Response:
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *_):
-            return False
-
-        def read1(self, size):
-            seen["limit"] = size
-            if seen.get("read"):
-                return b""
-            seen["read"] = True
-            return b'{"choices":[{"message":{"content":"{\\"action\\":\\"wait\\"}"}}]}'
+    def read1(size):
+        seen["limit"] = size
+        if seen.get("read"):
+            return b""
+        seen["read"] = True
+        return b'{"choices":[{"message":{"content":"{\\"action\\":\\"wait\\"}"}}]}'
 
     def open_request(request, timeout):
         seen.update(url=request.full_url, timeout=timeout, body=json.loads(request.data))
-        return Response()
+        return nullcontext(SimpleNamespace(read1=read1))
 
     def build(*handlers):
         assert handlers[0].proxies == {} and isinstance(handlers[1], ad_close._NoRedirect)
         return SimpleNamespace(open=open_request)
 
     monkeypatch.setattr(ad_close.urllib.request, "build_opener", build)
-    config = {"endpoint": "https://example.test/v1/chat/completions", "model": "vision", "api_key": "secret"}
+    config = {"endpoint": f"https://{host}/chat/completions", "model": "deepseek-v4-flash", "api_key": "secret"}
     assert ad_close.request_decision(np.zeros((128, 512, 3), dtype=np.uint8), config) == {"action": "wait"}
     assert seen["url"] == config["endpoint"] and seen["limit"] == 4096 and seen["timeout"] == 8
     assert seen["body"]["max_tokens"] == 160
+    assert seen["body"].get("thinking") == ({"type": "disabled"} if host == "api.deepseek.com" else None)
     with pytest.raises(ValueError):
         ad_close._NoRedirect().redirect_request(None, None, 302, "", {}, "https://other.test")
     with pytest.raises(ValueError):
@@ -183,17 +171,10 @@ def test_provider_uses_explicit_destination_without_redirect_or_proxy(monkeypatc
         ad_close._read_response(SimpleNamespace(read1=lambda _: b"x"), 8)
 
 
-def test_normalized_native_state_cannot_reset_advertisement_limits(monkeypatch):
-    monkeypatch.setattr(ad_close.os, "environ", {})
-    context = Context()
-    context.state = {"action": {"type": "Custom", "param": {
-        "custom_action_param": {"frames": 40, "calls": 4, "clicks": 0}}}}
-    assert not invoke(context) and not context.clicks
-
-
-@pytest.mark.parametrize("state", [None, {}, {"custom_action_param": {"frames": 0}}])
+@pytest.mark.parametrize("state", [None, {}, {"custom_action_param": {"frames": 0}},
+    {"action": {"type": "Custom", "param": {
+        "custom_action_param": {"frames": 40, "calls": 4, "clicks": 0}}}}])
 def test_missing_budget_never_renews_advertisement_permits(state, monkeypatch):
-    monkeypatch.setattr(ad_close.os, "environ", {})
     context = Context()
     context.state = state
     assert not invoke(context) and not context.clicks

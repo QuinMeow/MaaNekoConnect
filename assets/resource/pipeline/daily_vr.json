@@ -1,108 +1,4 @@
 {
-    "Daily_PendingVR": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page",
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/pending_vr.png",
-                "roi": [
-                    85,
-                    300,
-                    555,
-                    600
-                ],
-                "threshold": 0.9,
-                "sub_name": "row"
-            },
-            {
-                "recognition": "OCR",
-                "roi": "row",
-                "roi_offset": [
-                    400,
-                    -2,
-                    -338,
-                    4
-                ],
-                "expected": [
-                    "^[（(]?0[/／]1[)）]?$"
-                ],
-                "replace": [
-                    [
-                        "\\s",
-                        ""
-                    ]
-                ],
-                "only_rec": true,
-                "threshold": 0.95
-            }
-        ],
-        "box_index": 1
-    },
-    "Daily_ChooseVR": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page",
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/pending_vr.png",
-                "roi": [
-                    85,
-                    300,
-                    555,
-                    600
-                ],
-                "threshold": 0.9,
-                "sub_name": "row"
-            },
-            {
-                "recognition": "OCR",
-                "roi": "row",
-                "roi_offset": [
-                    400,
-                    -2,
-                    -338,
-                    4
-                ],
-                "expected": [
-                    "^[（(]?0[/／]1[)）]?$"
-                ],
-                "replace": [
-                    [
-                        "\\s",
-                        ""
-                    ]
-                ],
-                "only_rec": true,
-                "threshold": 0.95
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "daily/challenge.png",
-                "roi": "row",
-                "roi_offset": [
-                    390,
-                    65,
-                    -228,
-                    82
-                ],
-                "threshold": 0.94
-            }
-        ],
-        "enabled": true,
-        "box_index": 3,
-        "action": "Click",
-        "target": true,
-        "max_hit": 1,
-        "post_delay": 2500,
-        "timeout": 45000,
-        "next": [
-            "Daily_VRBegin"
-        ],
-        "on_error": [
-            "CommonRecoveryEnter"
-        ]
-    },
     "Daily_VRPage": {
         "recognition": "TemplateMatch",
         "template": "daily/vr_title.png",
@@ -158,19 +54,22 @@
         ]
     },
     "Daily_VRSpend": {
+        "focus": {"Node.Action.Succeeded": "[VR] 已开始免费挑战 1 次。", "Node.Action.Failed": "[VR] 异常：挑战点击失败。"},
         "recognition": "And",
         "all_of": [
             "Daily_VRPage",
             {
-                "recognition": "TemplateMatch",
+                "recognition": "OCR",
                 "roi": [
-                    510,
-                    1025,
-                    115,
-                    40
+                    520,
+                    1031,
+                    95,
+                    28
                 ],
-                "template": "daily/vr_free_label.png",
-                "threshold": 0.97
+                "only_rec": true,
+                "expected": ["^無料あと$"],
+                "replace": [["\\s", ""]],
+                "threshold": 0.95
             },
             {
                 "recognition": "ColorMatch",
@@ -229,6 +128,7 @@
         ]
     },
     "DailyVR_Start": {
+        "focus": {"Node.Action.Succeeded": "[VR] 开始免费挑战。"},
         "doc": "VR猫爬塔",
         "recognition": "DirectHit",
         "post_delay": 0,
@@ -813,17 +713,40 @@
         ]
     },
     "DailyVR_Verify0": {
-        "recognition": "And",
-        "all_of": [
-            "DailyVR_Exhausted"
+        "recognition": "Or",
+        "any_of": [
+            "DailyVR_Exhausted",
+            "DailyVR_LastFreeBadgeGone"
         ],
         "post_delay": 0,
         "timeout": 8000,
         "next": [
-            "DailyVR_Exhausted"
+            "Daily_Return"
         ],
         "on_error": [
             "Daily_StopCapture"
+        ]
+    },
+    "DailyVR_LastFreeBadgeGone": {
+        "doc": "仅在已读到一次免费并确认奖励后使用；最后一次用完时游戏移除气泡，而非显示零次。",
+        "recognition": "And",
+        "all_of": [
+            "Daily_VRPage",
+            "NavFooter_Home",
+            {
+                "recognition": "ColorMatch",
+                "method": 4,
+                "roi": [525, 1038, 125, 14],
+                "lower": [20, 130, 190],
+                "upper": [145, 215, 240],
+                "count": 1600
+            },
+            {
+                "recognition": "OCR",
+                "roi": [510, 1055, 160, 70],
+                "expected": ["^スキップクリア$"],
+                "threshold": 0.95
+            }
         ]
     },
     "DailyVR_FreeGate": {
@@ -841,6 +764,7 @@
         ]
     },
     "DailyVR_Exhausted": {
+        "focus": {"Node.Action.Succeeded": "[VR] 免费次数已用完。"},
         "recognition": "And",
         "all_of": [
             "Daily_VRPage",
@@ -875,6 +799,7 @@
         }
     },
     "DailyVR_Unavailable": {
+        "focus": {"Node.Action.Succeeded": "[VR] 未找到可用免费挑战，跳过。"},
         "recognition": "And",
         "all_of": [
             "Daily_VRPage",

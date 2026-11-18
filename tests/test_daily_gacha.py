@@ -56,3 +56,57 @@ def test_unknown_ad_result_never_replays_the_trigger(pipelines):
 def test_banner_guard_is_not_satisfied_by_paid_confirm(native):
     assert not native.match("DailyGacha_AdReady", image("confirm"))
     assert not native.match("DailyGacha_ConfirmGuard", image("free"))
+
+
+def test_disabled_native_close_placeholder_waits_without_clicking(native, monkeypatch):
+    from types import SimpleNamespace
+    from agent import ad_close
+
+    monkeypatch.setattr(ad_close, "load_config", lambda: None)
+    outcomes = []
+
+    class Probe(CustomAction):
+        def run(self, context, argv):
+            control = ad_close.AdCloseControl()
+            for _ in range(41):
+                outcomes.append(control.run(context, SimpleNamespace(custom_action_param="{}")))
+            return True
+
+    assert native.resource.register_custom_action("ProbeAdWait", Probe())
+    native.run("TestAdWait", {"TestAdWait": {
+        "action": "Custom", "custom_action": "ProbeAdWait", "post_delay": 0}})
+    assert outcomes == [True] * 40 + [False]
+
+
+def test_missing_ai_settings_stop_before_entering_advertisement(native, monkeypatch):
+    from agent import ad_close
+
+    monkeypatch.setattr(ad_close, "load_config", lambda: None)
+    ad_close.register_ad_close(native.resource)
+    names = [node.name for node in native.run("DailyGacha_ConfigCheck", {
+        "Daily_StopCapture": {"action": "DoNothing", "post_delay": 0},
+    }).nodes]
+    assert names[-1] == "Daily_Stop" and "DailyGacha_AdSpend" not in names
+
+
+def test_slow_sdk_confirmation_waits_bounded_without_replaying_draw(native, pipelines):
+    checks = []
+
+    class DelayedSDK(CustomAction):
+        def run(self, context, argv):
+            checks.append(True)
+            context.override_pipeline({"DailyGacha_ConfirmStillVisible": {"enabled": False},
+                                       "DailyGacha_AdQuotaConsumed": {"recognition": "DirectHit"}})
+            return True
+
+    native.resource.register_custom_action("DelayedSDK", DelayedSDK())
+    patch = {name: {"post_delay": 0, "timeout": 20, "rate_limit": 1} for name in pipelines}
+    patch["DailyGacha_ConfirmGuard"].update(recognition="DirectHit")
+    patch["DailyGacha_WaitForSDK"].update(action="Custom", custom_action="DelayedSDK")
+    patch["DailyGacha_AdQuotaConsumed"].update(action="DoNothing", next=[])
+    patch["Daily_PostError"].update(enabled=False)
+    patch["Daily_StopCapture"].update(action="DoNothing")
+    names = [node.name for node in native.run("DailyGacha_ConfirmStillVisible", patch).nodes]
+    assert checks and names[-1] == "DailyGacha_AdQuotaConsumed"
+    assert "DailyGacha_AdSpend" not in names and "Daily_Stop" not in names
+    assert 1 <= pipelines["DailyGacha_WaitForSDK"]["max_hit"] <= 10

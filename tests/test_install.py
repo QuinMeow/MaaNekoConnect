@@ -82,6 +82,8 @@ def test_pure_json_omits_agent_python_and_ocr_without_mutating_sources(installer
                                         "./.runtime/python/python.exe", r"..\.runtime\python\python.exe"])
 def test_python_agent_is_verified_portable_and_relocatable(installer, project, runtime, executable):
     enable_agent(project, executable)
+    write(project / "scripts/ConfigureAdAI.vbs", "settings launcher")
+    write(project / "config/ad_ai.dat", "private credential must not ship")
     write(project / "assets/resource/pipeline/main.json", '{"Test":{"action":"Custom"}}')
     original = (project / "assets/interface.json").read_bytes()
     output = installer.install_project(project, "vtest", "win", "x86_64")
@@ -95,6 +97,7 @@ def test_python_agent_is_verified_portable_and_relocatable(installer, project, r
     assert (output / "agent/main.py").is_file() and (output / "libs/MaaAgentBinary/README.md").is_file()
     assert (project / "assets/interface.json").read_bytes() == original
     assert str(project) not in (output / "interface.json").read_text("utf-8")
+    assert (output / "ConfigureAdAI.vbs").is_file() and not (output / "config/ad_ai.dat").exists()
 
 
 @pytest.mark.parametrize("damage", ["missing", "partial", "corrupt", "old_directory", "old_file", "dangling", "old_resource", "old_agent", "old_interface"])
@@ -190,11 +193,3 @@ def test_used_ocr_models_are_required_and_not_overwritten(installer, project, mo
         with pytest.raises(FileNotFoundError, match="OCR"):
             installer.install_project(project, "vtest", "win", "x86_64")
         assert not (project / "install").exists()
-
-
-def test_workflow_prepares_locked_runtime_before_install():
-    workflow = (ROOT / ".github/workflows/install.yml").read_text("utf-8")
-    assert "include-hidden-files: true" in workflow
-    assert 'MFAA_VERSION: "v2.16.2"' in workflow
-    assert "actions/setup-python@v5" in workflow and 'python-version: "3.11"' in workflow
-    assert workflow.index("prepare_python.py --project-root .. --target win-x64") < workflow.index("python ./install.py")

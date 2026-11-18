@@ -1,0 +1,278 @@
+{
+    "Soleil_DailyStart": {
+        "doc": "按选项执行配送、浴室、当番、家具；每个业务单独跳回其调度节点",
+        "recognition": "DirectHit",
+        "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "[Soleil] 开始"},
+        "next": ["Soleil_DeliveryStage"],
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DeliveryStage": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "next": ["[JumpBack]Soleil_DeliveryRun", "Soleil_BathStage"],
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DeliveryRun": {
+        "recognition": "DirectHit", "enabled": false, "max_hit": 1, "post_delay": 0,
+        "next": ["DailyDelivery_Start"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathStage": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "next": ["[JumpBack]Soleil_BathRun", "Soleil_DutyStage"],
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathRun": {
+        "recognition": "DirectHit", "enabled": false, "max_hit": 1, "post_delay": 0,
+        "anchor": {"NavSoleil_Return": "Soleil_BathOpen", "CommonRecoveryResume": "Soleil_Stop"},
+        "next": ["NavSoleil_Ensure"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DutyStage": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "next": ["[JumpBack]Soleil_DutyRun", "Soleil_FurnitureStage"],
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DutyRun": {
+        "recognition": "DirectHit", "enabled": false, "max_hit": 1, "post_delay": 0,
+        "anchor": {"NavSoleil_Return": "Soleil_DutyOpen", "CommonRecoveryResume": "Soleil_Stop"},
+        "next": ["NavSoleil_Ensure"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_FurnitureStage": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "next": ["[JumpBack]Soleil_FurnitureRun", "Soleil_Finish"],
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_FurnitureRun": {
+        "recognition": "DirectHit", "enabled": false, "max_hit": 1, "post_delay": 0,
+        "next": ["FurnitureSchedule_Start"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_Finish": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "anchor": {"NavHome_NormalizeReturn": "Soleil_Done", "NavHome_PopupReturn": "NavHome_Normalize", "CommonRecoveryResume": "Soleil_Stop"},
+        "next": ["NavHome_Normalize"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathOpen": {
+        "recognition": "And",
+        "all_of": ["NavSoleil_Ready", "Soleil_BathTab"],
+        "box_index": 1,
+        "action": "Click", "target": true, "max_hit": 1,
+        "post_delay": 1200, "timeout": 10000,
+        "focus": {"Node.Action.Succeeded": "[浴室] 已打开"},
+        "next": ["Soleil_BathZoomCheck", "Soleil_BathZoom"],
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathPage": {
+        "recognition": "And",
+        "all_of": ["NavSoleil_Ready", "Soleil_BathSelected", "Soleil_BathQuotaLabel", "NavFooter_Home"]
+    },
+    "Soleil_BathSelected": {
+        "recognition": "And",
+        "all_of": [{
+            "recognition": "TemplateMatch", "roi": [610, 1090, 90, 60],
+            "template": "soleil/bath_selected.png", "threshold": 0.95
+        }, {
+            "recognition": "ColorMatch", "method": 4, "roi": [625, 1110, 60, 24],
+            "lower": [235, 110, 35], "upper": [255, 195, 120], "count": 600
+        }]
+    },
+    "Soleil_BathTab": {
+        "recognition": "Or",
+        "any_of": ["Soleil_BathSelected", {
+            "recognition": "TemplateMatch", "roi": [610, 1090, 90, 60],
+            "template": "soleil/bath_tab.png", "threshold": 0.95
+        }]
+    },
+    "Soleil_BathQuotaLabel": {
+        "recognition": "TemplateMatch", "roi": [150, 180, 450, 450],
+        "template": ["soleil/bath_quota_label.png", "soleil/bath_quota_label_small.png"],
+        "threshold": 0.95
+    },
+    "Soleil_BathQuota": {
+        "recognition": "OCR", "roi": [368, 233, 35, 36], "only_rec": true,
+        "expected": ["^[0-2]$"], "threshold": 0.95
+    },
+    "Soleil_BathMarkers": {
+        "recognition": "TemplateMatch", "template": ["soleil/bath_marker.png", "soleil/bath_marker_small.png"],
+        "roi": [150, 300, 450, 350], "threshold": 0.95, "order_by": "Vertical"
+    },
+    "Soleil_BathDuckIcon": {
+        "recognition": "TemplateMatch", "roi": [470, 20, 65, 65],
+        "template": "soleil/bath_duck_icon.png", "threshold": 0.95
+    },
+    "Soleil_BathDuckCount": {
+        "recognition": "OCR", "roi": [515, 24, 120, 53],
+        "expected": ["^(?:0|[1-9][0-9]{0,11}|[1-9][0-9]{0,2}(?:,[0-9]{3}){1,3})$"], "threshold": 0.95
+    },
+    "Soleil_BathState": {"recognition": "Custom", "custom_recognition": "SoleilBathArrow", "custom_recognition_param": {"baseline": null, "history": [], "pending": null, "duck_rewards": []}},
+    "Soleil_BathInit": {
+        "recognition": "Custom", "custom_recognition": "SoleilBathArrow",
+        "custom_recognition_param": {"op": "reset"}, "max_hit": 1,
+        "post_delay": 0, "timeout": 15000,
+        "next": ["Soleil_BathDispatch"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathZoom": {
+        "doc": "2.2.0、720x1280 实机确认的适中双指放大；已有大图时跳过，仅正向识别大图后建立次数基线",
+        "recognition": "And", "all_of": ["Soleil_BathPage"],
+        "action": "MultiSwipe",
+        "swipes": [
+            {"begin": [315, 545], "end": [220, 510], "duration": 500, "contact": 0, "starting": 0},
+            {"begin": [435, 585], "end": [530, 620], "duration": 500, "contact": 1, "starting": 0}
+        ],
+        "max_hit": 1, "post_delay": 1200,
+        "focus": {"Node.Action.Failed": "[浴室] 放大失败"},
+        "next": ["Soleil_BathZoomCheck"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathZoomCheck": {
+        "recognition": "And", "all_of": ["Soleil_BathPage", {
+            "recognition": "TemplateMatch", "template": "soleil/bath_quota_label.png",
+            "roi": [150, 180, 450, 450], "threshold": 0.95
+        }],
+        "post_delay": 0, "timeout": 8000,
+        "focus": {"Node.Action.Succeeded": "[浴室] 已放大"},
+        "next": ["Soleil_BathInit"], "on_error": ["Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathDispatch": {
+        "recognition": "DirectHit", "post_delay": 0, "timeout": 5000, "rate_limit": 500,
+        "next": ["Soleil_BathCollect", "Soleil_BathDone"],
+        "on_error": ["Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathCollect": {
+        "recognition": "Custom", "custom_recognition": "SoleilBathArrow",
+        "custom_recognition_param": {"op": "target"},
+        "action": "Click", "target": true, "max_hit": 2, "post_delay": 1200,
+        "focus": {"Node.Action.Succeeded": "[浴室] 已点击角色", "Node.Action.Failed": "[浴室] 点击失败"},
+        "next": ["Soleil_BathVerifyDispatch"], "on_error": ["Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathVerifyDispatch": {
+        "recognition": "DirectHit", "post_delay": 0, "timeout": 3500, "rate_limit": 350,
+        "next": ["Soleil_BathVerify"],
+        "on_error": ["Soleil_BathVerifyUnknown", "Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathVerify": {
+        "recognition": "Custom", "custom_recognition": "SoleilBathArrow",
+        "custom_recognition_param": {"op": "confirm"}, "max_hit": 2, "post_delay": 0,
+        "next": ["Soleil_BathLog"], "on_error": ["Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathVerifyUnknown": {
+        "recognition": "Custom", "custom_recognition": "SoleilBathArrow",
+        "custom_recognition_param": {"op": "confirm_unknown"}, "max_hit": 2, "post_delay": 0,
+        "next": ["Soleil_BathLog"], "on_error": ["Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathLog": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "[浴室] 领取结果未识别"},
+        "next": ["Soleil_BathDispatch"], "on_error": ["Soleil_BathUnconfirmed"]
+    },
+    "Soleil_BathDone": {
+        "recognition": "Custom", "custom_recognition": "SoleilBathArrow",
+        "custom_recognition_param": {"op": "done"}, "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "[浴室] 收菜结束"},
+        "next": ["Soleil_BathReturn"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathUnconfirmed": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "[浴室] 领取结果未识别"},
+        "next": ["Soleil_UnconfirmedReturn"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathReturn": {
+        "recognition": "And", "all_of": ["NavSoleil_Ready", "Soleil_BathSelected", "NavFooter_Home"],
+        "action": "DoNothing", "post_delay": 0,
+        "next": ["Soleil_BathComplete"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_BathComplete": {
+        "recognition": "DirectHit", "post_delay": 0
+    },
+    "Soleil_DutyOpen": {
+        "recognition": "And",
+        "all_of": ["NavSoleil_Ready", {
+            "recognition": "OCR", "roi": [610, 765, 85, 65],
+            "expected": ["^当番$"], "threshold": 0.95
+        }],
+        "box_index": 1,
+        "action": "Click", "target": true, "max_hit": 1,
+        "post_delay": 1200, "timeout": 10000,
+        "focus": {"Node.Action.Succeeded": "[当番] 已打开"},
+        "next": ["Soleil_DutyChange"], "on_error": ["Soleil_DutyUnconfirmed"]
+    },
+    "Soleil_DutyPage": {
+        "recognition": "And",
+        "all_of": [{
+            "recognition": "TemplateMatch", "roi": [35, 30, 85, 50],
+            "template": "soleil/duty_title.png", "threshold": 0.95
+        }, {
+            "recognition": "TemplateMatch", "roi": [30, 130, 140, 45],
+            "template": "soleil/duty_floor.png", "threshold": 0.95
+        }, {
+            "recognition": "TemplateMatch", "roi": [30, 310, 170, 45],
+            "template": "soleil/duty_kitchen.png", "threshold": 0.95
+        }, {
+            "recognition": "TemplateMatch", "roi": [30, 490, 150, 45],
+            "template": "soleil/duty_waiting.png", "threshold": 0.95
+        }, {
+            "recognition": "TemplateMatch", "roi": [30, 760, 150, 45],
+            "template": "soleil/duty_bath.png", "threshold": 0.95
+        }, "NavFooter_Home"]
+    },
+    "Soleil_DutyAutoButton": {
+        "recognition": "And",
+        "all_of": [{
+            "recognition": "OCR", "roi": [250, 1080, 230, 70],
+            "expected": ["^おまかせ$"], "threshold": 0.97
+        }, {
+            "recognition": "ColorMatch", "method": 4, "roi": [250, 1096, 220, 28],
+            "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 3500
+        }]
+    },
+    "Soleil_DutyChange": {
+        "recognition": "And",
+        "all_of": ["Soleil_DutyPage", "Soleil_DutyAutoButton"],
+        "box_index": 1,
+        "action": "Click", "target": true, "max_hit": 1,
+        "post_delay": 1200, "timeout": 12000,
+        "focus": {"Node.Action.Succeeded": "[当番] 已点击おまかせ", "Node.Action.Failed": "[当番] 换班点击失败"},
+        "next": ["Soleil_DutyAwaitResult"], "on_error": ["Soleil_DutyUnconfirmed"]
+    },
+    "Soleil_DutyAwaitResult": {
+        "doc": "2.2.0 原生采样：おまかせ无提交弹窗，先空槽动画再恢复名单；只确认加载与短时稳定，不推断人员已变化",
+        "recognition": "And",
+        "all_of": ["Soleil_DutyPage", "Soleil_DutyRosterPresent", {
+            "recognition": "Custom", "custom_recognition": "WaitForFrozenScreen",
+            "custom_recognition_param": {
+                "time": 1000, "target": [45, 195, 540, 710],
+                "threshold": 0.000001, "method": 1, "rate_limit": 250, "timeout": 7000
+            }
+        }],
+        "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "[当番] 名单已加载", "Node.Action.Failed": "[当番] 名单加载失败"},
+        "next": ["Soleil_DutyReturn"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DutyRosterPresent": {
+        "recognition": "ColorMatch", "method": 4, "roi": [48, 835, 160, 60],
+        "lower": [0, 0, 0], "upper": [220, 220, 220], "count": 2000
+    },
+    "Soleil_DutyUnconfirmed": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "[当番] 换班按钮未识别"},
+        "next": ["Soleil_UnconfirmedReturn"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_UnconfirmedReturn": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "anchor": {"NavHome_NormalizeReturn": "Soleil_Stop", "NavHome_PopupReturn": "NavHome_Normalize", "CommonRecoveryResume": "Soleil_Stop"},
+        "next": ["NavHome_Normalize"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DutyReturn": {
+        "recognition": "And", "all_of": ["Soleil_DutyPage"],
+        "action": "Click", "target": [345, 1220, 30, 20], "max_hit": 1,
+        "post_delay": 1000,
+        "next": ["NavHome_Ensure"],
+        "anchor": {"NavHome_Return": "Soleil_DutyComplete"},
+        "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_ReturnHome": {
+        "recognition": "And", "all_of": ["NavSoleil_Ready"], "post_delay": 0,
+        "anchor": {"NavHome_Return": "Soleil_DutyComplete"},
+        "next": ["NavHome_Ensure"], "on_error": ["Soleil_Stop"]
+    },
+    "Soleil_DutyComplete": {"recognition": "DirectHit", "post_delay": 0},
+    "Soleil_Done": {"recognition": "DirectHit", "post_delay": 0, "focus": {"Node.Action.Succeeded": "[Soleil] 完成"}},
+    "Soleil_Stop": {"recognition": "DirectHit", "action": "StopTask", "focus": {"Node.Action.Starting": "[Soleil] 页面未识别，停止"}}
+}

@@ -3,36 +3,14 @@
         "recognition": "TemplateMatch", "template": "daily/gift_title.png",
         "roi": [35, 25, 185, 60], "threshold": 0.97
     },
-    "Daily_PendingGift": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_Page",
-            {"recognition": "TemplateMatch", "template": "daily/pending_gift.png",
-             "roi": [85, 300, 555, 600], "threshold": 0.9, "sub_name": "row"},
-            {"recognition": "OCR", "roi": "row", "roi_offset": [370, -2, -308, 4],
-             "expected": ["^[（(]?0[/／]1[)）]?$"], "replace": [["\\s", ""]],
-             "only_rec": true, "threshold": 0.95}
-        ],
-        "box_index": 1
-    },
-    "Daily_ChooseGift": {
-        "recognition": "And",
-        "all_of": [
-            "Daily_PendingGift",
-            {"recognition": "TemplateMatch", "template": "daily/challenge.png",
-             "roi": "Daily_PendingGift", "roi_offset": [390, 65, -198, 82], "threshold": 0.94}
-        ],
-        "enabled": false, "box_index": 1, "action": "Click", "target": true,
-        "max_hit": 1, "post_delay": 2500, "timeout": 45000,
-        "next": ["Daily_GiftBegin"], "on_error": ["CommonRecoveryEnter"]
-    },
     "DailyGift_Start": {
         "doc": "礼物关卡",
+        "focus": {"Node.Action.Succeeded": "礼物关卡：开始"},
         "recognition": "DirectHit", "post_delay": 0,
         "anchor": {"CommonRecoveryResume": "DailyCore_Recover", "Daily_AfterWork": "DailyCore_Done",
                    "NavHome_Return": "DailyCore_Quest", "DailyCore_QuestTarget": "DailyGift_Open",
                    "DailyGift_BottomProof": "DailyGift_NoProof", "DailyGift_SearchPermit": "Daily_StopCapture"},
-        "next": ["NavHome_Ensure"], "on_error": ["CommonRecoveryEnter"]
+        "next": ["DailyGift_LeftConfig"], "on_error": ["CommonRecoveryEnter"]
     },
     "DailyGift_Open": {
         "recognition": "And", "all_of": ["DailyCore_QuestPage"],
@@ -40,7 +18,25 @@
         "post_delay": 2000, "timeout": 30000,
         "next": ["Daily_GiftBegin"], "on_error": ["CommonRecoveryEnter"]
     },
-    "DailyGift_Tab": {
+    "DailyGift_State": {
+        "recognition": "DirectHit", "enabled": false,
+        "action": "Custom", "custom_action": "DailyGiftControl",
+        "custom_action_param": {"goals": [3, 3], "done": [0, 0], "side": -1,
+                                "quota": null, "pending": false, "ready": false, "searches": 0}
+    },
+    "DailyGift_LeftConfig": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "action": "Custom", "custom_action": "DailyGiftControl",
+        "custom_action_param": {"op": "left", "count": 3},
+        "next": ["DailyGift_RightConfig"], "on_error": ["DailyGift_Stop"]
+    },
+    "DailyGift_RightConfig": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "action": "Custom", "custom_action": "DailyGiftControl",
+        "custom_action_param": {"op": "right", "count": 3},
+        "next": ["NavHome_Ensure"], "on_error": ["DailyGift_Stop"]
+    },
+    "DailyGift_LeftTab": {
         "recognition": "And",
         "all_of": [
             {"recognition": "OCR", "roi": [35, 1090, 315, 50], "expected": ["^ギフト集め$"],
@@ -49,15 +45,54 @@
              "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 3000}
         ]
     },
+    "DailyGift_RightTab": {
+        "recognition": "And", "all_of": [
+            {"recognition": "OCR", "roi": [370, 1090, 315, 50], "expected": ["^アクセ集め$"],
+             "threshold": 0.95, "only_rec": true},
+            {"recognition": "ColorMatch", "method": 4, "roi": [385, 1102, 290, 25],
+             "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 3000}
+        ]
+    },
+    "DailyGift_Tab": {"recognition": "Or", "any_of": ["DailyGift_LeftTab", "DailyGift_RightTab"]},
+    "DailyGift_SelectLeft": {
+        "recognition": "And", "all_of": ["Daily_GiftPage", "NavFooter_Home"],
+        "action": "Click", "target": [170, 1105, 35, 25], "max_hit": 1, "post_delay": 800,
+        "next": ["DailyGift_ReadList"], "on_error": ["DailyGift_Stop"]
+    },
+    "DailyGift_SelectRight": {
+        "recognition": "And", "all_of": ["Daily_GiftPage", "NavFooter_Home"],
+        "action": "Click", "target": [510, 1105, 35, 25], "max_hit": 1, "post_delay": 800,
+        "next": ["DailyGift_ReadList"], "on_error": ["DailyGift_Stop"]
+    },
+    "DailyGift_QuotaOCR": {
+        "recognition": "OCR", "roi": [254, 116, 60, 35], "only_rec": true,
+        "expected": ["^[0-3][/／]3$"], "replace": [["\\s", ""]], "threshold": 0.95
+    },
+    "DailyGift_ReadList": {
+        "recognition": "And", "all_of": ["Daily_GiftPage", "DailyGift_Tab", "NavFooter_Home"],
+        "action": "Custom", "custom_action": "DailyGiftControl", "custom_action_param": {"op": "list"},
+        "post_delay": 0, "next": ["DailyGift_Log"], "on_error": ["DailyGift_Stop"]
+    },
+    "DailyGift_Log": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "礼物关卡：已读取当前栏的免费剩余次数"},
+        "next": ["[Anchor]DailyGift_Next"]
+    },
+    "DailyGift_Stop": {
+        "recognition": "DirectHit", "post_delay": 0,
+        "focus": {"Node.Action.Succeeded": "礼物关卡：次数、页面或结果未识别，已停止"},
+        "next": ["Daily_StopCapture"]
+    },
     "DailyGift_PositiveQuota": {
         "recognition": "OCR", "roi": [254, 116, 60, 35], "only_rec": true,
         "expected": ["^[1-3][/／]3$"], "replace": [["\\s", ""]], "threshold": 0.95
     },
     "Daily_GiftBegin": {
-        "recognition": "And", "all_of": ["Daily_GiftPage", "DailyGift_Tab", "NavFooter_Home"],
+        "recognition": "And", "all_of": ["Daily_GiftPage", "NavFooter_Home"],
+        "action": "Custom", "custom_action": "DailyGiftControl", "custom_action_param": {"op": "begin"},
         "post_delay": 0, "timeout": 30000,
-        "next": ["DailyGift_Exhausted", "DailyGift_ScrollBottom", "Daily_StopCapture"],
-        "on_error": ["Daily_StopCapture"]
+        "next": ["[Anchor]DailyGift_Next"],
+        "on_error": ["DailyGift_Stop"]
     },
     "DailyGift_Exhausted": {
         "recognition": "And",
@@ -73,7 +108,7 @@
         "recognition": "And",
         "all_of": ["Daily_GiftPage", "DailyGift_Tab", "DailyGift_PositiveQuota", "NavFooter_Home"],
         "action": "Swipe", "begin": [410, 900], "end": [410, 250], "duration": 400,
-        "repeat": 6, "max_hit": 1, "post_delay": 1200,
+        "repeat": 6, "max_hit": 6, "post_delay": 1200,
         "next": ["DailyGift_SelectGate"], "on_error": ["Daily_StopCapture"]
     },
     "DailyGift_Bottom": {
@@ -109,8 +144,8 @@
         ]
     },
     "DailyGift_SelectGate": {
-        "recognition": "DirectHit", "post_delay": 0,
-        "next": ["DailyGift_BottomProved", "Daily_StopCapture"], "on_error": ["Daily_StopCapture"]
+        "recognition": "DirectHit", "post_delay": 0, "timeout": 8000,
+        "next": ["DailyGift_BottomProved"], "on_error": ["Daily_StopCapture"]
     },
     "DailyGift_Cleared": {
         "recognition": "And", "all_of": [
@@ -130,9 +165,13 @@
     },
     "DailyGift_SearchUp": {
         "recognition": "And", "all_of": ["DailyGift_SearchReady"],
-        "action": "Swipe", "begin": [410, 330], "end": [410, 730], "duration": 400,
-        "max_hit": 8, "post_delay": 700,
+        "action": "Custom", "custom_action": "DailyGiftControl", "custom_action_param": {"op": "search"},
+        "max_hit": 48, "post_delay": 700,
         "next": ["[Anchor]DailyGift_SearchPermit"], "on_error": ["Daily_StopCapture"]
+    },
+    "DailyGift_SearchSwipe": {
+        "recognition": "DirectHit", "action": "Swipe", "begin": [410, 330], "end": [410, 730],
+        "duration": 400, "post_delay": 0
     },
     "DailyGift_Prepare": {
         "recognition": "And",
@@ -144,7 +183,7 @@
             {"recognition": "ColorMatch", "method": 4, "roi": "prepare",
              "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 2500}
         ],
-        "box_index": 2, "action": "Click", "target": true, "max_hit": 1,
+        "box_index": 2, "action": "Click", "target": true, "max_hit": 6,
         "post_delay": 1800, "timeout": 30000,
         "next": ["Daily_PostError", "DailyGift_PrepDispatch"], "on_error": ["Daily_StopCapture"]
     },
@@ -164,15 +203,13 @@
         "recognition": "And",
         "all_of": [
             "Daily_PrepPage", "DailyGift_QuickLabel",
-            {"recognition": "TemplateMatch", "template": "daily/start.png",
-             "roi": [220, 1085, 280, 90], "threshold": 0.97},
-            {"recognition": "ColorMatch", "method": 4, "roi": [245, 1113, 225, 35],
-             "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 4000}
+            "DailyCore_StartButton",
+            "DailyCore_StartBright"
         ]
     },
     "DailyGift_PrepDispatch": {
-        "recognition": "And", "all_of": ["DailyGift_PrepReady"], "post_delay": 0,
-        "next": ["DailyGift_CheckedGate", "DailyGift_UncheckedGate", "Daily_StopCapture"],
+        "recognition": "And", "all_of": ["DailyGift_PrepReady"], "post_delay": 0, "timeout": 8000,
+        "next": ["DailyGift_CheckedGate", "DailyGift_UncheckedGate"],
         "on_error": ["Daily_StopCapture"]
     },
     "DailyGift_CheckedGate": {
@@ -185,36 +222,40 @@
     },
     "DailyGift_EnableQuick": {
         "recognition": "And", "all_of": ["DailyGift_PrepReady", "DailyGift_Unchecked"],
-        "action": "Click", "target": [505, 1117, 21, 21], "max_hit": 1, "post_delay": 400,
-        "next": ["DailyGift_PrepDispatch"], "on_error": ["Daily_StopCapture"]
+        "action": "Click", "target": [505, 1117, 21, 21], "max_hit": 6, "post_delay": 400,
+        "next": ["DailyGift_CheckedGate"], "on_error": ["Daily_StopCapture"]
     },
     "DailyGift_QuickSpend": {
         "recognition": "And", "all_of": ["DailyGift_PrepReady", "DailyGift_Checked"],
-        "action": "Click", "target": [345, 1115, 30, 25], "max_hit": 1,
+        "action": "Custom", "custom_action": "DailyGiftControl", "custom_action_param": {"op": "spend"},
+        "max_hit": 6,
         "post_delay": 1200, "timeout": 45000,
         "next": ["Daily_PostError", "DailyGift_ResultGate"], "on_error": ["Daily_StopCapture"],
-        "attach": {"quick": true, "stage": "highest-cleared-at-confirmed-bottom"}
+        "attach": {"quick": true, "stage": "highest-cleared-at-confirmed-bottom"},
+        "focus": {"Node.Action.Succeeded": "礼物关卡：已开始 1 次免费快速开店"}
+    },
+    "DailyGift_QuickClick": {
+        "recognition": "DirectHit", "action": "Click", "target": [345, 1115, 30, 25], "post_delay": 0
     },
     "DailyGift_ResultReady": {
         "recognition": "And",
         "all_of": [
-            {"recognition": "OCR", "roi": [0, 595, 350, 130], "only_rec": true,
-             "expected": ["^Win[!！]?$"], "threshold": 0.95},
+            "DailyCore_WinText",
             {"recognition": "TemplateMatch", "template": "daily/gift_ok.png",
              "roi": [220, 1155, 290, 90], "threshold": 0.97},
-            {"recognition": "ColorMatch", "method": 4, "roi": [250, 1185, 220, 30],
-             "lower": [220, 45, 55], "upper": [255, 130, 145], "count": 3500}
+            "DailyCore_ResultHomeBright"
         ],
         "box_index": 1
     },
     "DailyGift_ResultGate": {
-        "recognition": "And", "all_of": ["DailyGift_ResultReady"], "post_delay": 0,
-        "next": ["DailyGift_ResultOK", "Daily_StopCapture"], "on_error": ["Daily_StopCapture"]
+        "recognition": "And", "all_of": ["DailyGift_ResultReady"], "post_delay": 0, "timeout": 8000,
+        "next": ["DailyGift_ResultOK"], "on_error": ["Daily_StopCapture"]
     },
     "DailyGift_ResultOK": {
         "recognition": "And", "all_of": ["DailyGift_ResultReady"],
-        "action": "Click", "target": true, "max_hit": 1, "post_delay": 800, "timeout": 30000,
-        "next": ["Daily_PostError", "DailyGift_ResultHome"], "on_error": ["Daily_StopCapture"]
+        "action": "Click", "target": true, "max_hit": 6, "post_delay": 800, "timeout": 30000,
+        "next": ["Daily_PostError", "DailyGift_ReadList"], "on_error": ["DailyGift_Stop"],
+        "focus": {"Node.Action.Succeeded": "礼物关卡：胜利，已返回列表"}
     },
     "DailyGift_ResultHome": {
         "recognition": "And", "all_of": ["Daily_GiftPage", "NavFooter_Home"],

@@ -1,7 +1,7 @@
 def test_independent_friend_task_uses_batch_not_single_greeting(pipelines):
     choices = pipelines["Daily_FriendTab"]["next"]
     assert "DailyFriend_Batch" in choices
-    assert "Daily_FriendGreet" not in choices
+    assert "Daily_FriendGreet" not in pipelines
     batch = pipelines["DailyFriend_Batch"]
     assert batch["max_hit"] == 1
     assert batch["on_error"] == ["Daily_StopCapture"]

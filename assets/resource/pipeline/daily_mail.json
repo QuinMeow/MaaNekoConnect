@@ -1,5 +1,6 @@
 {
     "DailyMail_Start": {
+        "focus": {"Node.Action.Succeeded": "[邮箱] 开始批量领取邮件。"},
         "doc": "邮箱领取",
         "recognition": "DirectHit",
         "post_delay": 0,
@@ -81,7 +82,7 @@
             "DailyMail_Ready",
             {
                 "recognition": "TemplateMatch",
-                "template": "daily/mail_batch.png",
+                "template": ["daily/mail_batch.png", "daily/mail_batch_current.png"],
                 "roi": [
                     235,
                     920,
@@ -141,6 +142,7 @@
         ]
     },
     "DailyMail_Collect": {
+        "focus": {"Node.Action.Succeeded": "[邮箱] 已点击批量领取。", "Node.Action.Failed": "[邮箱] 异常：批量领取点击失败。"},
         "recognition": "And",
         "all_of": [
             "DailyMail_BatchReady"
@@ -305,6 +307,7 @@
         ]
     },
     "DailyMail_CapacityClose": {
+        "focus": {"Node.Action.Succeeded": "[邮箱] 容量不足，已关闭提示。"},
         "recognition": "And",
         "all_of": [
             "DailyMail_Capacity"

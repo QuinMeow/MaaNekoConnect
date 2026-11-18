@@ -96,3 +96,29 @@ def test_vr_positive_quota_requires_the_free_skip_control(native):
     assert not native.match("Daily_VRSpend", (image * 0.75).astype(np.uint8))
     image[1031:1060, 615:658] = 0
     assert not native.match("Daily_VRSpend", image)
+
+
+def test_current_free_label_is_read_semantically_without_spending_on_unknown_quota(native, frame):
+    image = frame("daily", "vr_free_current", {
+        "title": (35, 25, 185, 60), "free": (505, 1020, 165, 105),
+        "footer": (280, 1195, 160, 75)})
+    assert native.match("DailyVR_Read1", image)
+    assert not native.match("DailyVR_Verify0", image)
+    assert not native.match("DailyVR_Read2", image)
+    assert not native.match("DailyVR_Read1", (image * 0.65).astype(np.uint8))
+    for x, y, w, h in ((520, 1031, 95, 28), (615, 1031, 43, 29), (525, 1075, 125, 30)):
+        missing = image.copy()
+        missing[y:y + h, x:x + w] = 0
+        assert not native.match("DailyVR_Read1", missing)
+
+
+def test_last_free_attempt_returns_when_badge_is_replaced_by_known_blue_panel(native, frame, pipelines):
+    image = frame("daily", "vr_last_free_used", {
+        "title": (35, 25, 185, 60), "control": (505, 1027, 165, 98),
+        "footer": (280, 1195, 160, 75)})
+    assert native.match("DailyVR_Verify0", image)
+    assert not native.match("Daily_VRSpend", image)
+    assert not native.match("DailyVR_Verify0", (image * 0.65).astype(np.uint8))
+    image[1038:1052, 525:650] = 0
+    assert not native.match("DailyVR_Verify0", image)
+    assert pipelines["DailyVR_Verify0"]["next"] == ["Daily_Return"]

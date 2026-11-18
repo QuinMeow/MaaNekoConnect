@@ -6,6 +6,7 @@ import pytest
 
 REGIONS = {
     "mail_title": (180, 80, 360, 70), "mail_batch": (250, 934, 218, 43),
+    "mail_batch_current": (245, 925, 230, 60),
     "mail_tab": (55, 1018, 230, 44), "close": (310, 1135, 100, 100),
     "reward": (298, 398, 128, 32), "capacity_header": (88, 201, 154, 22),
     "capacity_footer": (210, 919, 310, 30),
@@ -28,11 +29,12 @@ def test_mail_collects_once_and_never_restarts_after_capacity_rejection(pipeline
 
 @pytest.mark.parametrize("sample,node,required", [
     ("mail_ready", "DailyMail_Collect", ("mail_title", "mail_batch", "mail_tab", "close")),
+    ("mail_current", "DailyMail_Collect", ("mail_title", "mail_batch_current", "mail_tab", "close")),
     ("mail_capacity", "DailyMail_CapacityClose", ("capacity_header", "capacity_footer", "close")),
     ("mail_reward", "DailyMail_RewardClose", ("reward", "close")),
 ])
 def test_mail_controls_require_the_specific_complete_unobscured_page(native, frame, sample, node, required):
-    if sample == "mail_ready":
+    if node == "DailyMail_Collect":
         require_ocr()
     image = frame("daily", sample, REGIONS)
     assert native.match(node, image)
@@ -42,14 +44,16 @@ def test_mail_controls_require_the_specific_complete_unobscured_page(native, fra
         partial[y:y + h, x:x + w] = 0
         assert not native.match(node, partial), key
     assert not native.match(node, np.zeros_like(image))
-    if sample != "mail_ready":
+    assert not native.match(node, (image * 0.7).astype(np.uint8))
+    if node != "DailyMail_Collect":
         assert not native.match("DailyMail_Collect", image)
 
 
-def test_mail_reward_capacity_and_remaining_items_return_home_without_another_batch(native, pipelines, frame):
+@pytest.mark.parametrize("initial", ["mail_ready", "mail_current"])
+def test_mail_reward_capacity_and_remaining_items_return_home_without_another_batch(native, pipelines, frame, initial):
     require_ocr()
     images = [frame("daily", sample, REGIONS) for sample in
-              ("mail_ready", "mail_reward", "mail_capacity", "mail_remaining")]
+              (initial, "mail_reward", "mail_capacity", "mail_remaining")]
     images.append(frame("recovery", "home_ready_holdout", REGIONS))
     native.controller.image = images[0]
     clicks = []

@@ -120,7 +120,7 @@ Loading 的省略号会变化，生产模板只截取静态 `Loading` 字样，�
 
 这是接入结构示意，不是可直接执行的完整任务；示例业务节点需由调用方定义并加页面门禁。恢复层通过 `[Anchor]CommonRecoveryResume` 返回，锚点必须是能重新确认页面与业务状态的安全入口，不应指向扣券、购买或其他不可盲重试动作。业务还需保留未确认消费的“不确定”结果，不能因网络恢复后任务最终到达正常终点就抹除先前未确认的请求。
 
-MFAA AgentServer 通过 [agent/extensions.py](../../../agent/extensions.py) 导入时注册该识别。直接使用 `Resource` 的 CLI 则调用 `register_recovery(resource)` 后加载资源；注册失败抛出错误，不静默继续。普通 Framework 运行进程只导入 `recovery`，不要导入 `extensions` 或 `maa.agent.agent_server`；SDK 的 AgentServer 包会选择独立进程使用的原生库模式。
+MFAA 与 LocalBridge 的 AgentServer 通过 [agent/extensions.py](../../../agent/extensions.py) 导入时注册该识别。离线测试直接使用 `Resource` 时调用 `register_recovery(resource)` 后加载资源；注册失败抛出错误，不静默继续。普通 Framework 测试进程只导入 `recovery`，不要导入 `extensions` 或 `maa.agent.agent_server`；SDK 的 AgentServer 包会选择独立进程使用的原生库模式。
 
 ## 验证边界
 

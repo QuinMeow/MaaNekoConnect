@@ -14,6 +14,7 @@
         ]
     },
     "Daily_MilestoneClaim": {
+        "focus": {"Node.Action.Succeeded": "[任务奖励] 已点击DayPt阶段奖励。", "Node.Action.Failed": "[任务奖励] 异常：阶段奖励点击失败。"},
         "recognition": "And",
         "all_of": [
             "Daily_Milestone"
@@ -33,6 +34,7 @@
         ]
     },
     "Daily_Claim": {
+        "focus": {"Node.Action.Succeeded": "[任务奖励] 已点击领取。", "Node.Action.Failed": "[任务奖励] 异常：领取点击失败。"},
         "recognition": "And",
         "all_of": [
             "Daily_Page",
@@ -110,6 +112,7 @@
         ]
     },
     "Daily_DismissReward": {
+        "focus": {"Node.Action.Succeeded": "[奖励] 已领取，产物数量=未识别。"},
         "recognition": "And",
         "all_of": [
             "Daily_Reward"
@@ -462,6 +465,7 @@
         ]
     },
     "DailyRewards_Start": {
+        "focus": {"Node.Action.Succeeded": "[任务奖励] 开始领取。"},
         "doc": "任务奖励领取",
         "recognition": "DirectHit",
         "post_delay": 0,
